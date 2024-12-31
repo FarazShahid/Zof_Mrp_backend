@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientsModule } from './clients/clients.module';
 import { Client } from './clients/entities/client.entity';
+import { ProductsModule } from './products/products.module';
+import { Product } from './products/entities/product.entity';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -11,10 +13,10 @@ import { Client } from './clients/entities/client.entity';
     username: 'root',
     password: '',
     database: 'zof_mrp',
-    entities: [Client],
+    entities: [Client, Product],
     // Make Sync False for Prod
     synchronize: true
-  }), ClientsModule],
+  }), ClientsModule, ProductsModule],
   controllers: [],
   providers: [],
 })

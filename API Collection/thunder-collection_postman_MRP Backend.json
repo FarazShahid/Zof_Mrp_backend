@@ -1,6 +1,6 @@
 {
     "info": {
-        "_postman_id": "c5716533-8a4c-4a12-9b34-dbd91d64e36c",
+        "_postman_id": "99db17b4-4d3d-4c53-bd80-f567c1b3cb56",
         "name": "MRP Backend",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "description": ""
@@ -45,7 +45,7 @@
                             "language": "json"
                         }
                     },
-                    "raw": "{\n    \"Name\": \"Test Name 1\",\n    \"Email\": \"test@dev.com\",\n    \"Phone\": \"11111\",\n    \"Country\": \"Pakistan\",\n    \"State\": \"Punjab\",\n    \"City\": \"Lahore\",\n    \"CompleteAddress\": \"Canal Road\",\n    \"ClientStatusId\": \"1\",\n    \"CreatedBy\": \"1\"\n  }"
+                    "raw": "{\r\n  \"Name\": \"Test Name 1 updated\",\r\n  \"Email\": \"test@dev.com\",\r\n  \"Phone\": \"11111\",\r\n  \"Country\": \"Pakistan\",\r\n  \"State\": \"Punjab\",\r\n  \"City\": \"Lahore\",\r\n  \"CompleteAddress\": \"Canal Road\",\r\n  \"ClientStatusId\": \"1\"\r\n}\r\n"
                 }
             }
         },
@@ -54,10 +54,10 @@
             "request": {
                 "method": "PATCH",
                 "url": {
-                    "raw": "http://localhost:3000/clients/4",
+                    "raw": "http://localhost:3000/clients/6",
                     "path": [
                         "clients",
-                        "4"
+                        "6"
                     ],
                     "protocol": "http",
                     "host": [
@@ -81,10 +81,27 @@
             "request": {
                 "method": "DELETE",
                 "url": {
-                    "raw": "http://localhost:3000/clients/4",
+                    "raw": "http://localhost:3000/clients/6",
                     "path": [
                         "clients",
-                        "4"
+                        "6"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "3000"
+                }
+            }
+        },
+        {
+            "name": "Get Products",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:3000/products",
+                    "path": [
+                        "products"
                     ],
                     "protocol": "http",
                     "host": [
