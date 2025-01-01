@@ -86,4 +86,10 @@ export class UserService {
 
     await this.userRepository.delete(id);
   }
+
+  async getUserEmailById(userId: number): Promise<string> {
+    const user = await this.userRepository.findOne({ where: { Id: userId } });
+    return user ? user.Email : null;
+  }
+
 }

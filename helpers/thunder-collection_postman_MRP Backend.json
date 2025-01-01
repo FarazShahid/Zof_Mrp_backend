@@ -1,6 +1,6 @@
 {
     "info": {
-        "_postman_id": "f5316ad1-e480-4cf2-8e38-7e4988848c24",
+        "_postman_id": "8c899714-ee5f-47d8-b4b2-ec1cc1bc07ab",
         "name": "MRP Backend",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "description": ""
@@ -144,7 +144,7 @@
                             "language": "json"
                         }
                     },
-                    "raw": "{\r\n  \"email\": \"test@dev.com\",\r\n  \"password\": \"123\"\r\n}\r\n"
+                    "raw": "{\n  \"email\": \"test@dev.com\",\n  \"password\": \"123\"\n}\n"
                 }
             }
         },
@@ -177,7 +177,7 @@
                             "language": "json"
                         }
                     },
-                    "raw": "{\r\n  \"Email\": \"test@dev.commmmfm\",\r\n  \"Password\": \"123\",\r\n  \"isActive\": true\r\n}\r\n"
+                    "raw": "{\n  \"Email\": \"test@dev.com\",\n  \"Password\": \"123\",\n  \"isActive\": true\n}\n"
                 },
                 "auth": {
                     "type": "bearer",
@@ -295,6 +295,33 @@
                         {
                             "key": "token",
                             "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE5MzMsImV4cCI6MTczNTY2NTUzM30.MC0fNXbtcPKGyMVn7BzgrHaasLSwwDDPO-WV7ZiCcJg",
+                            "type": "string"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Get Events",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:3000/events",
+                    "path": [
+                        "events"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "3000"
+                },
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU3MzE0MzQsImV4cCI6MTczNTgxNzgzNH0.u6EuD5AQIh2Y_0GEJkIGHDGSF9CM6wI6rUzbjQIY2JA",
                             "type": "string"
                         }
                     ]
