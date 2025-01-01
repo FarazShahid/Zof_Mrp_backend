@@ -4,6 +4,9 @@ import { ClientsModule } from './clients/clients.module';
 import { Client } from './clients/entities/client.entity';
 import { ProductsModule } from './products/products.module';
 import { Product } from './products/entities/product.entity';
+import { AuthModule } from './auth/auth.module';
+import { User } from './users/entities/user.entity';
+import { UserModule } from './users/user.module';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -13,10 +16,10 @@ import { Product } from './products/entities/product.entity';
     username: 'root',
     password: '',
     database: 'zof_mrp',
-    entities: [Client, Product],
+    entities: [Client, Product, User],
     // Make Sync False for Prod
     synchronize: true
-  }), ClientsModule, ProductsModule],
+  }), ClientsModule, ProductsModule, AuthModule, UserModule],
   controllers: [],
   providers: [],
 })

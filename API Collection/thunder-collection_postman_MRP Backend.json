@@ -1,6 +1,6 @@
 {
     "info": {
-        "_postman_id": "99db17b4-4d3d-4c53-bd80-f567c1b3cb56",
+        "_postman_id": "f5316ad1-e480-4cf2-8e38-7e4988848c24",
         "name": "MRP Backend",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "description": ""
@@ -20,6 +20,16 @@
                         "localhost"
                     ],
                     "port": "3000"
+                },
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE5MzMsImV4cCI6MTczNTY2NTUzM30.MC0fNXbtcPKGyMVn7BzgrHaasLSwwDDPO-WV7ZiCcJg",
+                            "type": "string"
+                        }
+                    ]
                 }
             }
         },
@@ -45,7 +55,7 @@
                             "language": "json"
                         }
                     },
-                    "raw": "{\r\n  \"Name\": \"Test Name 1 updated\",\r\n  \"Email\": \"test@dev.com\",\r\n  \"Phone\": \"11111\",\r\n  \"Country\": \"Pakistan\",\r\n  \"State\": \"Punjab\",\r\n  \"City\": \"Lahore\",\r\n  \"CompleteAddress\": \"Canal Road\",\r\n  \"ClientStatusId\": \"1\"\r\n}\r\n"
+                    "raw": "{\n  \"Name\": \"Test Name 1 updated\",\n  \"Email\": \"test@dev.com\",\n  \"Phone\": \"11111\",\n  \"Country\": \"Pakistan\",\n  \"State\": \"Punjab\",\n  \"City\": \"Lahore\",\n  \"CompleteAddress\": \"Canal Road\",\n  \"ClientStatusId\": \"1\"\n}\n"
                 }
             }
         },
@@ -108,6 +118,186 @@
                         "localhost"
                     ],
                     "port": "3000"
+                }
+            }
+        },
+        {
+            "name": "Login",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://localhost:3000/auth/login",
+                    "path": [
+                        "auth",
+                        "login"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "3000"
+                },
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\r\n  \"email\": \"test@dev.com\",\r\n  \"password\": \"123\"\r\n}\r\n"
+                }
+            }
+        },
+        {
+            "name": "Save User",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://localhost:3000/users",
+                    "path": [
+                        "users"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "3000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE3NTMsImV4cCI6MTczNTY2NTM1M30.jLIm8hcNcYgeCrkCqCV8M_IUI1EyFwdM7n3IC-v19nI",
+                        "disabled": true
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\r\n  \"Email\": \"test@dev.commmmfm\",\r\n  \"Password\": \"123\",\r\n  \"isActive\": true\r\n}\r\n"
+                },
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE5MzMsImV4cCI6MTczNTY2NTUzM30.MC0fNXbtcPKGyMVn7BzgrHaasLSwwDDPO-WV7ZiCcJg",
+                            "type": "string"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Get Users",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:3000/users",
+                    "path": [
+                        "users"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "3000"
+                },
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE5MzMsImV4cCI6MTczNTY2NTUzM30.MC0fNXbtcPKGyMVn7BzgrHaasLSwwDDPO-WV7ZiCcJg",
+                            "type": "string"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Update User",
+            "request": {
+                "method": "PUT",
+                "url": {
+                    "raw": "http://localhost:3000/users/1",
+                    "path": [
+                        "users",
+                        "1"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "3000"
+                },
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\r\n  \"Email\": \"test@example.com\",\r\n  \"Password\": \"testPassword1234\",\r\n  \"isActive\": false\r\n}\r\n"
+                },
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE5MzMsImV4cCI6MTczNTY2NTUzM30.MC0fNXbtcPKGyMVn7BzgrHaasLSwwDDPO-WV7ZiCcJg",
+                            "type": "string"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Delete User",
+            "request": {
+                "method": "DELETE",
+                "url": {
+                    "raw": "http://localhost:3000/users/1",
+                    "path": [
+                        "users",
+                        "1"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "3000"
+                }
+            }
+        },
+        {
+            "name": "Get Single User",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:3000/users/2",
+                    "path": [
+                        "users",
+                        "2"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "3000"
+                },
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE5MzMsImV4cCI6MTczNTY2NTUzM30.MC0fNXbtcPKGyMVn7BzgrHaasLSwwDDPO-WV7ZiCcJg",
+                            "type": "string"
+                        }
+                    ]
                 }
             }
         }
