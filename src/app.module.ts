@@ -9,6 +9,8 @@ import { User } from './users/entities/user.entity';
 import { UserModule } from './users/user.module';
 import { EventsModule } from './events/events.module';
 import { ClientEvent } from './events/entities/clientevent.entity';
+import { OrderstatusModule } from './orderstatus/orderstatus.module';
+import { OrderStatus } from './orderstatus/entities/orderstatus.entity';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -18,10 +20,10 @@ import { ClientEvent } from './events/entities/clientevent.entity';
     username: 'root',
     password: '',
     database: 'zof_mrp',
-    entities: [Client, Product, User, ClientEvent],
+    entities: [Client, Product, User, ClientEvent, OrderStatus],
     // Make Sync False for Prod
     synchronize: true
-  }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule],
+  }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule],
   controllers: [],
   providers: [],
 })

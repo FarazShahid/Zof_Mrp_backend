@@ -1,6 +1,6 @@
 {
     "info": {
-        "_postman_id": "8c899714-ee5f-47d8-b4b2-ec1cc1bc07ab",
+        "_postman_id": "e9fcfa50-30e4-44df-abb1-701b7e915542",
         "name": "MRP Backend",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "description": ""
@@ -309,6 +309,33 @@
                     "raw": "http://localhost:3000/events",
                     "path": [
                         "events"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "3000"
+                },
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU3MzE0MzQsImV4cCI6MTczNTgxNzgzNH0.u6EuD5AQIh2Y_0GEJkIGHDGSF9CM6wI6rUzbjQIY2JA",
+                            "type": "string"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Get Order Status",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:3000/orderstatuses",
+                    "path": [
+                        "orderstatuses"
                     ],
                     "protocol": "http",
                     "host": [
