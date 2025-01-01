@@ -11,6 +11,9 @@ import { EventsModule } from './events/events.module';
 import { ClientEvent } from './events/entities/clientevent.entity';
 import { OrderstatusModule } from './orderstatus/orderstatus.module';
 import { OrderStatus } from './orderstatus/entities/orderstatus.entity';
+import { OrdersService } from './orders/orders.service';
+import { OrderModule } from './orders/orders.module';
+import { Order } from './orders/entities/orders.entity';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -20,11 +23,11 @@ import { OrderStatus } from './orderstatus/entities/orderstatus.entity';
     username: 'root',
     password: '',
     database: 'zof_mrp',
-    entities: [Client, Product, User, ClientEvent, OrderStatus],
+    autoLoadEntities: true, 
+    entities: [Client, Product, User, ClientEvent, OrderStatus, Order],
     // Make Sync False for Prod
     synchronize: true
-  }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule],
-  controllers: [],
-  providers: [],
+  }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule, OrderModule],
+  controllers: []
 })
 export class AppModule {}
