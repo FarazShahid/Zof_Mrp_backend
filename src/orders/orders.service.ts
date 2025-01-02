@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In  } from 'typeorm';
 import { Order } from './entities/orders.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { OrderItemsPrintingOption } from './entities/order-item-printiing.option.entity';
@@ -167,14 +167,15 @@ export class OrdersService {
   }
   
   async updateOrder(id: number, updateOrderDto: any, updatedBy: number): Promise<Order> {
-    const order = await this.orderRepository.findOne({ where: { Id: id } });
 
+    const order = await this.orderRepository.findOne({ where: { Id: id } });
+  
     if (!order) {
       throw new Error('Order not found');
     }
-
-    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline } = updateOrderDto;
-
+  
+    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, items } = updateOrderDto;
+  
     order.ClientId = ClientId ?? order.ClientId;
     order.OrderEventId = OrderEventId ?? order.OrderEventId;
     order.Description = Description ?? order.Description;
@@ -182,29 +183,81 @@ export class OrdersService {
     order.Deadline = Deadline ?? order.Deadline;
     order.UpdatedBy = updatedBy;
     order.UpdatedOn = new Date();
-
-    return this.orderRepository.save(order);
+  
+    const updatedOrder = await this.orderRepository.save(order);
+  
+    if (items && items.length > 0) {
+   
+      const existingOrderItems = await this.orderItemRepository.find({ where: { OrderId: id } });
+      const existingOrderItemIds = existingOrderItems.map((item) => item.Id);
+  
+      if (existingOrderItemIds.length > 0) {
+        await this.orderItemsPrintingOptionRepository.delete({
+          OrderItemId: In(existingOrderItemIds),
+        });
+      }
+  
+      await this.orderItemRepository.delete({ OrderId: id });
+  
+      const newOrderItems = items.map((item) => ({
+        OrderId: id,
+        ProductId: item.ProductId,
+        Description: item.Description,
+        ImageId: item.ImageId,
+        FileId: item.FileId,
+        VideoId: item.VideoId,
+        CreatedBy: updatedBy,
+        UpdatedBy: updatedBy,
+        CreatedOn: new Date(),
+        UpdatedOn: new Date(),
+      }));
+  
+      const savedOrderItems = await this.orderItemRepository.save(newOrderItems);
+  
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.printingOptions && item.printingOptions.length > 0) {
+          const printingOptions = item.printingOptions.map((option) => ({
+            OrderItemId: savedOrderItems[i].Id,
+            PrintingOptionId: option.PrintingOptionId,
+            Description: option.Description,
+          }));
+  
+          await this.orderItemsPrintingOptionRepository.save(printingOptions);
+        }
+      }
+    }
+    return updatedOrder;
   }
 
   async deleteOrder(id: number): Promise<void> {
-    const order = await this.orderRepository.findOne({ where: { Id: id } });
 
+    const order = await this.orderRepository.findOne({ where: { Id: id } });
+  
     if (!order) {
       throw new Error('Order not found');
     }
-
+  
+    const orderItems = await this.orderItemRepository.find({ where: { OrderId: id } });
+    const orderItemIds = orderItems.map((item) => item.Id);
+  
+    if (orderItemIds.length > 0) {
+      await this.orderItemsPrintingOptionRepository.delete({
+        OrderItemId: In(orderItemIds),
+      });
+    }
+  
     await this.orderItemRepository.delete({ OrderId: id });
-    await this.orderItemsPrintingOptionRepository.delete({ OrderItemId: id });
-
+  
     await this.orderRepository.delete(id);
   }
-
+  
   async getOrderItemsByOrderId(orderId: number): Promise<any> {
     const orderItems = await this.orderItemRepository
       .createQueryBuilder('orderItem')
-      .leftJoinAndSelect('product', 'product', 'orderItem.ProductId = product.Id') 
-      .leftJoinAndSelect('orderItemPrintingOptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId') 
-      .leftJoinAndSelect('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id') 
+      .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
+      .leftJoin('orderItemPrintingOptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
+      .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
       .select([
         'orderItem.Id AS Id',
         'orderItem.OrderId AS OrderId',
@@ -225,17 +278,19 @@ export class OrdersService {
       .getRawMany();
   
     if (!orderItems || orderItems.length === 0) {
-      throw new Error('No items found for the given order ID');
+      return [];
     }
   
     const formattedItems = orderItems.reduce((acc, item) => {
       const existingItem = acc.find(orderItem => orderItem.Id === item.Id);
       if (existingItem) {
-        existingItem.printingOptions.push({
-          PrintingOptionId: item.PrintingOptionId,
-          PrintingOptionName: item.PrintingOptionName,
-          Description: item.PrintingOptionDescription,
-        });
+        if (item.PrintingOptionId) {
+          existingItem.printingOptions.push({
+            PrintingOptionId: item.PrintingOptionId,
+            PrintingOptionName: item.PrintingOptionName,
+            Description: item.PrintingOptionDescription,
+          });
+        }
       } else {
         acc.push({
           Id: item.Id,
@@ -248,12 +303,12 @@ export class OrdersService {
           VideoId: item.VideoId,
           CreatedOn: item.CreatedOn,
           UpdatedOn: item.UpdatedOn,
-          PrintingOptions: item.PrintingOptionId
+          printingOptions: item.PrintingOptionId
             ? [
                 {
                   PrintingOptionId: item.PrintingOptionId,
-                  Description: item.PrintingOptionDescription,
                   PrintingOptionName: item.PrintingOptionName,
+                  Description: item.PrintingOptionDescription,
                 },
               ]
             : [],
