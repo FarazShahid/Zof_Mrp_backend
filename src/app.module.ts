@@ -17,6 +17,8 @@ import { OrderItem } from './orders/entities/order-item.entity';
 import { OrderItemsPrintingOption } from './orders/entities/order-item-printiing.option.entity';
 import { PrintingoptionsModule } from './printingoptions/printingoptions.module';
 import { PrintingOptions } from './printingoptions/entities/printingoptions.entity';
+import { SizeoptionsModule } from './sizeoptions/sizeoptions.module';
+import { SizeOption } from './sizeoptions/entities/sizeoptions.entity';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -27,10 +29,10 @@ import { PrintingOptions } from './printingoptions/entities/printingoptions.enti
     password: '',
     database: 'zof_mrp',
     autoLoadEntities: true, 
-    entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem, OrderItemsPrintingOption, PrintingOptions],
+    entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem, OrderItemsPrintingOption, PrintingOptions, SizeOption],
     // Make Sync False for Prod
     synchronize: true
-  }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule, OrderModule, PrintingoptionsModule],
+  }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule, OrderModule, PrintingoptionsModule, SizeoptionsModule],
   controllers: []
 })
 export class AppModule {}
