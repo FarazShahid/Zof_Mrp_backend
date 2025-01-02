@@ -34,7 +34,7 @@ export class OrdersService {
 
     const savedOrder = await this.orderRepository.save(newOrder);
 
-    if (items && items.length > 0) {
+    if (Array.isArray(items) && items.length > 0) {
       const orderItems = items.map((item) => ({
         OrderId: savedOrder.Id,
         ProductId: item.ProductId,
@@ -52,7 +52,7 @@ export class OrdersService {
 
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
-        if (item.printingOptions && item.printingOptions.length > 0) {
+        if (Array.isArray(item.printingOptions) && item.printingOptions.length > 0) {
           const printingOptions = item.printingOptions.map((option) => ({
             OrderItemId: savedOrderItems[i].Id, 
             PrintingOptionId: option.PrintingOptionId,
@@ -186,7 +186,7 @@ export class OrdersService {
   
     const updatedOrder = await this.orderRepository.save(order);
   
-    if (items && items.length > 0) {
+    if (Array.isArray(items) && items.length > 0) {
    
       const existingOrderItems = await this.orderItemRepository.find({ where: { OrderId: id } });
       const existingOrderItemIds = existingOrderItems.map((item) => item.Id);
@@ -216,7 +216,7 @@ export class OrdersService {
   
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
-        if (item.printingOptions && item.printingOptions.length > 0) {
+        if (Array.isArray(item.printingOptions) && item.printingOptions.length > 0) {
           const printingOptions = item.printingOptions.map((option) => ({
             OrderItemId: savedOrderItems[i].Id,
             PrintingOptionId: option.PrintingOptionId,
