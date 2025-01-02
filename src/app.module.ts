@@ -15,6 +15,7 @@ import { OrdersService } from './orders/orders.service';
 import { OrderModule } from './orders/orders.module';
 import { Order } from './orders/entities/orders.entity';
 import { OrderItem } from './orders/entities/order-item.entity';
+import { OrderItemsPrintingOption } from './orders/entities/order-item-printiing.option.entity';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -25,7 +26,7 @@ import { OrderItem } from './orders/entities/order-item.entity';
     password: '',
     database: 'zof_mrp',
     autoLoadEntities: true, 
-    entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem],
+    entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem, OrderItemsPrintingOption],
     // Make Sync False for Prod
     synchronize: true
   }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule, OrderModule],

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/orders.entity';
 import { OrderItem } from './entities/order-item.entity';
+import { OrderItemsPrintingOption } from './entities/order-item-printiing.option.entity'; // Import the new entity
 import { CreateOrderDto } from './dto/create-orders.dto';
 
 @Injectable()
@@ -12,11 +13,14 @@ export class OrdersService {
     private orderRepository: Repository<Order>,
     @InjectRepository(OrderItem)
     private orderItemRepository: Repository<OrderItem>,
+    @InjectRepository(OrderItemsPrintingOption) // Inject the new repository for printing options
+    private orderItemsPrintingOptionRepository: Repository<OrderItemsPrintingOption>,
   ) {}
 
   async createOrder(createOrderDto: CreateOrderDto, createdBy: number): Promise<Order> {
     const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, items } = createOrderDto;
 
+    // Create and save the new order
     const newOrder = this.orderRepository.create({
       ClientId,
       OrderEventId,
@@ -31,6 +35,7 @@ export class OrdersService {
 
     const savedOrder = await this.orderRepository.save(newOrder);
 
+    // Handle order items and their printing options
     if (items && items.length > 0) {
       const orderItems = items.map((item) => ({
         OrderId: savedOrder.Id,
@@ -45,7 +50,23 @@ export class OrdersService {
         UpdatedOn: new Date(),
       }));
 
-      await this.orderItemRepository.save(orderItems);
+      // Save the order items
+      const savedOrderItems = await this.orderItemRepository.save(orderItems);
+
+      // Now, handle printing options for each item
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.printingOptions && item.printingOptions.length > 0) {
+          const printingOptions = item.printingOptions.map((option) => ({
+            OrderItemId: savedOrderItems[i].Id, // Link printing option to the current order item
+            PrintingOptionId: option.PrintingOptionId,
+            Description: option.Description,
+          }));
+
+          // Save printing options for the order item
+          await this.orderItemsPrintingOptionRepository.save(printingOptions);
+        }
+      }
     }
 
     return savedOrder;
@@ -177,8 +198,11 @@ export class OrdersService {
       throw new Error('Order not found');
     }
 
+    // Delete associated order items and their printing options
     await this.orderItemRepository.delete({ OrderId: id });
+    await this.orderItemsPrintingOptionRepository.delete({ OrderItemId: id });
 
+    // Delete the order itself
     await this.orderRepository.delete(id);
   }
 }

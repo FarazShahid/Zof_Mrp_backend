@@ -5,10 +5,11 @@ import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
 import { UserModule } from '../users/user.module';
 import { OrderItem } from './entities/order-item.entity';
+import { OrderItemsPrintingOption } from './entities/order-item-printiing.option.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem]),
+    TypeOrmModule.forFeature([Order, OrderItem, OrderItemsPrintingOption]),
     UserModule,
   ],
   controllers: [OrdersController],
