@@ -15,11 +15,11 @@ export class OrderStatus {
   CreatedOn: Date;
 
   @Column()
-  CreatedBy: string; // User ID of the creator
+  CreatedBy: string;
 
   @Column()
   UpdatedOn: Date;
 
   @Column()
-  UpdatedBy: string; // User ID of the last updater
+  UpdatedBy: string;
 }
