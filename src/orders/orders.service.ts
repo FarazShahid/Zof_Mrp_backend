@@ -119,8 +119,8 @@ export class OrdersService {
     }));
   }
 
-  async getOrderById(id: number): Promise<any> {
-    const order = await this.orderRepository
+  async getOrdersByClientId(clientId: number): Promise<any[]> {
+    const orders = await this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndMapOne(
         'order.EventName',
@@ -151,14 +151,14 @@ export class OrdersService {
         'client.Name AS ClientName',
         'status.StatusName AS StatusName',
       ])
-      .where('order.Id = :id', { id })
-      .getRawOne();
-
-    if (!order) {
-      throw new Error('Order not found');
+      .where('order.ClientId = :clientId', { clientId })
+      .getRawMany();
+  
+    if (!orders || orders.length === 0) {
+      return [];
     }
-
-    return {
+  
+    return orders.map((order) => ({
       Id: order.order_Id,
       Description: order.order_Description,
       OrderEventId: order.order_OrderEventId,
@@ -168,9 +168,9 @@ export class OrdersService {
       EventName: order.EventName || null,
       ClientName: order.ClientName || null,
       StatusName: order.StatusName || null,
-    };
+    }));
   }
-
+  
   async updateOrder(id: number, updateOrderDto: any, updatedBy: number): Promise<Order> {
     const order = await this.orderRepository.findOne({ where: { Id: id } });
 

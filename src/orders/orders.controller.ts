@@ -22,7 +22,7 @@ export class OrdersController {
 
   @Get(':id')
   async findOne(@Param('id') id: number): Promise<any> {
-    return this.ordersService.getOrderById(id);
+    return this.ordersService.getOrdersByClientId(id);
   }
 
   @Put(':id')
