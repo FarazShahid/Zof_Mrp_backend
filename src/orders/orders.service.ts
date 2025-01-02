@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/orders.entity';
+import { OrderItem } from './entities/order-item.entity';
 import { CreateOrderDto } from './dto/create-orders.dto';
-import { OrderItem } from './entities/order-item.entity'; // Import the OrderItem entity
 
 @Injectable()
 export class OrdersService {
@@ -17,7 +17,6 @@ export class OrdersService {
   async createOrder(createOrderDto: CreateOrderDto, createdBy: number): Promise<Order> {
     const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, items } = createOrderDto;
 
-    // Step 1: Create the order
     const newOrder = this.orderRepository.create({
       ClientId,
       OrderEventId,
@@ -52,12 +51,103 @@ export class OrdersService {
     return savedOrder;
   }
 
-  async getAllOrders(): Promise<Order[]> {
-    return await this.orderRepository.find();
+  async getAllOrders(): Promise<any[]> {
+    const orders = await this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndMapOne(
+        'order.EventName',
+        'clientevent',
+        'event',
+        'order.OrderEventId = event.Id',
+      )
+      .leftJoinAndMapOne(
+        'order.ClientName',
+        'client',
+        'client',
+        'order.ClientId = client.Id',
+      )
+      .leftJoinAndMapOne(
+        'order.StatusName',
+        'clientstatus',
+        'status',
+        'order.OrderStatusId = status.Id',
+      )
+      .select([
+        'order.Id',
+        'order.Description',
+        'order.OrderEventId',
+        'order.ClientId',
+        'order.OrderStatusId',
+        'order.Deadline',
+        'event.EventName AS EventName',
+        'client.Name AS ClientName',
+        'status.StatusName AS StatusName',
+      ])
+      .getRawMany();
+
+    return orders.map((order) => ({
+      Id: order.order_Id,
+      Description: order.order_Description,
+      OrderEventId: order.order_OrderEventId,
+      ClientId: order.order_ClientId,
+      OrderStatusId: order.order_OrderStatusId,
+      Deadline: order.order_Deadline,
+      EventName: order.EventName || null,
+      ClientName: order.ClientName || null,
+      StatusName: order.StatusName || null,
+    }));
   }
 
-  async getOrderById(id: number): Promise<Order> {
-    return await this.orderRepository.findOne({ where: { Id: id } });
+  async getOrderById(id: number): Promise<any> {
+    const order = await this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndMapOne(
+        'order.EventName',
+        'clientevent',
+        'event',
+        'order.OrderEventId = event.Id',
+      )
+      .leftJoinAndMapOne(
+        'order.ClientName',
+        'client',
+        'client',
+        'order.ClientId = client.Id',
+      )
+      .leftJoinAndMapOne(
+        'order.StatusName',
+        'clientstatus',
+        'status',
+        'order.OrderStatusId = status.Id',
+      )
+      .select([
+        'order.Id',
+        'order.Description',
+        'order.OrderEventId',
+        'order.ClientId',
+        'order.OrderStatusId',
+        'order.Deadline',
+        'event.EventName AS EventName',
+        'client.Name AS ClientName',
+        'status.StatusName AS StatusName',
+      ])
+      .where('order.Id = :id', { id })
+      .getRawOne();
+
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    return {
+      Id: order.order_Id,
+      Description: order.order_Description,
+      OrderEventId: order.order_OrderEventId,
+      ClientId: order.order_ClientId,
+      OrderStatusId: order.order_OrderStatusId,
+      Deadline: order.order_Deadline,
+      EventName: order.EventName || null,
+      ClientName: order.ClientName || null,
+      StatusName: order.StatusName || null,
+    };
   }
 
   async updateOrder(id: number, updateOrderDto: any, updatedBy: number): Promise<Order> {
@@ -81,6 +171,14 @@ export class OrdersService {
   }
 
   async deleteOrder(id: number): Promise<void> {
+    const order = await this.orderRepository.findOne({ where: { Id: id } });
+
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    await this.orderItemRepository.delete({ OrderId: id });
+
     await this.orderRepository.delete(id);
   }
 }
