@@ -11,11 +11,12 @@ import { EventsModule } from './events/events.module';
 import { ClientEvent } from './events/entities/clientevent.entity';
 import { OrderstatusModule } from './orderstatus/orderstatus.module';
 import { OrderStatus } from './orderstatus/entities/orderstatus.entity';
-import { OrdersService } from './orders/orders.service';
 import { OrderModule } from './orders/orders.module';
 import { Order } from './orders/entities/orders.entity';
 import { OrderItem } from './orders/entities/order-item.entity';
 import { OrderItemsPrintingOption } from './orders/entities/order-item-printiing.option.entity';
+import { PrintingoptionsModule } from './printingoptions/printingoptions.module';
+import { PrintingOptions } from './printingoptions/entities/printingoptions.entity';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -26,10 +27,10 @@ import { OrderItemsPrintingOption } from './orders/entities/order-item-printiing
     password: '',
     database: 'zof_mrp',
     autoLoadEntities: true, 
-    entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem, OrderItemsPrintingOption],
+    entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem, OrderItemsPrintingOption, PrintingOptions],
     // Make Sync False for Prod
     synchronize: true
-  }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule, OrderModule],
+  }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule, OrderModule, PrintingoptionsModule],
   controllers: []
 })
 export class AppModule {}

@@ -270,6 +270,21 @@
 				"header": []
 			},
 			"response": []
+		},
+		{
+			"name": "Get Printing Options",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU3MzE0MzQsImV4cCI6MTczNTgxNzgzNH0.u6EuD5AQIh2Y_0GEJkIGHDGSF9CM6wI6rUzbjQIY2JA"
+					}
+				},
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:3000/printingoptions"
+			},
+			"response": []
 		}
 	]
 }
