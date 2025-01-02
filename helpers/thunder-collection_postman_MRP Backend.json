@@ -285,6 +285,14 @@
 				"url": "http://localhost:3000/printingoptions"
 			},
 			"response": []
+		},
+		{
+			"name": "Get Items By Order Id",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
 		}
 	]
 }

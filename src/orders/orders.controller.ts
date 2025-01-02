@@ -11,7 +11,7 @@ export class OrdersController {
 
   @Post()
   async create(@Body() createOrderDto: CreateOrderDto, @Req() req): Promise<any> {
-    const userId = req.user.id; // Extract user ID from token
+    const userId = req.user.id;
     return this.ordersService.createOrder(createOrderDto, userId);
   }
 
@@ -27,12 +27,17 @@ export class OrdersController {
 
   @Put(':id')
   async update(@Param('id') id: number, @Body() updateOrderDto: UpdateOrderDto, @Req() req): Promise<any> {
-    const userId = req.user.id; // Extract user ID from token
+    const userId = req.user.id; 
     return this.ordersService.updateOrder(id, updateOrderDto, userId);
   }
 
   @Delete(':id')
   async remove(@Param('id') id: number): Promise<void> {
     return this.ordersService.deleteOrder(id);
+  }
+
+  @Get('items/:id')
+  async getOrderItems(@Param('id') orderId: number): Promise<any> {
+    return this.ordersService.getOrderItemsByOrderId(orderId);
   }
 }
