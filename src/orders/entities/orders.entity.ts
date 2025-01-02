@@ -17,7 +17,7 @@ export class Order {
   @Column()
   OrderStatusId: number;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp',  default: () => 'CURRENT_TIMESTAMP' })
   Deadline: Date;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

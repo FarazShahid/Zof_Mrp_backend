@@ -3,18 +3,21 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/orders.entity';
 import { CreateOrderDto } from './dto/create-orders.dto';
-import { UpdateOrderDto } from './dto/update-orders.dto';
+import { OrderItem } from './entities/order-item.entity'; // Import the OrderItem entity
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order)
     private orderRepository: Repository<Order>,
+    @InjectRepository(OrderItem)
+    private orderItemRepository: Repository<OrderItem>,
   ) {}
 
   async createOrder(createOrderDto: CreateOrderDto, createdBy: number): Promise<Order> {
-    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline } = createOrderDto;
+    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, items } = createOrderDto;
 
+    // Step 1: Create the order
     const newOrder = this.orderRepository.create({
       ClientId,
       OrderEventId,
@@ -27,7 +30,26 @@ export class OrdersService {
       UpdatedOn: new Date(),
     });
 
-    return await this.orderRepository.save(newOrder);
+    const savedOrder = await this.orderRepository.save(newOrder);
+
+    if (items && items.length > 0) {
+      const orderItems = items.map((item) => ({
+        OrderId: savedOrder.Id,
+        ProductId: item.ProductId,
+        Description: item.Description,
+        ImageId: item.ImageId,
+        FileId: item.FileId,
+        VideoId: item.VideoId,
+        CreatedBy: createdBy,
+        UpdatedBy: createdBy,
+        CreatedOn: new Date(),
+        UpdatedOn: new Date(),
+      }));
+
+      await this.orderItemRepository.save(orderItems);
+    }
+
+    return savedOrder;
   }
 
   async getAllOrders(): Promise<Order[]> {
@@ -38,7 +60,7 @@ export class OrdersService {
     return await this.orderRepository.findOne({ where: { Id: id } });
   }
 
-  async updateOrder(id: number, updateOrderDto: UpdateOrderDto, updatedBy: number): Promise<Order> {
+  async updateOrder(id: number, updateOrderDto: any, updatedBy: number): Promise<Order> {
     const order = await this.orderRepository.findOne({ where: { Id: id } });
 
     if (!order) {

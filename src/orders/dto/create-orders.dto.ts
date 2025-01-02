@@ -1,9 +1,28 @@
+import { IsArray, IsOptional, IsString, IsNumber } from 'class-validator';
+
 export class CreateOrderDto {
-    ClientId: number;
-    OrderEventId: number;
+  @IsNumber()
+  ClientId: number;
+
+  @IsNumber()
+  OrderEventId: number;
+
+  @IsString()
+  Description: string;
+
+  @IsNumber()
+  OrderStatusId: number;
+
+  @IsString()
+  Deadline: string;
+
+  @IsArray()
+  @IsOptional()
+  items: {
+    ProductId: number;
     Description?: string;
-    OrderStatusId: number;
-    Deadline: Date;
-    items: any[];
-  }
-  
+    ImageId?: number;
+    FileId?: number;
+    VideoId?: number;
+  }[];
+}
