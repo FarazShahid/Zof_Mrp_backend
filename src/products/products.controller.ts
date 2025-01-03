@@ -16,7 +16,7 @@ export class ProductsController {
 
   @Get()
   findAll() {
-    return this.productsService.findAll();
+    return this.productsService.getAllProducts();
   }
 
   @Get(':id')
@@ -32,5 +32,10 @@ export class ProductsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productsService.remove(+id);
+  }
+
+  @Get('availablecolors/:id')
+  async getAvailableColorsByProductId(@Param('id') productId: number): Promise<any> {
+    return this.productsService.getAvailableColorsByProductId(productId);
   }
 }
