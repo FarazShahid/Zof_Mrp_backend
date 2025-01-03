@@ -33,4 +33,9 @@ export class ProductsController {
   remove(@Param('id') id: string) {
     return this.productsService.remove(+id);
   }
+
+  @Get('availablecolors/:id')
+  async getOrdersEdit(@Param('id') productId: number): Promise<any> {
+    return this.productsService.getAvailableColorsByProductId(productId);
+  }
 }

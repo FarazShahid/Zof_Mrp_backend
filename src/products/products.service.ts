@@ -33,4 +33,29 @@ export class ProductsService {
   remove(id: number) {
     return `This action removes a #${id} product`;
   }
+
+  async getAvailableColorsByProductId(productId: number): Promise<any> {
+    const availableColors = await this.productRepository.createQueryBuilder('product')
+      .leftJoin('availablecoloroptions', 'colors', 'colors.ProductId = product.Id')
+      .select([
+        'colors.Id AS Id',
+        'colors.ColorName AS ColorName',
+        'colors.ImageId AS ImageId',
+      ])
+      .where('product.Id = :productId', { productId })
+      .getRawMany();
+  
+    if (!availableColors || availableColors.length === 0) {
+      throw new Error('No available colors found for the given product ID');
+    }
+  
+    const response = availableColors.map((color) => ({
+      Id: color.Id,
+      ColorName: color.ColorName,
+      ImageId: color.ImageId,
+    }));
+  
+    return response;
+  }
+  
 }
