@@ -1,332 +1,637 @@
 {
-    "info": {
-        "_postman_id": "8c899714-ee5f-47d8-b4b2-ec1cc1bc07ab",
-        "name": "MRP Backend",
-        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-        "description": ""
-    },
-    "item": [
-        {
-            "name": "Get Clients",
-            "request": {
-                "method": "GET",
-                "url": {
-                    "raw": "http://localhost:3000/clients",
-                    "path": [
-                        "clients"
-                    ],
-                    "protocol": "http",
-                    "host": [
-                        "localhost"
-                    ],
-                    "port": "3000"
-                },
-                "auth": {
-                    "type": "bearer",
-                    "bearer": [
-                        {
-                            "key": "token",
-                            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE5MzMsImV4cCI6MTczNTY2NTUzM30.MC0fNXbtcPKGyMVn7BzgrHaasLSwwDDPO-WV7ZiCcJg",
-                            "type": "string"
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            "name": "Save Clients",
-            "request": {
-                "method": "POST",
-                "url": {
-                    "raw": "http://localhost:3000/clients",
-                    "path": [
-                        "clients"
-                    ],
-                    "protocol": "http",
-                    "host": [
-                        "localhost"
-                    ],
-                    "port": "3000"
-                },
-                "body": {
-                    "mode": "raw",
-                    "options": {
-                        "raw": {
-                            "language": "json"
-                        }
-                    },
-                    "raw": "{\n  \"Name\": \"Test Name 1 updated\",\n  \"Email\": \"test@dev.com\",\n  \"Phone\": \"11111\",\n  \"Country\": \"Pakistan\",\n  \"State\": \"Punjab\",\n  \"City\": \"Lahore\",\n  \"CompleteAddress\": \"Canal Road\",\n  \"ClientStatusId\": \"1\"\n}\n"
-                }
-            }
-        },
-        {
-            "name": "Update Client",
-            "request": {
-                "method": "PATCH",
-                "url": {
-                    "raw": "http://localhost:3000/clients/6",
-                    "path": [
-                        "clients",
-                        "6"
-                    ],
-                    "protocol": "http",
-                    "host": [
-                        "localhost"
-                    ],
-                    "port": "3000"
-                },
-                "body": {
-                    "mode": "raw",
-                    "options": {
-                        "raw": {
-                            "language": "json"
-                        }
-                    },
-                    "raw": "{\n    \"Name\": \"Test Name 1 updated\",\n    \"Email\": \"test@dev.com\",\n    \"Phone\": \"11111\",\n    \"Country\": \"Pakistan\",\n    \"State\": \"Punjab\",\n    \"City\": \"Lahore\",\n    \"CompleteAddress\": \"Canal Road\",\n    \"ClientStatusId\": \"1\",\n    \"CreatedOn\": \"1\",\n    \"CreatedBy\": \"1\"\n  }"
-                }
-            }
-        },
-        {
-            "name": "Delete Clients",
-            "request": {
-                "method": "DELETE",
-                "url": {
-                    "raw": "http://localhost:3000/clients/6",
-                    "path": [
-                        "clients",
-                        "6"
-                    ],
-                    "protocol": "http",
-                    "host": [
-                        "localhost"
-                    ],
-                    "port": "3000"
-                }
-            }
-        },
-        {
-            "name": "Get Products",
-            "request": {
-                "method": "GET",
-                "url": {
-                    "raw": "http://localhost:3000/products",
-                    "path": [
-                        "products"
-                    ],
-                    "protocol": "http",
-                    "host": [
-                        "localhost"
-                    ],
-                    "port": "3000"
-                }
-            }
-        },
-        {
-            "name": "Login",
-            "request": {
-                "method": "POST",
-                "url": {
-                    "raw": "http://localhost:3000/auth/login",
-                    "path": [
-                        "auth",
-                        "login"
-                    ],
-                    "protocol": "http",
-                    "host": [
-                        "localhost"
-                    ],
-                    "port": "3000"
-                },
-                "body": {
-                    "mode": "raw",
-                    "options": {
-                        "raw": {
-                            "language": "json"
-                        }
-                    },
-                    "raw": "{\n  \"email\": \"test@dev.com\",\n  \"password\": \"123\"\n}\n"
-                }
-            }
-        },
-        {
-            "name": "Save User",
-            "request": {
-                "method": "POST",
-                "url": {
-                    "raw": "http://localhost:3000/users",
-                    "path": [
-                        "users"
-                    ],
-                    "protocol": "http",
-                    "host": [
-                        "localhost"
-                    ],
-                    "port": "3000"
-                },
-                "header": [
-                    {
-                        "key": "Authorization",
-                        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE3NTMsImV4cCI6MTczNTY2NTM1M30.jLIm8hcNcYgeCrkCqCV8M_IUI1EyFwdM7n3IC-v19nI",
-                        "disabled": true
-                    }
-                ],
-                "body": {
-                    "mode": "raw",
-                    "options": {
-                        "raw": {
-                            "language": "json"
-                        }
-                    },
-                    "raw": "{\n  \"Email\": \"test@dev.com\",\n  \"Password\": \"123\",\n  \"isActive\": true\n}\n"
-                },
-                "auth": {
-                    "type": "bearer",
-                    "bearer": [
-                        {
-                            "key": "token",
-                            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE5MzMsImV4cCI6MTczNTY2NTUzM30.MC0fNXbtcPKGyMVn7BzgrHaasLSwwDDPO-WV7ZiCcJg",
-                            "type": "string"
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            "name": "Get Users",
-            "request": {
-                "method": "GET",
-                "url": {
-                    "raw": "http://localhost:3000/users",
-                    "path": [
-                        "users"
-                    ],
-                    "protocol": "http",
-                    "host": [
-                        "localhost"
-                    ],
-                    "port": "3000"
-                },
-                "auth": {
-                    "type": "bearer",
-                    "bearer": [
-                        {
-                            "key": "token",
-                            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE5MzMsImV4cCI6MTczNTY2NTUzM30.MC0fNXbtcPKGyMVn7BzgrHaasLSwwDDPO-WV7ZiCcJg",
-                            "type": "string"
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            "name": "Update User",
-            "request": {
-                "method": "PUT",
-                "url": {
-                    "raw": "http://localhost:3000/users/1",
-                    "path": [
-                        "users",
-                        "1"
-                    ],
-                    "protocol": "http",
-                    "host": [
-                        "localhost"
-                    ],
-                    "port": "3000"
-                },
-                "body": {
-                    "mode": "raw",
-                    "options": {
-                        "raw": {
-                            "language": "json"
-                        }
-                    },
-                    "raw": "{\r\n  \"Email\": \"test@example.com\",\r\n  \"Password\": \"testPassword1234\",\r\n  \"isActive\": false\r\n}\r\n"
-                },
-                "auth": {
-                    "type": "bearer",
-                    "bearer": [
-                        {
-                            "key": "token",
-                            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE5MzMsImV4cCI6MTczNTY2NTUzM30.MC0fNXbtcPKGyMVn7BzgrHaasLSwwDDPO-WV7ZiCcJg",
-                            "type": "string"
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            "name": "Delete User",
-            "request": {
-                "method": "DELETE",
-                "url": {
-                    "raw": "http://localhost:3000/users/1",
-                    "path": [
-                        "users",
-                        "1"
-                    ],
-                    "protocol": "http",
-                    "host": [
-                        "localhost"
-                    ],
-                    "port": "3000"
-                }
-            }
-        },
-        {
-            "name": "Get Single User",
-            "request": {
-                "method": "GET",
-                "url": {
-                    "raw": "http://localhost:3000/users/2",
-                    "path": [
-                        "users",
-                        "2"
-                    ],
-                    "protocol": "http",
-                    "host": [
-                        "localhost"
-                    ],
-                    "port": "3000"
-                },
-                "auth": {
-                    "type": "bearer",
-                    "bearer": [
-                        {
-                            "key": "token",
-                            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE5MzMsImV4cCI6MTczNTY2NTUzM30.MC0fNXbtcPKGyMVn7BzgrHaasLSwwDDPO-WV7ZiCcJg",
-                            "type": "string"
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            "name": "Get Events",
-            "request": {
-                "method": "GET",
-                "url": {
-                    "raw": "http://localhost:3000/events",
-                    "path": [
-                        "events"
-                    ],
-                    "protocol": "http",
-                    "host": [
-                        "localhost"
-                    ],
-                    "port": "3000"
-                },
-                "auth": {
-                    "type": "bearer",
-                    "bearer": [
-                        {
-                            "key": "token",
-                            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU3MzE0MzQsImV4cCI6MTczNTgxNzgzNH0.u6EuD5AQIh2Y_0GEJkIGHDGSF9CM6wI6rUzbjQIY2JA",
-                            "type": "string"
-                        }
-                    ]
-                }
-            }
-        }
-    ]
+	"info": {
+		"_postman_id": "7ff0e3cc-67dc-4a21-af0e-98dba5c16703",
+		"name": "MRP Backend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40740062"
+	},
+	"item": [
+		{
+			"name": "Get Clients",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU3MzE0MzQsImV4cCI6MTczNTgxNzgzNH0.u6EuD5AQIh2Y_0GEJkIGHDGSF9CM6wI6rUzbjQIY2JA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/clients",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"clients"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Clients",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU3MzE0MzQsImV4cCI6MTczNTgxNzgzNH0.u6EuD5AQIh2Y_0GEJkIGHDGSF9CM6wI6rUzbjQIY2JA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"Name\": \"Hassaan Malik\",\n  \"Email\": \"test@dev.com\",\n  \"Phone\": \"11111\",\n  \"Country\": \"Pakistan\",\n  \"State\": \"Punjab\",\n  \"City\": \"Lahore\",\n  \"CompleteAddress\": \"Canal Road\",\n  \"ClientStatusId\": \"1\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/clients",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"clients"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Client",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Name\": \"Test Name 1 updated\",\n    \"Email\": \"test@dev.com\",\n    \"Phone\": \"11111\",\n    \"Country\": \"Pakistan\",\n    \"State\": \"Punjab\",\n    \"City\": \"Lahore\",\n    \"CompleteAddress\": \"Canal Road\",\n    \"ClientStatusId\": \"1\",\n    \"CreatedOn\": \"1\",\n    \"CreatedBy\": \"1\"\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/clients/6",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"clients",
+						"6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Clients",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/clients/6",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"clients",
+						"6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Products",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/products",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"test@dev.com\",\n  \"password\": \"123\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/auth/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save User",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE5MzMsImV4cCI6MTczNTY2NTUzM30.MC0fNXbtcPKGyMVn7BzgrHaasLSwwDDPO-WV7ZiCcJg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE3NTMsImV4cCI6MTczNTY2NTM1M30.jLIm8hcNcYgeCrkCqCV8M_IUI1EyFwdM7n3IC-v19nI",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"Email\": \"test@dev.com\",\n  \"Password\": \"123\",\n  \"isActive\": true\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Users",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE5MzMsImV4cCI6MTczNTY2NTUzM30.MC0fNXbtcPKGyMVn7BzgrHaasLSwwDDPO-WV7ZiCcJg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update User",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE5MzMsImV4cCI6MTczNTY2NTUzM30.MC0fNXbtcPKGyMVn7BzgrHaasLSwwDDPO-WV7ZiCcJg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"Email\": \"test@example.com\",\r\n  \"Password\": \"testPassword1234\",\r\n  \"isActive\": false\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/users/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"users",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/users/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"users",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Single User",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU2NjE5MzMsImV4cCI6MTczNTY2NTUzM30.MC0fNXbtcPKGyMVn7BzgrHaasLSwwDDPO-WV7ZiCcJg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/users/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"users",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Events",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/events",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"events"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Order Status",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/orderstatuses",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"orderstatuses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Orders",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/orders/124",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"orders",
+						"124"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Order",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"ClientId\": 1,\r\n  \"OrderEventId\": 2,\r\n  \"Description\": \"Order for event\",\r\n  \"OrderStatusId\": 1,\r\n  \"Deadline\": \"2025-01-10T00:00:00Z\",\r\n  \"items\": [\r\n    {\r\n      \"ProductId\": 101,\r\n      \"Description\": \"Product 1 Description\",\r\n      \"ImageId\": 201,\r\n      \"FileId\": 301,\r\n      \"VideoId\": 401,\r\n      \"printingOptions\": [\r\n        {\r\n          \"PrintingOptionId\": 1,\r\n          \"Description\": \"Option 1 for Product 1\"\r\n        }\r\n       \r\n      ]\r\n    },\r\n    {\r\n      \"ProductId\": 102,\r\n      \"Description\": \"Product 2 Description\",\r\n      \"ImageId\": 202,\r\n      \"FileId\": 302,\r\n      \"VideoId\": 402,\r\n      \"printingOptions\": [\r\n        {\r\n          \"PrintingOptionId\": 3,\r\n          \"Description\": \"Option 1 for Product 2\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/orders",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Order",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"ClientId\": 1,\r\n  \"OrderEventId\": 2,\r\n  \"Description\": \"Order for event\",\r\n  \"OrderStatusId\": 1,\r\n  \"Deadline\": \"2025-01-10T00:00:00Z\",\r\n  \"items\": [\r\n    {\r\n      \"ProductId\": 101,\r\n      \"Description\": \"Product 1 Description\",\r\n      \"ImageId\": 201,\r\n      \"FileId\": 301,\r\n      \"VideoId\": 401,\r\n      \"printingOptions\": [\r\n        {\r\n          \"PrintingOptionId\": 1,\r\n          \"Description\": \"Option 1 for Product 1\"\r\n        }\r\n       \r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/orders/16",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"orders",
+						"16"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Order",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Get Printing Options",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU3MzE0MzQsImV4cCI6MTczNTgxNzgzNH0.u6EuD5AQIh2Y_0GEJkIGHDGSF9CM6wI6rUzbjQIY2JA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/printingoptions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"printingoptions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Items By Order Id",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/orders/items/12",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"orders",
+						"items",
+						"12"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Size Options",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/sizeoptions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"sizeoptions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Product Cut Options",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/productcutoptions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"productcutoptions"
+					]
+				}
+			},
+			"response": []
+		}
+	]
 }
