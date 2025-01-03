@@ -46,7 +46,7 @@ export class ProductsService {
       .getRawMany();
   
     if (!availableColors || availableColors.length === 0) {
-      throw new Error('No available colors found for the given product ID');
+      return []
     }
   
     const response = availableColors.map((color) => ({
