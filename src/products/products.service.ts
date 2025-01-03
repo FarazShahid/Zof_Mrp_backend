@@ -17,9 +17,38 @@ export class ProductsService {
     return 'This action adds a new product';
   }
 
-  findAll() {
-    return this.productRepository.find();
-
+  async getAllProducts(): Promise<any[]> {
+    try {
+      const products = await this.productRepository
+        .createQueryBuilder('product')
+        .leftJoin('productcategory', 'productcategory', 'product.ProductCategoryId = productcategory.Id')
+        .leftJoin('fabrictype', 'fabrictype', 'product.FabricTypeId = fabrictype.Id')
+        .select([
+          'product.Id AS Id',
+          'product.ProductCategoryId AS ProductCategoryId',
+          'product.FabricTypeId AS FabricTypeId',
+          'product.Name AS Name',
+          'product.Description AS Description',
+          'productcategory.Type AS ProductCategoryName',
+          'fabrictype.Type AS FabricTypeName',
+          'fabrictype.GSM AS FabricGSM',
+          'fabrictype.Name AS FabricName',
+        ])
+        .getRawMany();
+      return products.map((product) => ({
+        Id: product.Id,
+        Name: product.Name,
+        ProductCategoryId: product.ProductCategoryId,
+        ProductCategoryName: product.ProductCategoryName || "",
+        FabricTypeId: product.FabricTypeId,
+        FabricTypeName: product.FabricTypeName || "",
+        FabricName: product.FabricName || "",
+        FabricGSM: product.FabricGSM || "",
+        Description: product.Description
+      }));
+    } catch {
+      return []
+    }
   }
 
   findOne(id: number) {
