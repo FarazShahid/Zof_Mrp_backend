@@ -35,7 +35,7 @@ export class ProductsController {
   }
 
   @Get('availablecolors/:id')
-  async getOrdersEdit(@Param('id') productId: number): Promise<any> {
+  async getAvailableColorsByProductId(@Param('id') productId: number): Promise<any> {
     return this.productsService.getAvailableColorsByProductId(productId);
   }
 }
