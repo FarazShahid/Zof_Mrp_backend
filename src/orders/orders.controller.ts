@@ -40,4 +40,9 @@ export class OrdersController {
   async getOrderItems(@Param('id') orderId: number): Promise<any> {
     return this.ordersService.getOrderItemsByOrderId(orderId);
   }
+
+  @Get('get-edit/:id')
+  async getOrdersEdit(@Param('id') orderId: number): Promise<any> {
+    return this.ordersService.getEditOrder(orderId);
+  }
 }

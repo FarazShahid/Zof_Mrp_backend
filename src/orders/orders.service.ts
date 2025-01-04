@@ -84,7 +84,7 @@ export class OrdersService {
       )
       .leftJoinAndMapOne(
         'order.StatusName',
-        'clientstatus',
+        'orderstatus',
         'status',
         'order.OrderStatusId = status.Id',
       )
@@ -131,7 +131,7 @@ export class OrdersService {
       )
       .leftJoinAndMapOne(
         'order.StatusName',
-        'clientstatus',
+        'orderstatus',
         'status',
         'order.OrderStatusId = status.Id',
       )
@@ -252,6 +252,83 @@ export class OrdersService {
     await this.orderRepository.delete(id);
   }
   
+
+  async getEditOrder(id: number): Promise<any> {
+    const order = await this.orderRepository.findOne({ where: { Id: id } });
+
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    const orderItems = await this.orderItemRepository
+      .createQueryBuilder('orderItem')
+      .leftJoin(
+        'orderItemPrintingOptions',
+        'printingOption',
+        'orderItem.Id = printingOption.OrderItemId',
+      )
+      .leftJoin(
+        'printingoptions',
+        'printingoptions',
+        'printingOption.PrintingOptionId = printingoptions.Id',
+      )
+      .select([
+        'orderItem.Id AS Id',
+        'orderItem.OrderId AS OrderId',
+        'orderItem.ProductId AS ProductId',
+        'orderItem.Description AS Description',
+        'orderItem.ImageId AS ImageId',
+        'orderItem.FileId AS FileId',
+        'orderItem.VideoId AS VideoId',
+        'printingOption.Id AS PrintingOptionId',
+        'printingOption.PrintingOptionId AS PrintingOptionId',
+        'printingOption.Description AS PrintingOptionDescription',
+      ])
+      .where('orderItem.OrderId = :orderId', { orderId: id })
+      .getRawMany();
+
+    const formattedOrderItems = orderItems.reduce((acc, item) => {
+      const existingItem = acc.find((orderItem) => orderItem.Id === item.Id);
+      if (existingItem) {
+        if (item.PrintingOptionId) {
+          existingItem.printingOptions.push({
+            PrintingOptionId: item.PrintingOptionId,
+            Description: item.PrintingOptionDescription,
+          });
+        }
+      } else {
+        acc.push({
+          Id: item.Id,
+          ProductId: item.ProductId,
+          Description: item.Description,
+          ImageId: item.ImageId,
+          FileId: item.FileId,
+          VideoId: item.VideoId,
+          printingOptions: item.PrintingOptionId
+            ? [
+                {
+                  PrintingOptionId: item.PrintingOptionId,
+                  Description: item.PrintingOptionDescription,
+                },
+              ]
+            : [],
+        });
+      }
+      return acc;
+    }, []);
+
+    const response = {
+      ClientId: order.ClientId,
+      OrderEventId: order.OrderEventId,
+      Description: order.Description,
+      OrderStatusId: order.OrderStatusId,
+      Deadline: order.Deadline,
+      items: formattedOrderItems,
+    };
+
+    return response;
+  }
+
   async getOrderItemsByOrderId(orderId: number): Promise<any> {
     const orderItems = await this.orderItemRepository
       .createQueryBuilder('orderItem')

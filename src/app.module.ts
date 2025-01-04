@@ -33,7 +33,7 @@ import { ProductCutOption } from './productcutoptions/entity/productcutoptions.e
     autoLoadEntities: true, 
     entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem, OrderItemsPrintingOption, PrintingOptions, SizeOption, ProductCutOption],
     // Make Sync False for Prod
-    synchronize: true
+    synchronize: false
   }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule, OrderModule, PrintingoptionsModule, SizeoptionsModule, ProductcutoptionsModule],
   controllers: []
 })
