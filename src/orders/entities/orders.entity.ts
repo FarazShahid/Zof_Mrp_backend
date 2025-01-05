@@ -17,6 +17,9 @@ export class Order {
   @Column()
   OrderStatusId: number;
 
+  @Column({ type: 'int', nullable: true })
+  OrderPriority: number;
+
   @Column({ type: 'timestamp',  default: () => 'CURRENT_TIMESTAMP' })
   Deadline: Date;
 

@@ -18,7 +18,7 @@ export class OrdersService {
   ) {}
 
   async createOrder(createOrderDto: CreateOrderDto, createdBy: number): Promise<Order> {
-    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, items } = createOrderDto;
+    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, OrderPriority, items } = createOrderDto;
 
     const newOrder = this.orderRepository.create({
       ClientId,
@@ -26,19 +26,21 @@ export class OrdersService {
       Description,
       OrderStatusId,
       Deadline,
+      OrderPriority,
       CreatedBy: createdBy,
       UpdatedBy: createdBy,
       CreatedOn: new Date(),
       UpdatedOn: new Date(),
     });
-
+  
     const savedOrder = await this.orderRepository.save(newOrder);
-
+  
     if (Array.isArray(items) && items.length > 0) {
       const orderItems = items.map((item) => ({
         OrderId: savedOrder.Id,
         ProductId: item.ProductId,
         Description: item.Description,
+        OrderItemPriority: item.OrderItemPriority || 0,
         ImageId: item.ImageId,
         FileId: item.FileId,
         VideoId: item.VideoId,
@@ -47,25 +49,26 @@ export class OrdersService {
         CreatedOn: new Date(),
         UpdatedOn: new Date(),
       }));
-
+  
       const savedOrderItems = await this.orderItemRepository.save(orderItems);
-
+  
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         if (Array.isArray(item.printingOptions) && item.printingOptions.length > 0) {
           const printingOptions = item.printingOptions.map((option) => ({
-            OrderItemId: savedOrderItems[i].Id, 
+            OrderItemId: savedOrderItems[i].Id,
             PrintingOptionId: option.PrintingOptionId,
             Description: option.Description,
           }));
-
+  
           await this.orderItemsPrintingOptionRepository.save(printingOptions);
         }
       }
     }
-
+  
     return savedOrder;
   }
+  
 
   async getAllOrders(): Promise<any[]> {
     const orders = await this.orderRepository
@@ -95,24 +98,27 @@ export class OrdersService {
         'order.ClientId',
         'order.OrderStatusId',
         'order.Deadline',
+        'order.OrderPriority AS OrderPriority',
         'event.EventName AS EventName',
         'client.Name AS ClientName',
         'status.StatusName AS StatusName',
       ])
       .getRawMany();
-
+  
     return orders.map((order) => ({
       Id: order.order_Id,
       Description: order.order_Description,
       OrderEventId: order.order_OrderEventId,
       ClientId: order.order_ClientId,
       OrderStatusId: order.order_OrderStatusId,
+      OrderPriority: order.OrderPriority || null,
       Deadline: order.order_Deadline,
       EventName: order.EventName || null,
       ClientName: order.ClientName || null,
       StatusName: order.StatusName || null,
     }));
   }
+  
 
   async getOrdersByClientId(clientId: number): Promise<any[]> {
     const orders = await this.orderRepository
@@ -141,12 +147,14 @@ export class OrdersService {
         'order.OrderEventId',
         'order.ClientId',
         'order.OrderStatusId',
+        'order.OrderPriority AS OrderPriority',
         'order.Deadline',
         'event.EventName AS EventName',
         'client.Name AS ClientName',
         'status.StatusName AS StatusName',
       ])
       .where('order.ClientId = :clientId', { clientId })
+      .orderBy('order.Deadline', 'ASC')
       .getRawMany();
   
     if (!orders || orders.length === 0) {
@@ -158,6 +166,7 @@ export class OrdersService {
       Description: order.order_Description,
       OrderEventId: order.order_OrderEventId,
       ClientId: order.order_ClientId,
+      OrderPriority: order.OrderPriority,
       OrderStatusId: order.order_OrderStatusId,
       Deadline: order.order_Deadline,
       EventName: order.EventName || null,
@@ -165,7 +174,7 @@ export class OrdersService {
       StatusName: order.StatusName || null,
     }));
   }
-  
+   
   async updateOrder(id: number, updateOrderDto: any, updatedBy: number): Promise<Order> {
 
     const order = await this.orderRepository.findOne({ where: { Id: id } });

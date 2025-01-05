@@ -16,11 +16,15 @@ export class CreateOrderDto {
   @IsString()
   Deadline: string;
 
+  @IsOptional()
+  OrderPriority?: number;
+
   @IsArray()
   @IsOptional()
   items: {
     ProductId: number;
     Description?: string;
+    OrderItemPriority: number;
     ImageId?: number;
     FileId?: number;
     VideoId?: number;

@@ -1,3 +1,4 @@
+import { IsOptional } from 'class-validator';
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity('orderitems')
@@ -34,4 +35,7 @@ export class OrderItem {
 
   @Column()
   UpdatedBy: number;
+
+  @IsOptional()
+  OrderItemPriority?: number;
 }
