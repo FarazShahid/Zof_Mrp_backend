@@ -36,6 +36,6 @@ export class OrderItem {
   @Column()
   UpdatedBy: number;
 
-  @IsOptional()
-  OrderItemPriority?: number;
+  @Column({ type: 'int', default: 0 })
+  OrderItemPriority: number;
 }

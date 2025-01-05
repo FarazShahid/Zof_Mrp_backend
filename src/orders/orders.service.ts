@@ -19,7 +19,7 @@ export class OrdersService {
 
   async createOrder(createOrderDto: CreateOrderDto, createdBy: number): Promise<Order> {
     const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, OrderPriority, items } = createOrderDto;
-
+  
     const newOrder = this.orderRepository.create({
       ClientId,
       OrderEventId,
@@ -40,7 +40,7 @@ export class OrdersService {
         OrderId: savedOrder.Id,
         ProductId: item.ProductId,
         Description: item.Description,
-        OrderItemPriority: item.OrderItemPriority || 0,
+        OrderItemPriority: item.OrderItemPriority,
         ImageId: item.ImageId,
         FileId: item.FileId,
         VideoId: item.VideoId,
@@ -67,7 +67,7 @@ export class OrdersService {
     }
   
     return savedOrder;
-  }
+  }  
   
 
   async getAllOrders(): Promise<any[]> {
@@ -289,6 +289,7 @@ export class OrdersService {
         'orderItem.ImageId AS ImageId',
         'orderItem.FileId AS FileId',
         'orderItem.VideoId AS VideoId',
+        'orderItem.OrderItemPriority AS OrderItemPriority',
         'printingOption.Id AS PrintingOptionId',
         'printingOption.PrintingOptionId AS PrintingOptionId',
         'printingOption.Description AS PrintingOptionDescription',
@@ -310,6 +311,7 @@ export class OrdersService {
           Id: item.Id,
           ProductId: item.ProductId,
           Description: item.Description,
+          OrderItemPriority: item.OrderItemPriority,
           ImageId: item.ImageId,
           FileId: item.FileId,
           VideoId: item.VideoId,
@@ -329,6 +331,7 @@ export class OrdersService {
     const response = {
       ClientId: order.ClientId,
       OrderEventId: order.OrderEventId,
+      OrderPriority: order.OrderPriority,
       Description: order.Description,
       OrderStatusId: order.OrderStatusId,
       Deadline: order.Deadline,
@@ -354,6 +357,7 @@ export class OrdersService {
         'orderItem.VideoId AS VideoId',
         'orderItem.CreatedOn AS CreatedOn',
         'orderItem.UpdatedOn AS UpdatedOn',
+        'orderItem.OrderItemPriority AS OrderItemPriority',
         'product.Name AS ProductName',
         'printingOption.Id AS PrintingOptionId',
         'printingOption.PrintingOptionId AS PrintingOptionId',
@@ -384,6 +388,7 @@ export class OrdersService {
           ProductId: item.ProductId,
           ProductName: item.ProductName || "",
           Description: item.Description,
+          OrderItemPriority: item.OrderItemPriority || 0,
           ImageId: item.ImageId,
           FileId: item.FileId,
           VideoId: item.VideoId,
