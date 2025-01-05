@@ -23,7 +23,6 @@ export class OrdersService {
   async createOrder(createOrderDto: CreateOrderDto, createdBy: number): Promise<Order> {
     const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, OrderPriority, items } = createOrderDto;
   
-    // Create the new order
     const newOrder = this.orderRepository.create({
       ClientId,
       OrderEventId,
@@ -40,7 +39,7 @@ export class OrdersService {
     const savedOrder = await this.orderRepository.save(newOrder);
   
     if (Array.isArray(items) && items.length > 0) {
-      // Create order items
+      
       const orderItems = items.map((item) => ({
         OrderId: savedOrder.Id,
         ProductId: item.ProductId,
@@ -57,16 +56,14 @@ export class OrdersService {
   
       const savedOrderItems = await this.orderItemRepository.save(orderItems);
   
-      // Add the ColorOption for each order item
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
   
-        // Save the ColorOption for the OrderItem
         if (item.ColorOptionId && item.ProductId) {
           const orderItemColor = this.orderItemColorRepository.create({
             ProductId: item.ProductId,
-            OrderItemId: savedOrderItems[i].Id, // Associate with the created OrderItem
-            ColorOptionId: item.ColorOptionId,  // Pass the ColorOptionId
+            OrderItemId: savedOrderItems[i].Id, 
+            ColorOptionId: item.ColorOptionId,  
             CreatedBy: createdBy,
             UpdatedBy: createdBy,
             CreatedOn: new Date(),
@@ -76,7 +73,6 @@ export class OrdersService {
           await this.orderItemColorRepository.save(orderItemColor);
         }
   
-        // Save printing options if available
         if (Array.isArray(item.printingOptions) && item.printingOptions.length > 0) {
           const printingOptions = item.printingOptions.map((option) => ({
             OrderItemId: savedOrderItems[i].Id,
@@ -207,7 +203,6 @@ export class OrdersService {
     const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, items, OrderPriority } =
       updateOrderDto;
   
-    // Update order details
     order.ClientId = ClientId ?? order.ClientId;
     order.OrderEventId = OrderEventId ?? order.OrderEventId;
     order.Description = Description ?? order.Description;
@@ -220,26 +215,22 @@ export class OrdersService {
     const updatedOrder = await this.orderRepository.save(order);
   
     if (Array.isArray(items) && items.length > 0) {
-      // Fetch existing order items for the given order
+
       const existingOrderItems = await this.orderItemRepository.find({ where: { OrderId: id } });
       const existingOrderItemIds = existingOrderItems.map((item) => item.Id);
   
-      // Delete all printing options associated with these order items
       if (existingOrderItemIds.length > 0) {
         await this.orderItemsPrintingOptionRepository.delete({
           OrderItemId: In(existingOrderItemIds),
         });
   
-        // Delete all color options associated with these order items
         await this.orderItemColorRepository.delete({
           OrderItemId: In(existingOrderItemIds),
         });
       }
   
-      // Delete all order items for this order
       await this.orderItemRepository.delete({ OrderId: id });
   
-      // Add new order items
       const newOrderItems = items.map((item) => ({
         OrderId: id,
         ProductId: item.ProductId,
@@ -259,7 +250,6 @@ export class OrdersService {
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
   
-        // Add printing options for each order item
         if (Array.isArray(item.printingOptions) && item.printingOptions.length > 0) {
           const printingOptions = item.printingOptions.map((option) => ({
             OrderItemId: savedOrderItems[i].Id,
@@ -270,7 +260,6 @@ export class OrdersService {
           await this.orderItemsPrintingOptionRepository.save(printingOptions);
         }
   
-        // Add color options for each order item
         if (item.ColorOptionId) {
           const colorOption = {
             OrderItemId: savedOrderItems[i].Id,
@@ -302,39 +291,33 @@ export class OrdersService {
       throw new Error('Order not found');
     }
   
-    // Get all order items associated with this order
     const orderItems = await this.orderItemRepository.find({ where: { OrderId: id } });
     const orderItemIds = orderItems.map((item) => item.Id);
   
     if (orderItemIds.length > 0) {
-      // Delete all printing options associated with these order items
       await this.orderItemsPrintingOptionRepository.delete({
         OrderItemId: In(orderItemIds),
       });
   
-      // Delete all color options associated with these order items
       await this.orderItemColorRepository.delete({
         OrderItemId: In(orderItemIds),
       });
     }
   
-    // Delete all order items associated with this order
     await this.orderItemRepository.delete({ OrderId: id });
   
-    // Finally, delete the order
     await this.orderRepository.delete(id);
   }
   
 
   async getEditOrder(id: number): Promise<any> {
-    // Fetch the order by ID
+    
     const order = await this.orderRepository.findOne({ where: { Id: id } });
   
     if (!order) {
       throw new Error('Order not found');
     }
   
-    // Fetch order items along with their printing options and colors
     const orderItems = await this.orderItemRepository
       .createQueryBuilder('orderItem')
       .leftJoin(
@@ -369,7 +352,6 @@ export class OrdersService {
       .where('orderItem.OrderId = :orderId', { orderId: id })
       .getRawMany();
   
-    // Format the response with printing options and colors
     const formattedOrderItems = orderItems.reduce((acc, item) => {
       const existingItem = acc.find((orderItem) => orderItem.Id === item.Id);
       if (existingItem) {
@@ -402,7 +384,6 @@ export class OrdersService {
       return acc;
     }, []);
   
-    // Build the final response
     const response = {
       ClientId: order.ClientId,
       OrderEventId: order.OrderEventId,

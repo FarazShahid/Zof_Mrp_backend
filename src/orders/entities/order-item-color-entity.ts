@@ -1,5 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { OrderItem } from './order-item.entity';  // Assuming you have an OrderItem entity
 
 @Entity('orderitemcolors')
 export class OrderItemColor {

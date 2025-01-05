@@ -25,7 +25,7 @@ export class ProductsService {
         .leftJoin('fabrictype', 'fabrictype', 'product.FabricTypeId = fabrictype.Id')
         .leftJoin('productdetails', 'productdetails', 'product.Id = productdetails.ProductId')
         .leftJoin('productcutoptions', 'productcutoptions', 'productdetails.ProductCutOptionId = productcutoptions.Id')
-        .leftJoin('sizeoptions', 'sizeoptions', 'productdetails.ProductSizeMeasurementId = sizeoptions.Id') // Join sizeoptions table
+        .leftJoin('sizeoptions', 'sizeoptions', 'productdetails.ProductSizeMeasurementId = sizeoptions.Id')
         .select([
           'product.Id AS Id',
           'product.ProductCategoryId AS ProductCategoryId',
@@ -62,7 +62,6 @@ export class ProductsService {
           result.push(existingProduct);
         }
   
-        // Add product details to the Details array
         if (product.ProductCutOptionId || product.ProductSizeMeasurementId) {
           existingProduct.Details.push({
             ProductCutOptionId: product.ProductCutOptionId || null,

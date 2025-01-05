@@ -29,6 +29,6 @@ export class CreateOrderDto {
     FileId?: number;
     ColorOptionId: number;
     VideoId?: number;
-    printingOptions?: { PrintingOptionId: number; Description?: string }[]; // Added printing options
+    printingOptions?: { PrintingOptionId: number; Description?: string }[];
   }[];
 }
