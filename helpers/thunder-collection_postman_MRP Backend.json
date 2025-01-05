@@ -130,7 +130,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzYwOTc3ODYsImV4cCI6MTczNjE4NDE4Nn0.HH78JPyNwNO3bftg9FiQ36FclYVUSheJTwQxHl67jPg",
 							"type": "string"
 						}
 					]
@@ -510,8 +510,30 @@
 		{
 			"name": "Delete Order",
 			"request": {
-				"method": "GET",
-				"header": []
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/orders/19",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"orders",
+						"19"
+					]
+				}
 			},
 			"response": []
 		},
@@ -641,7 +663,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzYwOTc3ODYsImV4cCI6MTczNjE4NDE4Nn0.HH78JPyNwNO3bftg9FiQ36FclYVUSheJTwQxHl67jPg",
 							"type": "string"
 						}
 					]
@@ -649,7 +671,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/orders/get-edit/21",
+					"raw": "http://localhost:3000/orders/get-edit/15",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -658,7 +680,7 @@
 					"path": [
 						"orders",
 						"get-edit",
-						"21"
+						"15"
 					]
 				}
 			},

@@ -21,6 +21,7 @@ import { SizeoptionsModule } from './sizeoptions/sizeoptions.module';
 import { SizeOption } from './sizeoptions/entities/sizeoptions.entity';
 import { ProductcutoptionsModule } from './productcutoptions/productcutoptions.module';
 import { ProductCutOption } from './productcutoptions/entity/productcutoptions.entity';
+import { OrderItemColor } from './orders/entities/order-item-color-entity';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -31,7 +32,7 @@ import { ProductCutOption } from './productcutoptions/entity/productcutoptions.e
     password: '',
     database: 'zof_mrp',
     autoLoadEntities: true, 
-    entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem, OrderItemsPrintingOption, PrintingOptions, SizeOption, ProductCutOption],
+    entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem, OrderItemsPrintingOption, PrintingOptions, SizeOption, ProductCutOption, OrderItemColor],
     // Make Sync False for Prod
     synchronize: false
   }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule, OrderModule, PrintingoptionsModule, SizeoptionsModule, ProductcutoptionsModule],
