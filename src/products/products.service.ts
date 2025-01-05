@@ -23,6 +23,9 @@ export class ProductsService {
         .createQueryBuilder('product')
         .leftJoin('productcategory', 'productcategory', 'product.ProductCategoryId = productcategory.Id')
         .leftJoin('fabrictype', 'fabrictype', 'product.FabricTypeId = fabrictype.Id')
+        .leftJoin('productdetails', 'productdetails', 'product.Id = productdetails.ProductId')
+        .leftJoin('productcutoptions', 'productcutoptions', 'productdetails.ProductCutOptionId = productcutoptions.Id')
+        .leftJoin('sizeoptions', 'sizeoptions', 'productdetails.ProductSizeMeasurementId = sizeoptions.Id') // Join sizeoptions table
         .select([
           'product.Id AS Id',
           'product.ProductCategoryId AS ProductCategoryId',
@@ -33,23 +36,49 @@ export class ProductsService {
           'fabrictype.Type AS FabricTypeName',
           'fabrictype.GSM AS FabricGSM',
           'fabrictype.Name AS FabricName',
+          'productdetails.ProductCutOptionId AS ProductCutOptionId',
+          'productcutoptions.OptionProductCutOptions AS ProductCutOptionName',
+          'productdetails.ProductSizeMeasurementId AS ProductSizeMeasurementId',
+          'sizeoptions.OptionSizeOptions AS ProductSizeOptionName',
         ])
         .getRawMany();
-      return products.map((product) => ({
-        Id: product.Id,
-        Name: product.Name,
-        ProductCategoryId: product.ProductCategoryId,
-        ProductCategoryName: product.ProductCategoryName || "",
-        FabricTypeId: product.FabricTypeId,
-        FabricTypeName: product.FabricTypeName || "",
-        FabricName: product.FabricName || "",
-        FabricGSM: product.FabricGSM || "",
-        Description: product.Description
-      }));
-    } catch {
-      return []
+  
+      return products.reduce((result, product) => {
+        let existingProduct = result.find((p) => p.Id === product.Id);
+  
+        if (!existingProduct) {
+          existingProduct = {
+            Id: product.Id,
+            Name: product.Name,
+            ProductCategoryId: product.ProductCategoryId,
+            ProductCategoryName: product.ProductCategoryName || "",
+            FabricTypeId: product.FabricTypeId,
+            FabricTypeName: product.FabricTypeName || "",
+            FabricName: product.FabricName || "",
+            FabricGSM: product.FabricGSM || "",
+            Description: product.Description,
+            Details: [],
+          };
+          result.push(existingProduct);
+        }
+  
+        // Add product details to the Details array
+        if (product.ProductCutOptionId || product.ProductSizeMeasurementId) {
+          existingProduct.Details.push({
+            ProductCutOptionId: product.ProductCutOptionId || null,
+            ProductCutOptionName: product.ProductCutOptionName || "",
+            ProductSizeMeasurementId: product.ProductSizeMeasurementId || null,
+            ProductSizeOptionName: product.ProductSizeOptionName || "",
+          });
+        }
+  
+        return result;
+      }, []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      return [];
     }
-  }
+  }  
 
   findOne(id: number) {
     return `This action returns a #${id} product`;
