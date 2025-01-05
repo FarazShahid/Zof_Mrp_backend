@@ -183,7 +183,7 @@ export class OrdersService {
       throw new Error('Order not found');
     }
   
-    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, items } = updateOrderDto;
+    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, items,	OrderPriority  } = updateOrderDto;
   
     order.ClientId = ClientId ?? order.ClientId;
     order.OrderEventId = OrderEventId ?? order.OrderEventId;
@@ -192,7 +192,7 @@ export class OrdersService {
     order.Deadline = Deadline ?? order.Deadline;
     order.UpdatedBy = updatedBy;
     order.UpdatedOn = new Date();
-  
+    order.OrderPriority = 	OrderPriority;
     const updatedOrder = await this.orderRepository.save(order);
   
     if (Array.isArray(items) && items.length > 0) {
@@ -219,6 +219,7 @@ export class OrdersService {
         UpdatedBy: updatedBy,
         CreatedOn: new Date(),
         UpdatedOn: new Date(),
+        OrderItemPriority: item.OrderItemPriority
       }));
   
       const savedOrderItems = await this.orderItemRepository.save(newOrderItems);
