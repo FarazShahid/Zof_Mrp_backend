@@ -6,10 +6,11 @@ import { OrdersController } from './orders.controller';
 import { UserModule } from '../users/user.module';
 import { OrderItem } from './entities/order-item.entity';
 import { OrderItemsPrintingOption } from './entities/order-item-printiing.option.entity';
+import { OrderItemColor } from './entities/order-item-color-entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem, OrderItemsPrintingOption]),
+    TypeOrmModule.forFeature([Order, OrderItem, OrderItemsPrintingOption, OrderItemColor]),
     UserModule,
   ],
   controllers: [OrdersController],
