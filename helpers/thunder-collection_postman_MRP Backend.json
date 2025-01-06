@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "7ff0e3cc-67dc-4a21-af0e-98dba5c16703",
+		"_postman_id": "01fa2b54-adbc-4999-8487-4ad87fb08d52",
 		"name": "MRP Backend",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "40740062"
+		"_exporter_id": "22127783"
 	},
 	"item": [
 		{
@@ -130,7 +130,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzYwOTc3ODYsImV4cCI6MTczNjE4NDE4Nn0.HH78JPyNwNO3bftg9FiQ36FclYVUSheJTwQxHl67jPg",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzYxOTk5OTYsImV4cCI6MTczNjI4NjM5Nn0.q5y5-X43uqSMzmwW7kj0KMb0YSYr2S-gYwcHRRrK2IE",
 							"type": "string"
 						}
 					]
@@ -408,7 +408,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"value": "",
 							"type": "string"
 						}
 					]
@@ -416,7 +416,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/orders/124",
+					"raw": "http://localhost:3000/orders/2",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -424,7 +424,7 @@
 					"port": "3000",
 					"path": [
 						"orders",
-						"124"
+						"2"
 					]
 				}
 			},
@@ -438,7 +438,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzYxOTk5OTYsImV4cCI6MTczNjI4NjM5Nn0.q5y5-X43uqSMzmwW7kj0KMb0YSYr2S-gYwcHRRrK2IE",
 							"type": "string"
 						}
 					]
@@ -447,7 +447,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"ClientId\": 1,\r\n  \"OrderEventId\": 2,\r\n  \"Description\": \"Order for event\",\r\n  \"OrderStatusId\": 1,\r\n  \"Deadline\": \"2025-01-10T00:00:00Z\",\r\n  \"items\": [\r\n    {\r\n      \"ProductId\": 101,\r\n      \"Description\": \"Product 1 Description\",\r\n      \"ImageId\": 201,\r\n      \"FileId\": 301,\r\n      \"VideoId\": 401,\r\n      \"printingOptions\": [\r\n        {\r\n          \"PrintingOptionId\": 1,\r\n          \"Description\": \"Option 1 for Product 1\"\r\n        }\r\n       \r\n      ]\r\n    },\r\n    {\r\n      \"ProductId\": 102,\r\n      \"Description\": \"Product 2 Description\",\r\n      \"ImageId\": 202,\r\n      \"FileId\": 302,\r\n      \"VideoId\": 402,\r\n      \"printingOptions\": [\r\n        {\r\n          \"PrintingOptionId\": 3,\r\n          \"Description\": \"Option 1 for Product 2\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+					"raw": "{\r\n  \"ClientId\": 1,\r\n  \"OrderEventId\": 2,\r\n  \"Description\": \"Order for event\",\r\n  \"OrderStatusId\": 1,\r\n  \"Deadline\": \"2025-01-10T00:00:00Z\",\r\n  \"OrderNumber\": \"2025-01-10T00:00:00Z\",\r\n  \"OrderName\": \"2025-01-10T00:00:00Z\",\r\n  \"ExternalOrderId\": 1,\r\n  \"items\": [\r\n    {\r\n      \"ProductId\": 101,\r\n      \"Description\": \"Product 1 Description\",\r\n      \"OrderItemQuantity\": 20,\r\n      \"ImageId\": 201,\r\n      \"FileId\": 301,\r\n      \"VideoId\": 401,\r\n      \"printingOptions\": [\r\n        {\r\n          \"PrintingOptionId\": 1,\r\n          \"Description\": \"Option 1 for Product 1\"\r\n        }\r\n       \r\n      ]\r\n    },\r\n    {\r\n      \"ProductId\": 102,\r\n      \"Description\": \"Product 2 Description\",\r\n      \"ImageId\": 202,\r\n      \"FileId\": 302,\r\n      \"VideoId\": 402,\r\n      \"printingOptions\": [\r\n        {\r\n          \"PrintingOptionId\": 3,\r\n          \"Description\": \"Option 1 for Product 2\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -476,7 +476,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzYxOTk5OTYsImV4cCI6MTczNjI4NjM5Nn0.q5y5-X43uqSMzmwW7kj0KMb0YSYr2S-gYwcHRRrK2IE",
 							"type": "string"
 						}
 					]
@@ -485,7 +485,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"ClientId\": 1,\r\n  \"OrderEventId\": 2,\r\n  \"Description\": \"Order for event\",\r\n  \"OrderStatusId\": 1,\r\n  \"Deadline\": \"2025-01-10T00:00:00Z\",\r\n  \"items\": [\r\n    {\r\n      \"ProductId\": 101,\r\n      \"Description\": \"Product 1 Description\",\r\n      \"ImageId\": 201,\r\n      \"FileId\": 301,\r\n      \"VideoId\": 401,\r\n      \"printingOptions\": [\r\n        {\r\n          \"PrintingOptionId\": 1,\r\n          \"Description\": \"Option 1 for Product 1\"\r\n        }\r\n       \r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+					"raw": "{\r\n    \"ClientId\": 1,\r\n    \"OrderEventId\": 2,\r\n    \"OrderPriority\": null,\r\n    \"Description\": \"Order for event\",\r\n    \"OrderNumber\": \"COMF6991\",\r\n    \"OrderName\": \"2025-01-10T00:00:00Z test\",\r\n    \"ExternalOrderId\": \"2\",\r\n    \"OrderStatusId\": 3,\r\n    \"Deadline\": \"2025-01-10T00:00:00.000Z\",\r\n    \"items\": [\r\n        {\r\n            \"Id\": 514,\r\n            \"ProductId\": 101,\r\n            \"OrderItemQuantity\": 1,\r\n            \"Description\": \"Product 1 Description\",\r\n            \"OrderNumber\": \"COMF6991\",\r\n            \"OrderName\": \"2025-01-10T00:00:00Z\",\r\n            \"ExternalOrderId\": \"1\",\r\n            \"OrderItemPriority\": 0,\r\n            \"ColorOptionId\": null,\r\n            \"ImageId\": 201,\r\n            \"FileId\": 301,\r\n            \"VideoId\": 401,\r\n            \"printingOptions\": [\r\n                {\r\n                    \"PrintingOptionId\": 1,\r\n                    \"Description\": \"Option 1 for Product 1\"\r\n                }\r\n            ]\r\n        },\r\n        {\r\n            \"Id\": 515,\r\n            \"ProductId\": 102,\r\n            \"OrderItemQuantity\": 1,\r\n            \"Description\": \"Product 2 Description\",\r\n            \"OrderNumber\": \"COMF6991\",\r\n            \"OrderName\": \"2025-01-10T00:00:00Z\",\r\n            \"ExternalOrderId\": \"1\",\r\n            \"OrderItemPriority\": 0,\r\n            \"ColorOptionId\": null,\r\n            \"ImageId\": 202,\r\n            \"FileId\": 302,\r\n            \"VideoId\": 402,\r\n            \"printingOptions\": [\r\n                {\r\n                    \"PrintingOptionId\": 3,\r\n                    \"Description\": \"Option 1 for Product 2\"\r\n                }\r\n            ]\r\n        }\r\n    ]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -493,7 +493,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/orders/16",
+					"raw": "http://localhost:3000/orders/130",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -501,7 +501,7 @@
 					"port": "3000",
 					"path": [
 						"orders",
-						"16"
+						"130"
 					]
 				}
 			},
@@ -574,7 +574,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzYxOTk5OTYsImV4cCI6MTczNjI4NjM5Nn0.q5y5-X43uqSMzmwW7kj0KMb0YSYr2S-gYwcHRRrK2IE",
 							"type": "string"
 						}
 					]
@@ -582,7 +582,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/orders/items/12",
+					"raw": "http://localhost:3000/orders/items/54",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -591,7 +591,7 @@
 					"path": [
 						"orders",
 						"items",
-						"12"
+						"54"
 					]
 				}
 			},
@@ -663,7 +663,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzYwOTc3ODYsImV4cCI6MTczNjE4NDE4Nn0.HH78JPyNwNO3bftg9FiQ36FclYVUSheJTwQxHl67jPg",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzYxOTk5OTYsImV4cCI6MTczNjI4NjM5Nn0.q5y5-X43uqSMzmwW7kj0KMb0YSYr2S-gYwcHRRrK2IE",
 							"type": "string"
 						}
 					]
@@ -671,7 +671,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/orders/get-edit/15",
+					"raw": "http://localhost:3000/orders/get-edit/132",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -680,7 +680,7 @@
 					"path": [
 						"orders",
 						"get-edit",
-						"15"
+						"132"
 					]
 				}
 			},
@@ -694,7 +694,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU5MDM4ODQsImV4cCI6MTczNTk5MDI4NH0.0OBLvfDzvYg9TZMVwlF2cJ36bSWJ9o-Dpb3SlMsS0TU",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzYxOTk5OTYsImV4cCI6MTczNjI4NjM5Nn0.q5y5-X43uqSMzmwW7kj0KMb0YSYr2S-gYwcHRRrK2IE",
 							"type": "string"
 						}
 					]
@@ -702,7 +702,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/products/availablecolors/1",
+					"raw": "http://localhost:3000/products/availablecolors/100000000",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -711,7 +711,7 @@
 					"path": [
 						"products",
 						"availablecolors",
-						"1"
+						"100000000"
 					]
 				}
 			},

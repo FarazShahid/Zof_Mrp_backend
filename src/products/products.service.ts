@@ -21,58 +21,22 @@ export class ProductsService {
     try {
       const products = await this.productRepository
         .createQueryBuilder('product')
-        .leftJoin('productcategory', 'productcategory', 'product.ProductCategoryId = productcategory.Id')
-        .leftJoin('fabrictype', 'fabrictype', 'product.FabricTypeId = fabrictype.Id')
-        .leftJoin('productdetails', 'productdetails', 'product.Id = productdetails.ProductId')
-        .leftJoin('productcutoptions', 'productcutoptions', 'productdetails.ProductCutOptionId = productcutoptions.Id')
-        .leftJoin('sizeoptions', 'sizeoptions', 'productdetails.ProductSizeMeasurementId = sizeoptions.Id')
         .select([
           'product.Id AS Id',
           'product.ProductCategoryId AS ProductCategoryId',
           'product.FabricTypeId AS FabricTypeId',
           'product.Name AS Name',
           'product.Description AS Description',
-          'productcategory.Type AS ProductCategoryName',
-          'fabrictype.Type AS FabricTypeName',
-          'fabrictype.GSM AS FabricGSM',
-          'fabrictype.Name AS FabricName',
-          'productdetails.ProductCutOptionId AS ProductCutOptionId',
-          'productcutoptions.OptionProductCutOptions AS ProductCutOptionName',
-          'productdetails.ProductSizeMeasurementId AS ProductSizeMeasurementId',
-          'sizeoptions.OptionSizeOptions AS ProductSizeOptionName',
         ])
         .getRawMany();
   
-      return products.reduce((result, product) => {
-        let existingProduct = result.find((p) => p.Id === product.Id);
-  
-        if (!existingProduct) {
-          existingProduct = {
-            Id: product.Id,
-            Name: product.Name,
-            ProductCategoryId: product.ProductCategoryId,
-            ProductCategoryName: product.ProductCategoryName || "",
-            FabricTypeId: product.FabricTypeId,
-            FabricTypeName: product.FabricTypeName || "",
-            FabricName: product.FabricName || "",
-            FabricGSM: product.FabricGSM || "",
-            Description: product.Description,
-            Details: [],
-          };
-          result.push(existingProduct);
-        }
-  
-        if (product.ProductCutOptionId || product.ProductSizeMeasurementId) {
-          existingProduct.Details.push({
-            ProductCutOptionId: product.ProductCutOptionId || null,
-            ProductCutOptionName: product.ProductCutOptionName || "",
-            ProductSizeMeasurementId: product.ProductSizeMeasurementId || null,
-            ProductSizeOptionName: product.ProductSizeOptionName || "",
-          });
-        }
-  
-        return result;
-      }, []);
+      return products.map(product => ({
+        Id: product.Id,
+        ProductCategoryId: product.ProductCategoryId,
+        FabricTypeId: product.FabricTypeId,
+        Name: product.Name,
+        Description: product.Description,
+      }));
     } catch (error) {
       console.error("Error fetching products:", error);
       return [];
@@ -91,28 +55,34 @@ export class ProductsService {
     return `This action removes a #${id} product`;
   }
 
-  async getAvailableColorsByProductId(productId: number): Promise<any> {
-    const availableColors = await this.productRepository.createQueryBuilder('product')
-      .leftJoin('availablecoloroptions', 'colors', 'colors.ProductId = product.Id')
-      .select([
-        'colors.Id AS Id',
-        'colors.ColorName AS ColorName',
-        'colors.ImageId AS ImageId',
-      ])
-      .where('product.Id = :productId', { productId })
-      .getRawMany();
+  async getAvailableColorsByProductId(productId: number): Promise<any[]> {
+    try {
+      const availableColors = await this.productRepository
+        .createQueryBuilder('product')
+        .leftJoin('availablecoloroptions', 'colors', 'colors.ProductId = product.Id')
+        .select([
+          'colors.Id AS Id',
+          'colors.ColorName AS ColorName',
+          'colors.ImageId AS ImageId',
+        ])
+        .where('product.Id = :productId', { productId })
+        .andWhere('colors.Id IS NOT NULL')
+        .getRawMany();
   
-    if (!availableColors || availableColors.length === 0) {
-      return []
+      if (!availableColors || availableColors.length === 0) {
+        return [];
+      }
+  
+      return availableColors.map((color) => ({
+        Id: color.Id,
+        ColorName: color.ColorName,
+        ImageId: color.ImageId,
+      }));
+    } catch (error) {
+      console.error("Error fetching available colors:", error);
+      return [];
     }
-  
-    const response = availableColors.map((color) => ({
-      Id: color.Id,
-      ColorName: color.ColorName,
-      ImageId: color.ImageId,
-    }));
-  
-    return response;
   }
+  
   
 }
