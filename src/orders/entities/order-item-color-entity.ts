@@ -9,15 +9,6 @@ export class OrderItemColor {
   ProductId: number;
 
   @Column()
-  OrderName: number;
-
-  @Column()
-  OrderNumber: number;
-
-  @Column()
-  ExternalOrderId: number;
-
-  @Column()
   OrderItemId: number;
 
   @Column()
