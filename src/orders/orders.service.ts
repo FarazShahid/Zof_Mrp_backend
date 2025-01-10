@@ -21,7 +21,7 @@ export class OrdersService {
   ) {}
 
   async createOrder(createOrderDto: CreateOrderDto, createdBy: number): Promise<Order> {
-    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, OrderPriority, items } = createOrderDto;
+    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, OrderPriority,ExternalOrderId,OrderName,OrderNumber, items } = createOrderDto;
   
     const newOrder = this.orderRepository.create({
       ClientId,
@@ -30,6 +30,8 @@ export class OrdersService {
       OrderStatusId,
       Deadline,
       OrderPriority,
+      ExternalOrderId,
+      OrderName,
       CreatedBy: createdBy,
       UpdatedBy: createdBy,
       CreatedOn: new Date(),
@@ -47,6 +49,7 @@ export class OrdersService {
         OrderItemPriority: item.OrderItemPriority || 0,
         ImageId: item.ImageId,
         FileId: item.FileId,
+        OrderItemQuantity: item.OrderItemQuantity || 0,
         VideoId: item.VideoId,
         CreatedBy: createdBy,
         UpdatedBy: createdBy,
@@ -117,6 +120,9 @@ export class OrdersService {
         'order.OrderStatusId',
         'order.Deadline',
         'order.OrderPriority AS OrderPriority',
+        'order.OrderNumber  AS OrderNumber ',
+        'order.OrderName AS OrderName',
+        'order.ExternalOrderId AS ExternalOrderId',
         'event.EventName AS EventName',
         'client.Name AS ClientName',
         'status.StatusName AS StatusName',
@@ -125,6 +131,9 @@ export class OrdersService {
   
     return orders.map((order) => ({
       Id: order.order_Id,
+      OrderName: order.OrderName,
+      OrderNumber: order.OrderNumber,
+      ExternalOrderId: order.ExternalOrderId,
       Description: order.order_Description,
       OrderEventId: order.order_OrderEventId,
       ClientId: order.order_ClientId,
@@ -167,6 +176,9 @@ export class OrdersService {
         'order.OrderStatusId',
         'order.OrderPriority AS OrderPriority',
         'order.Deadline',
+        'order.OrderNumber  AS OrderNumber ',
+        'order.OrderName AS OrderName',
+        'order.ExternalOrderId AS ExternalOrderId',
         'event.EventName AS EventName',
         'client.Name AS ClientName',
         'status.StatusName AS StatusName',
@@ -181,6 +193,9 @@ export class OrdersService {
   
     return orders.map((order) => ({
       Id: order.order_Id,
+      OrderName: order.OrderName,
+      OrderNumber: order.OrderNumber,
+      ExternalOrderId: order.ExternalOrderId,
       Description: order.order_Description,
       OrderEventId: order.order_OrderEventId,
       ClientId: order.order_ClientId,
@@ -200,7 +215,7 @@ export class OrdersService {
       throw new Error('Order not found');
     }
   
-    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, items, OrderPriority } =
+    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, items, OrderPriority, ExternalOrderId,OrderName,OrderNumber } =
       updateOrderDto;
   
     order.ClientId = ClientId ?? order.ClientId;
@@ -211,6 +226,8 @@ export class OrdersService {
     order.OrderPriority = OrderPriority ?? order.OrderPriority;
     order.UpdatedBy = updatedBy;
     order.UpdatedOn = new Date();
+    order.ExternalOrderId = ExternalOrderId;
+    order.OrderName = OrderName;
   
     const updatedOrder = await this.orderRepository.save(order);
   
@@ -240,6 +257,7 @@ export class OrdersService {
         VideoId: item.VideoId,
         CreatedBy: updatedBy,
         UpdatedBy: updatedBy,
+        OrderItemQuantity: item.OrderItemQuantity || 0,
         CreatedOn: new Date(),
         UpdatedOn: new Date(),
         OrderItemPriority: item.OrderItemPriority,
@@ -321,7 +339,7 @@ export class OrdersService {
     const orderItems = await this.orderItemRepository
       .createQueryBuilder('orderItem')
       .leftJoin(
-        'orderItemPrintingOptions',
+        'orderitemsprintingoptions',
         'printingOption',
         'orderItem.Id = printingOption.OrderItemId',
       )
@@ -339,6 +357,7 @@ export class OrdersService {
         'orderItem.Id AS Id',
         'orderItem.OrderId AS OrderId',
         'orderItem.ProductId AS ProductId',
+        'orderItem.OrderItemQuantity AS OrderItemQuantity',
         'orderItem.Description AS Description',
         'orderItem.ImageId AS ImageId',
         'orderItem.FileId AS FileId',
@@ -365,7 +384,11 @@ export class OrdersService {
         acc.push({
           Id: item.Id,
           ProductId: item.ProductId,
+          OrderItemQuantity: item.OrderItemQuantity,
           Description: item.Description,
+          OrderNumber: order.OrderNumber,
+          OrderName: order.OrderName,
+          ExternalOrderId: order.ExternalOrderId,
           OrderItemPriority: item.OrderItemPriority,
           ColorOptionId: item.ColorOptionId,
           ImageId: item.ImageId,
@@ -389,6 +412,9 @@ export class OrdersService {
       OrderEventId: order.OrderEventId,
       OrderPriority: order.OrderPriority,
       Description: order.Description,
+      OrderNumber: order.OrderNumber,
+      OrderName: order.OrderName,
+      ExternalOrderId: order.ExternalOrderId,
       OrderStatusId: order.OrderStatusId,
       Deadline: order.Deadline,
       items: formattedOrderItems,
@@ -402,7 +428,7 @@ export class OrdersService {
     const orderItems = await this.orderItemRepository
       .createQueryBuilder('orderItem')
       .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
-      .leftJoin('orderItemPrintingOptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
+      .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
       .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
       .leftJoin('orderitemcolors', 'orderItemColor', 'orderItem.Id = orderItemColor.OrderItemId')
       .leftJoin('availablecoloroptions', 'colorOption', 'orderItemColor.ColorOptionId = colorOption.Id')
@@ -410,6 +436,7 @@ export class OrdersService {
         'orderItem.Id AS Id',
         'orderItem.OrderId AS OrderId',
         'orderItem.ProductId AS ProductId',
+        'orderItem.OrderItemQuantity AS OrderItemQuantity',
         'orderItem.Description AS Description',
         'orderItem.ImageId AS ImageId',
         'orderItem.FileId AS FileId',
@@ -453,6 +480,7 @@ export class OrdersService {
           Id: item.Id,
           OrderId: item.OrderId,
           ProductId: item.ProductId,
+          OrderItemQuantity	: item.OrderItemQuantity,
           ProductName: item.ProductName || "",
           Description: item.Description,
           OrderItemPriority: item.OrderItemPriority || 0,

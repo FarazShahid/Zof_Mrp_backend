@@ -19,6 +19,15 @@ export class CreateOrderDto {
   @IsOptional()
   OrderPriority?: number;
 
+  @IsString()
+  OrderNumber?: string;
+
+  @IsString()
+  OrderName?: string;
+
+  @IsString()
+  ExternalOrderId?: string;
+
   @IsArray()
   @IsOptional()
   items: {
@@ -29,6 +38,7 @@ export class CreateOrderDto {
     FileId?: number;
     ColorOptionId: number;
     VideoId?: number;
+    OrderItemQuantity?: number;
     printingOptions?: { PrintingOptionId: number; Description?: string }[];
   }[];
 }

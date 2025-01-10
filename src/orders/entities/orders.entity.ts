@@ -35,6 +35,13 @@ export class Order {
   @Column()
   UpdatedBy: number;
 
-  @Column('json', { nullable: true })
-  items: any[];
+  
+  @Column()
+  OrderNumber?: string;
+
+  @Column()
+  OrderName?: string;
+
+  @Column()
+  ExternalOrderId: string;
 }

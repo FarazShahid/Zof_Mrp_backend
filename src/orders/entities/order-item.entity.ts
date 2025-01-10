@@ -38,4 +38,7 @@ export class OrderItem {
 
   @Column({ type: 'int', default: 0 })
   OrderItemPriority: number;
+
+  @Column({ type: 'int', default: 0 })
+  OrderItemQuantity: number;
 }
