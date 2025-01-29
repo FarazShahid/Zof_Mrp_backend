@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "01fa2b54-adbc-4999-8487-4ad87fb08d52",
+		"_postman_id": "8d658c22-8f84-4e43-9fe1-a74a0566a815",
 		"name": "MRP Backend",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "22127783"
+		"_exporter_id": "40740062"
 	},
 	"item": [
 		{
@@ -712,6 +712,122 @@
 						"products",
 						"availablecolors",
 						"100000000"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Product Categories",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/product-category",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"product-category"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Product Category",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"type\": \"Electronics Test\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/product-category",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"product-category"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Product Category",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/product-category/12",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"product-category",
+						"12"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Product Category",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n        \"type\": \"Electronics Test\",\r\n        \"createdBy\": \"Hassaan\",\r\n        \"updatedBy\": \"Hassaan Malik\"\r\n    }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/product-category/13",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"product-category",
+						"13"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Single Product Category",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/product-category/13",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"product-category",
+						"13"
 					]
 				}
 			},
