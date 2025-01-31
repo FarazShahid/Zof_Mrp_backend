@@ -26,6 +26,8 @@ import { ProductCategoryModule } from './product-category/product-category.modul
 import { ProductCategory } from './product-category/entities/product-category.entity';
 import { SleeveTypeModule } from './sleeve-type/sleeve-type.module';
 import { SleeveType } from './sleeve-type/entities/sleeve-type.entity/sleeve-type.entity';
+import { FabricTypeModule } from './fabrictype/fabrictype.module';
+import { FabricType } from './fabrictype/_/fabrictype.entity';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -36,10 +38,10 @@ import { SleeveType } from './sleeve-type/entities/sleeve-type.entity/sleeve-typ
     password: '',
     database: 'zof_mrp',
     autoLoadEntities: true, 
-    entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem, OrderItemsPrintingOption, PrintingOptions, SizeOption, ProductCutOption, OrderItemColor, ProductCategory, SleeveType],
+    entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem, OrderItemsPrintingOption, PrintingOptions, SizeOption, ProductCutOption, OrderItemColor, ProductCategory, SleeveType, FabricType],
     // Make Sync False for Prod
     synchronize: false
-  }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule, OrderModule, PrintingoptionsModule, SizeoptionsModule, ProductcutoptionsModule, ProductCategoryModule, SleeveTypeModule],
+  }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule, OrderModule, PrintingoptionsModule, SizeoptionsModule, ProductcutoptionsModule, ProductCategoryModule, SleeveTypeModule, FabricTypeModule],
   controllers: []
 })
 export class AppModule {}
