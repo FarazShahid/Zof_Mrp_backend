@@ -7,6 +7,7 @@ import { ProductCategoryController } from './product-category.controller';
 @Module({
   imports: [TypeOrmModule.forFeature([ProductCategory])],
   providers: [ProductCategoryService],
-  controllers: [ProductCategoryController]
+  controllers: [ProductCategoryController],
+  exports: [TypeOrmModule],
 })
 export class ProductCategoryModule {}
