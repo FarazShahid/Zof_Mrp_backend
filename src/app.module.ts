@@ -22,6 +22,12 @@ import { SizeOption } from './sizeoptions/entities/sizeoptions.entity';
 import { ProductcutoptionsModule } from './productcutoptions/productcutoptions.module';
 import { ProductCutOption } from './productcutoptions/entity/productcutoptions.entity';
 import { OrderItemColor } from './orders/entities/order-item-color-entity';
+import { ProductCategoryModule } from './product-category/product-category.module';
+import { ProductCategory } from './product-category/entities/product-category.entity';
+import { SleeveTypeModule } from './sleeve-type/sleeve-type.module';
+import { SleeveType } from './sleeve-type/entities/sleeve-type.entity/sleeve-type.entity';
+import { FabricTypeModule } from './fabrictype/fabrictype.module';
+import { FabricType } from './fabrictype/_/fabrictype.entity';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -32,10 +38,10 @@ import { OrderItemColor } from './orders/entities/order-item-color-entity';
     password: '',
     database: 'zof_mrp',
     autoLoadEntities: true, 
-    entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem, OrderItemsPrintingOption, PrintingOptions, SizeOption, ProductCutOption, OrderItemColor],
+    entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem, OrderItemsPrintingOption, PrintingOptions, SizeOption, ProductCutOption, OrderItemColor, ProductCategory, SleeveType, FabricType],
     // Make Sync False for Prod
     synchronize: false
-  }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule, OrderModule, PrintingoptionsModule, SizeoptionsModule, ProductcutoptionsModule],
+  }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule, OrderModule, PrintingoptionsModule, SizeoptionsModule, ProductcutoptionsModule, ProductCategoryModule, SleeveTypeModule, FabricTypeModule],
   controllers: []
 })
 export class AppModule {}
