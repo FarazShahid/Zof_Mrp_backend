@@ -548,8 +548,39 @@
 				{
 					"name": "Update",
 					"request": {
-						"method": "GET",
-						"header": []
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzgzMzkyNzcsImV4cCI6MTczODQyNTY3N30.8wGwUubT1UuSeY2pW78JS5-kgiQQEZHUGz1spzVz_48",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sleeveTypeName\": \"Grip armss 2s\",\r\n    \"productCategoryId\": 11,\r\n    \"updatedBy\": \"Hassaan\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/sleeve-type/20",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"sleeve-type",
+								"20"
+							]
+						}
 					},
 					"response": []
 				}
@@ -922,6 +953,37 @@
 					"response": []
 				},
 				{
+					"name": "Get Colors Product",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg1NzQwMjYsImV4cCI6MTczODY2MDQyNn0.dMmQa7jEYXcC7KlVoWsFEi557rxw6fG8VHJsgdBQA7U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/products/availablecolors/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"products",
+								"availablecolors",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get All",
 					"request": {
 						"auth": {
@@ -1014,6 +1076,177 @@
 							"path": [
 								"products",
 								"251"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cut Options",
+			"item": [
+				{
+					"name": "Get All",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg1NzQwMjYsImV4cCI6MTczODY2MDQyNn0.dMmQa7jEYXcC7KlVoWsFEi557rxw6fG8VHJsgdBQA7U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/productcutoptions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"productcutoptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg1NzQwMjYsImV4cCI6MTczODY2MDQyNn0.dMmQa7jEYXcC7KlVoWsFEi557rxw6fG8VHJsgdBQA7U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"OptionProductCutOptions\": \"Round Neck Cut\",\r\n  \"CreatedBy\": \"Hassaan\",\r\n  \"UpdatedBy\": \"Malik\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/productcutoptions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"productcutoptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg1NzQwMjYsImV4cCI6MTczODY2MDQyNn0.dMmQa7jEYXcC7KlVoWsFEi557rxw6fG8VHJsgdBQA7U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"OptionProductCutOptions\": \"Round Neck Cut test updated\",\r\n  \"UpdatedBy\": \"Admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/productcutoptions/9",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"productcutoptions",
+								"9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg1NzQwMjYsImV4cCI6MTczODY2MDQyNn0.dMmQa7jEYXcC7KlVoWsFEi557rxw6fG8VHJsgdBQA7U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/productcutoptions/9",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"productcutoptions",
+								"9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg2NzA5MzUsImV4cCI6MTczODc1NzMzNX0.S2SVga3wYjrI_uP-wfEtXbnWr8UyZ-HPtTZndQTrYcg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/productcutoptions/8",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"productcutoptions",
+								"8"
 							]
 						}
 					},
@@ -1161,66 +1394,6 @@
 					"port": "3000",
 					"path": [
 						"sizeoptions"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Product Cut Options",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:3000/productcutoptions",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"productcutoptions"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Color By Product",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzYxOTk5OTYsImV4cCI6MTczNjI4NjM5Nn0.q5y5-X43uqSMzmwW7kj0KMb0YSYr2S-gYwcHRRrK2IE",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:3000/products/availablecolors/100000000",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"products",
-						"availablecolors",
-						"100000000"
 					]
 				}
 			},
