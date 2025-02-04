@@ -3,7 +3,8 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
+
 
 @Injectable()
 export class ProductsService {
@@ -11,25 +12,58 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    private dataSource: DataSource
   ) { }
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     try {
-      // Validate required fields manually (if not using DTO validation in controller)
       const requiredFields = ['ProductCategoryId', 'FabricTypeId', 'Name', 'CreatedBy', 'UpdatedBy'];
       for (const field of requiredFields) {
         if (!createProductDto[field]) {
           throw new BadRequestException(`${field} is required`);
         }
       }
-
+  
       const newProduct = this.productRepository.create({
         ...createProductDto,
         CreatedOn: new Date(),
         UpdatedOn: new Date(),
       });
-
-      return await this.productRepository.save(newProduct);
+  
+      const savedProduct = await this.productRepository.save(newProduct);
+  
+      if (createProductDto.productColors && createProductDto.productColors.length > 0) {
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+        
+        try {
+          for (const color of createProductDto.productColors) {
+            await queryRunner.query(
+              `INSERT INTO availablecoloroptions (ColorName, ProductId, ImageId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy) 
+               VALUES (?, ?, ?, ?, ?, ?, ?)`,
+              [
+                color.ColorName,
+                savedProduct.Id,
+                color.ImageId,
+                new Date(),
+                createProductDto.CreatedBy,
+                new Date(),
+                createProductDto.UpdatedBy,
+              ]
+            );
+          }
+          
+          await queryRunner.commitTransaction();
+        } catch (error) {
+          await queryRunner.rollbackTransaction();
+          throw new Error('Failed to insert color options');
+        } finally {
+          await queryRunner.release();
+        }
+      }
+  
+      return savedProduct;
     } catch (error) {
       console.error('Error creating product:', error);
       throw new BadRequestException(error.message || 'Error creating product');
@@ -107,17 +141,32 @@ export class ProductsService {
   }
 
   async remove(id: number): Promise<{ message: string }> {
-    const product = await this.productRepository.findOne({ where: { Id: id } });
-
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+  
+    try {
+      const product = await this.productRepository.findOne({ where: { Id: id } });
+  
+      if (!product) {
+        throw new NotFoundException(`Product with ID ${id} not found`);
+      }
+  
+      await queryRunner.query(`DELETE FROM availablecoloroptions WHERE ProductId = ?`, [id]);
+  
+      await queryRunner.query(`DELETE FROM product WHERE Id = ?`, [id]);
+  
+      await queryRunner.commitTransaction();
+      
+      return { message: `Product with ID ${id} and its associated colors have been deleted successfully` };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new BadRequestException(error.message || `Error deleting product with ID ${id}`);
+    } finally {
+      await queryRunner.release();
     }
-
-    await this.productRepository.delete(id);
-
-    return { message: `Product with ID ${id} has been deleted successfully` };
   }
-
+  
   async getAvailableColorsByProductId(productId: number): Promise<any[]> {
     try {
       const availableColors = await this.productRepository
