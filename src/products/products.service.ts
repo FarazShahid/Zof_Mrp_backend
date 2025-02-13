@@ -40,10 +40,10 @@ export class ProductsService {
         try {
           for (const color of createProductDto.productColors) {
             await queryRunner.query(
-              `INSERT INTO availablecoloroptions (ColorName, ProductId, ImageId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy) 
+              `INSERT INTO availablecoloroptions (colorId, ProductId, ImageId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy) 
                VALUES (?, ?, ?, ?, ?, ?, ?)`,
               [
-                color.ColorName,
+                color.colorId,
                 savedProduct.Id,
                 color.ImageId,
                 new Date(),
@@ -172,9 +172,10 @@ export class ProductsService {
       const availableColors = await this.productRepository
         .createQueryBuilder('product')
         .leftJoin('availablecoloroptions', 'colors', 'colors.ProductId = product.Id')
+        .leftJoin('coloroption', 'color', 'color.Id = colors.colorId') 
         .select([
           'colors.Id AS Id',
-          'colors.ColorName AS ColorName',
+          'color.Name AS ColorName', 
           'colors.ImageId AS ImageId',
         ])
         .where('product.Id = :productId', { productId })
@@ -195,6 +196,4 @@ export class ProductsService {
       return [];
     }
   }
-  
-  
 }

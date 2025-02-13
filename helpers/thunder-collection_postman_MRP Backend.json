@@ -818,7 +818,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzYxOTk5OTYsImV4cCI6MTczNjI4NjM5Nn0.q5y5-X43uqSMzmwW7kj0KMb0YSYr2S-gYwcHRRrK2IE",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg1NzQwMjYsImV4cCI6MTczODY2MDQyNn0.dMmQa7jEYXcC7KlVoWsFEi557rxw6fG8VHJsgdBQA7U",
 									"type": "string"
 								}
 							]
@@ -856,7 +856,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU4MTg5NzgsImV4cCI6MTczNTkwNTM3OH0.hdTmSjL_bIflu4KyNwp8BDgsivC0MwBsNY6RvmozgC8",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg1NzQwMjYsImV4cCI6MTczODY2MDQyNn0.dMmQa7jEYXcC7KlVoWsFEi557rxw6fG8VHJsgdBQA7U",
 									"type": "string"
 								}
 							]
@@ -864,7 +864,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/orders/19",
+							"raw": "http://localhost:3000/orders/102",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -872,7 +872,7 @@
 							"port": "3000",
 							"path": [
 								"orders",
-								"19"
+								"102"
 							]
 						}
 					},
@@ -922,7 +922,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg2NzA5MzUsImV4cCI6MTczODc1NzMzNX0.S2SVga3wYjrI_uP-wfEtXbnWr8UyZ-HPtTZndQTrYcg",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzk0NDM3MjAsImV4cCI6MTczOTUzMDEyMH0.kPP3Z_ZHC72UJ-OpIogIzOUVP1Ov6ALbPo5nBcZ7Qp4",
 									"type": "string"
 								}
 							]
@@ -931,7 +931,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"ProductCategoryId\": 11,\r\n  \"FabricTypeId\": 15,\r\n  \"Name\": \"Scuba-Flees380 Doctor Long Coats\",\r\n  \"Description\": \"Premium quality doctor long coats made with Scuba-Flees380 fabric.\",\r\n  \"CreatedBy\": \"Hassaan\",\r\n  \"UpdatedBy\": \"Malik\",\r\n  \"productColors\": [\r\n    {\r\n      \"ColorName\": \"Red\",\r\n      \"ImageId\": \"img123\"\r\n    },\r\n    {\r\n      \"ColorName\": \"Blue\",\r\n      \"ImageId\": \"img124\"\r\n    },\r\n    {\r\n      \"ColorName\": \"Green\",\r\n      \"ImageId\": \"img125\"\r\n    }\r\n  ]\r\n}\r\n",
+							"raw": "{\r\n  \"ProductCategoryId\": 11,\r\n  \"FabricTypeId\": 15,\r\n  \"Name\": \"Scuba-Flees380 Doctor Long Coats\",\r\n  \"Description\": \"Premium quality doctor long coats made with Scuba-Flees380 fabric.\",\r\n  \"CreatedBy\": \"Hassaan\",\r\n  \"UpdatedBy\": \"Malik\",\r\n  \"productColors\": [\r\n    {\r\n      \"colorId\": 2,\r\n      \"ImageId\": \"img123\"\r\n    },\r\n    {\r\n      \"colorId\": 3,\r\n      \"ImageId\": \"img124\"\r\n    },\r\n    {\r\n      \"colorId\": 4,\r\n      \"ImageId\": \"img125\"\r\n    }\r\n  ]\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -960,7 +960,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg2NzA5MzUsImV4cCI6MTczODc1NzMzNX0.S2SVga3wYjrI_uP-wfEtXbnWr8UyZ-HPtTZndQTrYcg",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzk0NDM3MjAsImV4cCI6MTczOTUzMDEyMH0.kPP3Z_ZHC72UJ-OpIogIzOUVP1Ov6ALbPo5nBcZ7Qp4",
 									"type": "string"
 								}
 							]
@@ -968,7 +968,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/products/availablecolors/254",
+							"raw": "http://localhost:3000/products/availablecolors/256",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -977,7 +977,7 @@
 							"path": [
 								"products",
 								"availablecolors",
-								"254"
+								"256"
 							]
 						}
 					},
@@ -991,7 +991,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg1NzQwMjYsImV4cCI6MTczODY2MDQyNn0.dMmQa7jEYXcC7KlVoWsFEi557rxw6fG8VHJsgdBQA7U",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzk0NDM3MjAsImV4cCI6MTczOTUzMDEyMH0.kPP3Z_ZHC72UJ-OpIogIzOUVP1Ov6ALbPo5nBcZ7Qp4",
 									"type": "string"
 								}
 							]
@@ -1426,6 +1426,137 @@
 			]
 		},
 		{
+			"name": "Color Options",
+			"item": [
+				{
+					"name": "Get All",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzk0NDM3MjAsImV4cCI6MTczOTUzMDEyMH0.kPP3Z_ZHC72UJ-OpIogIzOUVP1Ov6ALbPo5nBcZ7Qp4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/coloroption",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"coloroption"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Save",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"Name\": \"Red\",\r\n  \"CreatedBy\": \"Admin\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/coloroption",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"coloroption"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get One",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/coloroption/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"coloroption",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/coloroption/10",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"coloroption",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Name\": \"Green Updated\",\r\n    \"UpdatedBy\": \"Hassaan\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/coloroption/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"coloroption",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Login",
 			"request": {
 				"method": "POST",
@@ -1520,7 +1651,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzU3MzE0MzQsImV4cCI6MTczNTgxNzgzNH0.u6EuD5AQIh2Y_0GEJkIGHDGSF9CM6wI6rUzbjQIY2JA",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg1NzQwMjYsImV4cCI6MTczODY2MDQyNn0.dMmQa7jEYXcC7KlVoWsFEi557rxw6fG8VHJsgdBQA7U",
 							"type": "string"
 						}
 					]

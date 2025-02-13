@@ -2,7 +2,7 @@ import { IsNotEmpty, ValidateNested, IsArray } from 'class-validator';
 
 class ProductColorDto {
   @IsNotEmpty({ message: 'ColorName is required' })
-  ColorName: string;
+  colorId: number;
 
   @IsNotEmpty({ message: 'ImageId is required' })
   ImageId: string;
