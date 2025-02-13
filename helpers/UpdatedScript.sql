@@ -24,3 +24,6 @@ FOREIGN KEY (colorId)
 REFERENCES coloroption(Id) 
 ON DELETE CASCADE 
 ON UPDATE CASCADE;
+
+ALTER TABLE productregionstandard 
+CHANGE COLUMN RegionName Name VARCHAR(50) NOT NULL;
