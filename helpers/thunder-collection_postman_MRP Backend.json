@@ -922,7 +922,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzk0NDM3MjAsImV4cCI6MTczOTUzMDEyMH0.kPP3Z_ZHC72UJ-OpIogIzOUVP1Ov6ALbPo5nBcZ7Qp4",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzk4OTcxMjIsImV4cCI6MTczOTk4MzUyMn0.roJch1APPCQ56x1bb2nf7W5UP54yRpEY-TFT69_i5us",
 									"type": "string"
 								}
 							]
@@ -931,7 +931,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"ProductCategoryId\": 11,\r\n  \"FabricTypeId\": 15,\r\n  \"Name\": \"Scuba-Flees380 Doctor Long Coats\",\r\n  \"Description\": \"Premium quality doctor long coats made with Scuba-Flees380 fabric.\",\r\n  \"CreatedBy\": \"Hassaan\",\r\n  \"UpdatedBy\": \"Malik\",\r\n  \"productColors\": [\r\n    {\r\n      \"colorId\": 2,\r\n      \"ImageId\": \"img123\"\r\n    },\r\n    {\r\n      \"colorId\": 3,\r\n      \"ImageId\": \"img124\"\r\n    },\r\n    {\r\n      \"colorId\": 4,\r\n      \"ImageId\": \"img125\"\r\n    }\r\n  ]\r\n}\r\n",
+							"raw": "{\r\n  \"ProductCategoryId\": 11,\r\n  \"FabricTypeId\": 15,\r\n  \"Name\": \"Scuba-Flees380 Doctor Long Coats\",\r\n  \"Description\": \"Premium quality doctor long coats made with Scuba-Flees380 fabric.\",\r\n  \"CreatedBy\": \"Hassaan\",\r\n  \"UpdatedBy\": \"Malik\",\r\n  \"productColors\": [\r\n    {\r\n      \"colorId\": 2,\r\n      \"ImageId\": \"img123\"\r\n    },\r\n    {\r\n      \"colorId\": 3,\r\n      \"ImageId\": \"img124\"\r\n    },\r\n    {\r\n      \"colorId\": 4,\r\n      \"ImageId\": \"img125\"\r\n    }\r\n  ],\r\n   \"productDetails\": [\r\n    {\r\n      \"ProductCutOptionId\": 201,\r\n      \"ProductSizeMeasurementId\": 301,\r\n      \"ProductRegionId\": 401,\r\n      \"SleeveTypeId\": 501\r\n    },\r\n    {\r\n      \"ProductCutOptionId\": 202,\r\n      \"ProductSizeMeasurementId\": 302,\r\n      \"ProductRegionId\": 402,\r\n      \"SleeveTypeId\": 502\r\n    }\r\n  ]\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -960,7 +960,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzk0NDM3MjAsImV4cCI6MTczOTUzMDEyMH0.kPP3Z_ZHC72UJ-OpIogIzOUVP1Ov6ALbPo5nBcZ7Qp4",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzk4OTcxMjIsImV4cCI6MTczOTk4MzUyMn0.roJch1APPCQ56x1bb2nf7W5UP54yRpEY-TFT69_i5us",
 									"type": "string"
 								}
 							]
@@ -968,7 +968,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/products/availablecolors/256",
+							"raw": "http://localhost:3000/products/availablecolors/257",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -977,7 +977,7 @@
 							"path": [
 								"products",
 								"availablecolors",
-								"256"
+								"257"
 							]
 						}
 					},
@@ -1020,7 +1020,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg2NzA5MzUsImV4cCI6MTczODc1NzMzNX0.S2SVga3wYjrI_uP-wfEtXbnWr8UyZ-HPtTZndQTrYcg",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzk5NjI2MDAsImV4cCI6MTc0MDA0OTAwMH0.uNVila9jLUr8fkjg9OD3yvU_gNFXrVV8qmF-v4-Ths0",
 									"type": "string"
 								}
 							]
@@ -1028,7 +1028,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/products/254",
+							"raw": "http://localhost:3000/products/257",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1036,7 +1036,7 @@
 							"port": "3000",
 							"path": [
 								"products",
-								"254"
+								"257"
 							]
 						}
 					},
@@ -1050,7 +1050,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg1NzQwMjYsImV4cCI6MTczODY2MDQyNn0.dMmQa7jEYXcC7KlVoWsFEi557rxw6fG8VHJsgdBQA7U",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzk5NjI2MDAsImV4cCI6MTc0MDA0OTAwMH0.uNVila9jLUr8fkjg9OD3yvU_gNFXrVV8qmF-v4-Ths0",
 									"type": "string"
 								}
 							]
@@ -1059,7 +1059,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"ProductCategoryId\": 11,\r\n    \"FabricTypeId\": 15,\r\n    \"Name\": \"Scuba-Flees380 Doctor Long Coats\",\r\n    \"Description\": \"Premium quality doctor long coats made with Scuba-Flees380 fabric.\",\r\n    \"CreatedOn\": \"2025-02-03T11:12:36.961Z\",\r\n    \"CreatedBy\": \"Shani Haider\",\r\n    \"UpdatedOn\": \"2025-02-03T11:12:36.961Z\",\r\n    \"UpdatedBy\": \"Shani\"\r\n}",
+							"raw": "{\r\n    \"Id\": 257,\r\n    \"ProductCategoryId\": 11,\r\n    \"FabricTypeId\": 15,\r\n    \"Name\": \"Scuba-Flees380 Doctor Long Coats Updated\",\r\n    \"Description\": \"Premium quality doctor long coats made with Scuba-Flees380 fabric.\",\r\n    \"CreatedOn\": \"2025-02-18T16:48:38.000Z\",\r\n    \"CreatedBy\": \"Hassaan\",\r\n    \"UpdatedOn\": \"2025-02-18T16:48:38.000Z\",\r\n    \"UpdatedBy\": \"Malik\",\r\n    \"productColors\": [\r\n        {\r\n            \"Id\": 1,\r\n            \"colorId\": 2,\r\n            \"ProductId\": 257,\r\n            \"ImageId\": 0,\r\n            \"CreatedOn\": \"2025-02-18T16:48:38.000Z\",\r\n            \"CreatedBy\": \"Hassaan\",\r\n            \"UpdatedOn\": \"2025-02-18T16:48:38.000Z\",\r\n            \"UpdatedBy\": \"Malik\"\r\n        }\r\n    ],\r\n    \"productDetails\": [\r\n        {\r\n            \"Id\": 256,\r\n            \"ProductId\": 257,\r\n            \"ProductCutOptionId\": 201,\r\n            \"ProductSizeMeasurementId\": 301,\r\n            \"CreatedOn\": \"2025-02-18T16:48:38.000Z\",\r\n            \"CreatedBy\": \"Hassaan\",\r\n            \"UpdatedOn\": \"2025-02-18T16:48:38.000Z\",\r\n            \"UpdatedBy\": \"Malik\",\r\n            \"ProductRegionId\": 401,\r\n            \"SleeveTypeId\": 501\r\n        }\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1067,7 +1067,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/products/251",
+							"raw": "http://localhost:3000/products/257",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1075,7 +1075,37 @@
 							"port": "3000",
 							"path": [
 								"products",
-								"251"
+								"257"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzk5NjI2MDAsImV4cCI6MTc0MDA0OTAwMH0.uNVila9jLUr8fkjg9OD3yvU_gNFXrVV8qmF-v4-Ths0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/products/257",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"products",
+								"257"
 							]
 						}
 					},
