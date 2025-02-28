@@ -7,12 +7,13 @@ CREATE TABLE users (
 );
 
 CREATE TABLE ColorOption (
-  Id int(11) NOT NULL,
+  Id int(11) NOT NULL AUTO_INCREMENT,
   Name varchar(255) NOT NULL,
   CreatedOn datetime DEFAULT current_timestamp(),
   CreatedBy varchar(100) DEFAULT NULL,
   UpdatedOn datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  UpdatedBy varchar(100) DEFAULT NULL
+  UpdatedBy varchar(100) DEFAULT NULL,
+  PRIMARY KEY (Id)
 );
 
 TRUNCATE TABLE availablecoloroptions;
