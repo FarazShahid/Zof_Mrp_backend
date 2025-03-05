@@ -301,19 +301,15 @@ CREATE TABLE `orderevent` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `orderitemcolors`
+-- Table structure for table `orderitemdetails`
 --
 
-CREATE TABLE `orderitemcolors` (
+CREATE TABLE `orderitemdetails` (
   `Id` int(11) NOT NULL,
-  `ProductId` int(11) NOT NULL,
   `ColorOptionId` int(11) NOT NULL,
   `OrderItemId` int(11) NOT NULL,
   `CreatedOn` datetime NOT NULL DEFAULT current_timestamp(),
   `UpdatedOn` datetime NOT NULL DEFAULT current_timestamp(),
-  `OrderName` int(11) NOT NULL,
-  `OrderNumber` int(11) NOT NULL,
-  `ExternalOrderId` int(11) NOT NULL,
   `CreatedBy` int(11) NOT NULL,
   `UpdatedBy` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1282,9 +1278,9 @@ ALTER TABLE `orderevent`
   ADD UNIQUE KEY `EventName` (`EventName`);
 
 --
--- Indexes for table `orderitemcolors`
+-- Indexes for table `orderitemdetails`
 --
-ALTER TABLE `orderitemcolors`
+ALTER TABLE `orderitemdetails`
   ADD PRIMARY KEY (`Id`);
 
 --
@@ -1509,28 +1505,28 @@ ALTER TABLE `orderevent`
   MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `orderitemcolors`
+-- AUTO_INCREMENT for table `orderitemdetails`
 --
-ALTER TABLE `orderitemcolors`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `orderitemdetails`
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `orderitems`
 --
 ALTER TABLE `orderitems`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `orderitemsprintingoptions`
 --
 ALTER TABLE `orderitemsprintingoptions`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `orderservices`

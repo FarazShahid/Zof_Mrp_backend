@@ -5,7 +5,7 @@ import { Order } from './entities/orders.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { OrderItemsPrintingOption } from './entities/order-item-printiing.option.entity';
 import { CreateOrderDto } from './dto/create-orders.dto';
-import { OrderItemColor } from './entities/order-item-color-entity';
+import { OrderItemDetails } from './entities/order-item-details';
 
 @Injectable()
 export class OrdersService {
@@ -16,8 +16,8 @@ export class OrdersService {
     private orderItemRepository: Repository<OrderItem>,
     @InjectRepository(OrderItemsPrintingOption)
     private orderItemsPrintingOptionRepository: Repository<OrderItemsPrintingOption>,
-    @InjectRepository(OrderItemColor)
-    private orderItemColorRepository: Repository<OrderItemColor>,
+    @InjectRepository(OrderItemDetails)
+    private orderItemDetailRepository: Repository<OrderItemDetails>,
   ) {}
 
   async createOrder(createOrderDto: CreateOrderDto, createdBy: number): Promise<Order> {
@@ -62,18 +62,16 @@ export class OrdersService {
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
   
-        if (item.ColorOptionId && item.ProductId) {
-          const orderItemColor = this.orderItemColorRepository.create({
-            ProductId: item.ProductId,
-            OrderItemId: savedOrderItems[i].Id, 
-            ColorOptionId: item.ColorOptionId,  
+        if (Array.isArray(item.orderItemDetails) && item.ProductId) {
+          const orderItemDetails = item.orderItemDetails.map((option) => ({
+            OrderItemId: savedOrderItems[i].Id,
+            ColorOptionId: option.ColorOptionId,
             CreatedBy: createdBy,
             UpdatedBy: createdBy,
             CreatedOn: new Date(),
             UpdatedOn: new Date(),
-          });
-  
-          await this.orderItemColorRepository.save(orderItemColor);
+          }));
+          await this.orderItemDetailRepository.save(orderItemDetails);
         }
   
         if (Array.isArray(item.printingOptions) && item.printingOptions.length > 0) {
@@ -241,7 +239,7 @@ export class OrdersService {
           OrderItemId: In(existingOrderItemIds),
         });
   
-        await this.orderItemColorRepository.delete({
+        await this.orderItemDetailRepository.delete({
           OrderItemId: In(existingOrderItemIds),
         });
       }
@@ -277,20 +275,18 @@ export class OrdersService {
   
           await this.orderItemsPrintingOptionRepository.save(printingOptions);
         }
-  
-        if (item.ColorOptionId) {
-          const colorOption = {
+
+        if (Array.isArray(item.orderItemDetails) && item.ProductId) {
+          const orderItemDetails = item.orderItemDetails.map((option) => ({
             OrderItemId: savedOrderItems[i].Id,
-            ProductId: item.ProductId,
-            ColorOptionId: item.ColorOptionId,
+            ColorOptionId: option.ColorOptionId,
             CreatedBy: updatedBy,
             UpdatedBy: updatedBy,
             CreatedOn: new Date(),
             UpdatedOn: new Date(),
-          };
-  
+          }));
           try {
-            await this.orderItemColorRepository.save(colorOption);
+            await this.orderItemDetailRepository.save(orderItemDetails);
           } catch (error) {
             console.error('Error saving color option:', error);
             throw new Error('Failed to save color options for order item');
@@ -317,7 +313,7 @@ export class OrdersService {
         OrderItemId: In(orderItemIds),
       });
   
-      await this.orderItemColorRepository.delete({
+      await this.orderItemDetailRepository.delete({
         OrderItemId: In(orderItemIds),
       });
     }
@@ -329,7 +325,6 @@ export class OrdersService {
   
 
   async getEditOrder(id: number): Promise<any> {
-    
     const order = await this.orderRepository.findOne({ where: { Id: id } });
   
     if (!order) {
@@ -349,9 +344,9 @@ export class OrdersService {
         'printingOption.PrintingOptionId = printingoptions.Id',
       )
       .leftJoin(
-        'orderitemcolors',
-        'orderitemcolors',
-        'orderItem.Id = orderitemcolors.OrderItemId',
+        'orderitemdetails',
+        'orderitemdetails',
+        'orderItem.Id = orderitemdetails.OrderItemId',
       )
       .select([
         'orderItem.Id AS Id',
@@ -366,46 +361,60 @@ export class OrdersService {
         'printingOption.Id AS PrintingOptionId',
         'printingOption.PrintingOptionId AS PrintingOptionId',
         'printingOption.Description AS PrintingOptionDescription',
-        'orderitemcolors.ColorOptionId AS ColorOptionId'
+        'orderitemdetails.ColorOptionId AS ColorOptionId',
+        'orderitemdetails.Id AS OrderItemDetailId'
       ])
       .where('orderItem.OrderId = :orderId', { orderId: id })
       .getRawMany();
   
-    const formattedOrderItems = orderItems.reduce((acc, item) => {
-      const existingItem = acc.find((orderItem) => orderItem.Id === item.Id);
-      if (existingItem) {
-        if (item.PrintingOptionId) {
-          existingItem.printingOptions.push({
-            PrintingOptionId: item.PrintingOptionId,
-            Description: item.PrintingOptionDescription,
+      const formattedOrderItems = orderItems.reduce((acc, item) => {
+        const existingItem = acc.find((orderItem) => orderItem.Id === item.Id);
+      
+        if (existingItem) {
+          if (item.PrintingOptionId && !existingItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
+            existingItem.printingOptions.push({
+              PrintingOptionId: item.PrintingOptionId,
+              Description: item.PrintingOptionDescription,
+            });
+          }
+      
+          if (item.OrderItemDetailId && !existingItem.orderItemDetails.some(od => od.ColorOptionId === item.ColorOptionId)) {
+            existingItem.orderItemDetails.push({
+              ColorOptionId: item.ColorOptionId,
+            });
+          }
+        } else {
+          acc.push({
+            Id: item.Id,
+            ProductId: item.ProductId,
+            OrderItemQuantity: item.OrderItemQuantity,
+            Description: item.Description,
+            OrderNumber: order.OrderNumber,
+            OrderName: order.OrderName,
+            ExternalOrderId: order.ExternalOrderId,
+            OrderItemPriority: item.OrderItemPriority,
+            ImageId: item.ImageId,
+            FileId: item.FileId,
+            VideoId: item.VideoId,
+            printingOptions: item.PrintingOptionId
+              ? [
+                  {
+                    PrintingOptionId: item.PrintingOptionId,
+                    Description: item.PrintingOptionDescription,
+                  },
+                ]
+              : [],
+            orderItemDetails: item.OrderItemDetailId
+              ? [
+                  {
+                    ColorOptionId: item.ColorOptionId,
+                  },
+                ]
+              : [],
           });
         }
-      } else {
-        acc.push({
-          Id: item.Id,
-          ProductId: item.ProductId,
-          OrderItemQuantity: item.OrderItemQuantity,
-          Description: item.Description,
-          OrderNumber: order.OrderNumber,
-          OrderName: order.OrderName,
-          ExternalOrderId: order.ExternalOrderId,
-          OrderItemPriority: item.OrderItemPriority,
-          ColorOptionId: item.ColorOptionId,
-          ImageId: item.ImageId,
-          FileId: item.FileId,
-          VideoId: item.VideoId,
-          printingOptions: item.PrintingOptionId
-            ? [
-                {
-                  PrintingOptionId: item.PrintingOptionId,
-                  Description: item.PrintingOptionDescription,
-                },
-              ]
-            : []
-        });
-      }
-      return acc;
-    }, []);
+        return acc;
+      }, []);
   
     const response = {
       ClientId: order.ClientId,
@@ -422,7 +431,6 @@ export class OrdersService {
   
     return response;
   }
-  
 
   async getOrderItemsByOrderId(orderId: number): Promise<any> {
     const orderItems = await this.orderItemRepository
@@ -430,8 +438,8 @@ export class OrdersService {
       .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
       .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
       .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
-      .leftJoin('orderitemcolors', 'orderItemColor', 'orderItem.Id = orderItemColor.OrderItemId')
-      .leftJoin('availablecoloroptions', 'colorOption', 'orderItemColor.ColorOptionId = colorOption.Id')
+      .leftJoin('orderitemdetails', 'orderItemColor', 'orderItem.Id = orderItemColor.OrderItemId')
+      .leftJoin('coloroption', 'colorOption', 'orderItemColor.ColorOptionId = colorOption.Id')
       .select([
         'orderItem.Id AS Id',
         'orderItem.OrderId AS OrderId',
@@ -450,7 +458,7 @@ export class OrdersService {
         'printingOption.Description AS PrintingOptionDescription',
         'printingoptions.Type AS PrintingOptionName',
         'orderItemColor.ColorOptionId AS ColorOptionId',
-        'colorOption.ColorName AS ColorName',
+        'colorOption.Name AS ColorName',
       ])
       .where('orderItem.OrderId = :orderId', { orderId })
       .getRawMany();
@@ -461,15 +469,17 @@ export class OrdersService {
   
     const formattedItems = orderItems.reduce((acc, item) => {
       const existingItem = acc.find(orderItem => orderItem.Id === item.Id);
+  
       if (existingItem) {
-        if (item.PrintingOptionId) {
+        if (item.PrintingOptionId && !existingItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
           existingItem.printingOptions.push({
             PrintingOptionId: item.PrintingOptionId,
             PrintingOptionName: item.PrintingOptionName,
             Description: item.PrintingOptionDescription,
           });
         }
-        if (item.ColorOptionId) {
+  
+        if (item.ColorOptionId && !existingItem.colors.some(c => c.ColorOptionId === item.ColorOptionId)) {
           existingItem.colors.push({
             ColorOptionId: item.ColorOptionId,
             ColorName: item.ColorName,
@@ -480,15 +490,13 @@ export class OrdersService {
           Id: item.Id,
           OrderId: item.OrderId,
           ProductId: item.ProductId,
-          OrderItemQuantity	: item.OrderItemQuantity,
+          OrderItemQuantity: item.OrderItemQuantity,
           ProductName: item.ProductName || "",
           Description: item.Description,
           OrderItemPriority: item.OrderItemPriority || 0,
           ImageId: item.ImageId,
           FileId: item.FileId,
           VideoId: item.VideoId,
-          ColorOptionId: item.ColorOptionId,
-          ColorName: item.ColorName,
           CreatedOn: item.CreatedOn,
           UpdatedOn: item.UpdatedOn,
           printingOptions: item.PrintingOptionId
@@ -499,13 +507,23 @@ export class OrdersService {
                   Description: item.PrintingOptionDescription,
                 },
               ]
-            : []
+            : [],
+          colors: item.ColorOptionId
+            ? [
+                {
+                  ColorOptionId: item.ColorOptionId,
+                  ColorName: item.ColorName,
+                },
+              ]
+            : [],
         });
       }
+  
       return acc;
     }, []);
   
     return formattedItems;
   }
+  
   
 }
