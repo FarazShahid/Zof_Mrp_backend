@@ -49,7 +49,6 @@ export class OrdersService {
         OrderItemPriority: item.OrderItemPriority || 0,
         ImageId: item.ImageId,
         FileId: item.FileId,
-        OrderItemQuantity: item.OrderItemQuantity || 0,
         VideoId: item.VideoId,
         CreatedBy: createdBy,
         UpdatedBy: createdBy,
@@ -66,6 +65,8 @@ export class OrdersService {
           const orderItemDetails = item.orderItemDetails.map((option) => ({
             OrderItemId: savedOrderItems[i].Id,
             ColorOptionId: option.ColorOptionId,
+            Quantity: option.Quantity,
+            Priority: option.Priority,
             CreatedBy: createdBy,
             UpdatedBy: createdBy,
             CreatedOn: new Date(),
@@ -255,7 +256,6 @@ export class OrdersService {
         VideoId: item.VideoId,
         CreatedBy: updatedBy,
         UpdatedBy: updatedBy,
-        OrderItemQuantity: item.OrderItemQuantity || 0,
         CreatedOn: new Date(),
         UpdatedOn: new Date(),
         OrderItemPriority: item.OrderItemPriority,
@@ -280,6 +280,8 @@ export class OrdersService {
           const orderItemDetails = item.orderItemDetails.map((option) => ({
             OrderItemId: savedOrderItems[i].Id,
             ColorOptionId: option.ColorOptionId,
+            Quantity: option.Quantity,
+            Priority: option.Priority,
             CreatedBy: updatedBy,
             UpdatedBy: updatedBy,
             CreatedOn: new Date(),
@@ -352,7 +354,6 @@ export class OrdersService {
         'orderItem.Id AS Id',
         'orderItem.OrderId AS OrderId',
         'orderItem.ProductId AS ProductId',
-        'orderItem.OrderItemQuantity AS OrderItemQuantity',
         'orderItem.Description AS Description',
         'orderItem.ImageId AS ImageId',
         'orderItem.FileId AS FileId',
@@ -362,7 +363,9 @@ export class OrdersService {
         'printingOption.PrintingOptionId AS PrintingOptionId',
         'printingOption.Description AS PrintingOptionDescription',
         'orderitemdetails.ColorOptionId AS ColorOptionId',
-        'orderitemdetails.Id AS OrderItemDetailId'
+        'orderitemdetails.Id AS OrderItemDetailId',
+        'orderitemdetails.Quantity AS OrderItemDetailQuanity',
+        'orderitemdetails.Priority AS OrderItemDetailPriority'
       ])
       .where('orderItem.OrderId = :orderId', { orderId: id })
       .getRawMany();
@@ -381,13 +384,14 @@ export class OrdersService {
           if (item.OrderItemDetailId && !existingItem.orderItemDetails.some(od => od.ColorOptionId === item.ColorOptionId)) {
             existingItem.orderItemDetails.push({
               ColorOptionId: item.ColorOptionId,
+              Quantity: item.OrderItemDetailQuanity,
+              Priority: item.OrderItemDetailPriority,
             });
           }
         } else {
           acc.push({
             Id: item.Id,
             ProductId: item.ProductId,
-            OrderItemQuantity: item.OrderItemQuantity,
             Description: item.Description,
             OrderNumber: order.OrderNumber,
             OrderName: order.OrderName,
@@ -408,6 +412,8 @@ export class OrdersService {
               ? [
                   {
                     ColorOptionId: item.ColorOptionId,
+                    Quantity: item.OrderItemDetailQuanity,
+                    Priority: item.OrderItemDetailPriority,
                   },
                 ]
               : [],
@@ -444,7 +450,6 @@ export class OrdersService {
         'orderItem.Id AS Id',
         'orderItem.OrderId AS OrderId',
         'orderItem.ProductId AS ProductId',
-        'orderItem.OrderItemQuantity AS OrderItemQuantity',
         'orderItem.Description AS Description',
         'orderItem.ImageId AS ImageId',
         'orderItem.FileId AS FileId',
@@ -459,6 +464,8 @@ export class OrdersService {
         'printingoptions.Type AS PrintingOptionName',
         'orderItemColor.ColorOptionId AS ColorOptionId',
         'colorOption.Name AS ColorName',
+        'orderItemColor.Quantity AS OrderItemDetailQuanity',
+        'orderItemColor.Priority AS OrderItemDetailPriority'
       ])
       .where('orderItem.OrderId = :orderId', { orderId })
       .getRawMany();
@@ -483,6 +490,8 @@ export class OrdersService {
           existingItem.colors.push({
             ColorOptionId: item.ColorOptionId,
             ColorName: item.ColorName,
+            Quantity: item.OrderItemDetailQuanity,
+            Priority: item.OrderItemDetailPriority,
           });
         }
       } else {
@@ -490,7 +499,6 @@ export class OrdersService {
           Id: item.Id,
           OrderId: item.OrderId,
           ProductId: item.ProductId,
-          OrderItemQuantity: item.OrderItemQuantity,
           ProductName: item.ProductName || "",
           Description: item.Description,
           OrderItemPriority: item.OrderItemPriority || 0,
@@ -513,6 +521,8 @@ export class OrdersService {
                 {
                   ColorOptionId: item.ColorOptionId,
                   ColorName: item.ColorName,
+                  Quantity: item.OrderItemDetailQuanity,
+                  Priority: item.OrderItemDetailPriority,
                 },
               ]
             : [],
@@ -524,6 +534,4 @@ export class OrdersService {
   
     return formattedItems;
   }
-  
-  
 }

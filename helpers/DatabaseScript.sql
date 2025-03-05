@@ -308,6 +308,8 @@ CREATE TABLE `orderitemdetails` (
   `Id` int(11) NOT NULL,
   `ColorOptionId` int(11) NOT NULL,
   `OrderItemId` int(11) NOT NULL,
+  `Quantity` int(11) NOT NULL DEFAULT 1,
+  `Priority` int(11) NOT NULL DEFAULT 0,
   `CreatedOn` datetime NOT NULL DEFAULT current_timestamp(),
   `UpdatedOn` datetime NOT NULL DEFAULT current_timestamp(),
   `CreatedBy` int(11) NOT NULL,
@@ -330,7 +332,6 @@ CREATE TABLE `orderitems` (
   `CreatedOn` datetime NOT NULL,
   `UpdatedOn` datetime NOT NULL,
   `OrderItemPriority` int(11) NOT NULL DEFAULT 0,
-  `OrderItemQuantity` int(11) NOT NULL DEFAULT 0,
   `Description` varchar(255) DEFAULT NULL,
   `CreatedBy` int(11) NOT NULL,
   `UpdatedBy` int(11) NOT NULL
@@ -1508,25 +1509,25 @@ ALTER TABLE `orderevent`
 -- AUTO_INCREMENT for table `orderitemdetails`
 --
 ALTER TABLE `orderitemdetails`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `orderitems`
 --
 ALTER TABLE `orderitems`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `orderitemsprintingoptions`
 --
 ALTER TABLE `orderitemsprintingoptions`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `orderservices`

@@ -37,8 +37,7 @@ export class CreateOrderDto {
     ImageId?: number;
     FileId?: number;
     VideoId?: number;
-    OrderItemQuantity?: number;
     printingOptions?: { PrintingOptionId: number; Description?: string }[];
-    orderItemDetails?: { ColorOptionId: number }[];
+    orderItemDetails?: { ColorOptionId: number; Quantity: number; Priority: number; }[];
   }[];
 }

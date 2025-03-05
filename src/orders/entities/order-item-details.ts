@@ -11,6 +11,12 @@ export class OrderItemDetails {
   @Column()
   ColorOptionId: number;
 
+  @Column()
+  Quantity: number;
+
+  @Column()
+  Priority: number;
+
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
 
