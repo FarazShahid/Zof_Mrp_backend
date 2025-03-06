@@ -1785,7 +1785,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg1NzQwMjYsImV4cCI6MTczODY2MDQyNn0.dMmQa7jEYXcC7KlVoWsFEi557rxw6fG8VHJsgdBQA7U",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NDEyMzk5NTgsImV4cCI6MTc0MTMyNjM1OH0.KiNOecXLP9GELby0OJACfFFa2kBjKXvrFQ5wLjXzuV8",
 									"type": "string"
 								}
 							]
@@ -1801,6 +1801,143 @@
 							"port": "3000",
 							"path": [
 								"printingoptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NDEyMzk5NTgsImV4cCI6MTc0MTMyNjM1OH0.KiNOecXLP9GELby0OJACfFFa2kBjKXvrFQ5wLjXzuV8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Name\": \"Test Name\",\r\n    \"createdBy\": \"Hassaan Malik\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/printingoptions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"printingoptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NDEyMzk5NTgsImV4cCI6MTc0MTMyNjM1OH0.KiNOecXLP9GELby0OJACfFFa2kBjKXvrFQ5wLjXzuV8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/printingoptions/6",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"printingoptions",
+								"6"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NDEyMzk5NTgsImV4cCI6MTc0MTMyNjM1OH0.KiNOecXLP9GELby0OJACfFFa2kBjKXvrFQ5wLjXzuV8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/printingoptions/7",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"printingoptions",
+								"7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NDEyMzk5NTgsImV4cCI6MTc0MTMyNjM1OH0.KiNOecXLP9GELby0OJACfFFa2kBjKXvrFQ5wLjXzuV8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Id\": 7,\r\n    \"UpdatedBy\": \"Hassaan Updated By\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/printingoptions/7",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"printingoptions",
+								"7"
 							]
 						}
 					},
