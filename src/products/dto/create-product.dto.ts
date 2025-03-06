@@ -1,4 +1,30 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, ValidateNested, IsArray } from 'class-validator';
+
+class ProductColorDto {
+  Id: number;
+
+  @IsNotEmpty({ message: 'ColorName is required' })
+  colorId: number;
+
+  @IsNotEmpty({ message: 'ImageId is required' })
+  ImageId: string;
+}
+
+export class ProductDetailDto {
+  Id: number;
+
+  @IsNotEmpty({ message: 'ProductCutOptionId is required' })
+  ProductCutOptionId: number;
+
+  @IsNotEmpty({ message: 'ProductSizeMeasurementId is required' })
+  ProductSizeMeasurementId: number;
+
+  @IsNotEmpty({ message: 'ProductRegionId is required' })
+  ProductRegionId: number;
+
+  @IsNotEmpty({ message: 'SleeveTypeId is required' })
+  SleeveTypeId: number;
+}
 
 export class CreateProductDto {
   @IsNotEmpty({ message: 'ProductCategoryId is required' })
@@ -17,4 +43,12 @@ export class CreateProductDto {
   UpdatedBy: string;
 
   Description?: string;
+
+  @IsArray({ message: 'productColors must be an array' })
+  @ValidateNested({ each: true })
+  productColors: ProductColorDto[];
+
+  @IsArray({ message: 'productDetails must be an array' })
+  @ValidateNested({ each: true })
+  productDetails: ProductDetailDto[];
 }

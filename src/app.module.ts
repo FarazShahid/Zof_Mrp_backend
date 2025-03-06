@@ -21,13 +21,17 @@ import { SizeoptionsModule } from './sizeoptions/sizeoptions.module';
 import { SizeOption } from './sizeoptions/entities/sizeoptions.entity';
 import { ProductcutoptionsModule } from './productcutoptions/productcutoptions.module';
 import { ProductCutOption } from './productcutoptions/entity/productcutoptions.entity';
-import { OrderItemColor } from './orders/entities/order-item-color-entity';
+import { OrderItemDetails } from './orders/entities/order-item-details';
 import { ProductCategoryModule } from './product-category/product-category.module';
 import { ProductCategory } from './product-category/entities/product-category.entity';
 import { SleeveTypeModule } from './sleeve-type/sleeve-type.module';
 import { SleeveType } from './sleeve-type/entities/sleeve-type.entity/sleeve-type.entity';
 import { FabricTypeModule } from './fabrictype/fabrictype.module';
 import { FabricType } from './fabrictype/_/fabrictype.entity';
+import { ColorOptionModule } from './coloroption/coloroption.module';
+import { ColorOption } from './coloroption/_/color-option.entity';
+import { ProductregionstandardModule } from './productregionstandard/productregionstandard.module';
+import { ProductRegionStandard } from './productregionstandard/_/product-region-standard.entity';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -38,10 +42,10 @@ import { FabricType } from './fabrictype/_/fabrictype.entity';
     password: '',
     database: 'zof_mrp',
     autoLoadEntities: true, 
-    entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem, OrderItemsPrintingOption, PrintingOptions, SizeOption, ProductCutOption, OrderItemColor, ProductCategory, SleeveType, FabricType],
+    entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem, OrderItemsPrintingOption, PrintingOptions, SizeOption, ProductCutOption, OrderItemDetails, ProductCategory, SleeveType, FabricType, ColorOption, ProductRegionStandard],
     // Make Sync False for Prod
     synchronize: false
-  }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule, OrderModule, PrintingoptionsModule, SizeoptionsModule, ProductcutoptionsModule, ProductCategoryModule, SleeveTypeModule, FabricTypeModule],
+  }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule, OrderModule, PrintingoptionsModule, SizeoptionsModule, ProductcutoptionsModule, ProductCategoryModule, SleeveTypeModule, FabricTypeModule, ColorOptionModule, ProductregionstandardModule],
   controllers: []
 })
 export class AppModule {}

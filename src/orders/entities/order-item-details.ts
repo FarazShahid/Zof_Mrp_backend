@@ -1,18 +1,21 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity('orderitemcolors')
-export class OrderItemColor {
+@Entity('orderitemdetails')
+export class OrderItemDetails {
   @PrimaryGeneratedColumn()
   Id: number;
-
-  @Column()
-  ProductId: number;
 
   @Column()
   OrderItemId: number;
 
   @Column()
   ColorOptionId: number;
+
+  @Column()
+  Quantity: number;
+
+  @Column()
+  Priority: number;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
