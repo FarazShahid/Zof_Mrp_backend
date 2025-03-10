@@ -6,6 +6,7 @@ import { OrderItem } from './entities/order-item.entity';
 import { OrderItemsPrintingOption } from './entities/order-item-printiing.option.entity';
 import { CreateOrderDto } from './dto/create-orders.dto';
 import { OrderItemDetails } from './entities/order-item-details';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class OrdersService {
@@ -18,6 +19,7 @@ export class OrdersService {
     private orderItemsPrintingOptionRepository: Repository<OrderItemsPrintingOption>,
     @InjectRepository(OrderItemDetails)
     private orderItemDetailRepository: Repository<OrderItemDetails>,
+    private dataSource: DataSource,
   ) {}
 
   async createOrder(createOrderDto: CreateOrderDto, createdBy: number): Promise<Order> {
@@ -327,115 +329,129 @@ export class OrdersService {
   
 
   async getEditOrder(id: number): Promise<any> {
-    const order = await this.orderRepository.findOne({ where: { Id: id } });
+    try {
   
-    if (!order) {
-      throw new Error('Order not found');
-    }
-  
-    const orderItems = await this.orderItemRepository
-      .createQueryBuilder('orderItem')
-      .leftJoin(
-        'orderitemsprintingoptions',
-        'printingOption',
-        'orderItem.Id = printingOption.OrderItemId',
-      )
-      .leftJoin(
-        'printingoptions',
-        'printingoptions',
-        'printingOption.PrintingOptionId = printingoptions.Id',
-      )
-      .leftJoin(
-        'orderitemdetails',
-        'orderitemdetails',
-        'orderItem.Id = orderitemdetails.OrderItemId',
-      )
-      .select([
-        'orderItem.Id AS Id',
-        'orderItem.OrderId AS OrderId',
-        'orderItem.ProductId AS ProductId',
-        'orderItem.Description AS Description',
-        'orderItem.ImageId AS ImageId',
-        'orderItem.FileId AS FileId',
-        'orderItem.VideoId AS VideoId',
-        'orderItem.OrderItemPriority AS OrderItemPriority',
-        'printingOption.Id AS PrintingOptionId',
-        'printingOption.PrintingOptionId AS PrintingOptionId',
-        'printingOption.Description AS PrintingOptionDescription',
-        'orderitemdetails.ColorOptionId AS ColorOptionId',
-        'orderitemdetails.Id AS OrderItemDetailId',
-        'orderitemdetails.Quantity AS OrderItemDetailQuanity',
-        'orderitemdetails.Priority AS OrderItemDetailPriority'
-      ])
-      .where('orderItem.OrderId = :orderId', { orderId: id })
-      .getRawMany();
-  
-      const formattedOrderItems = orderItems.reduce((acc, item) => {
-        const existingItem = acc.find((orderItem) => orderItem.Id === item.Id);
-      
-        if (existingItem) {
-          if (item.PrintingOptionId && !existingItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
-            existingItem.printingOptions.push({
-              PrintingOptionId: item.PrintingOptionId,
-              Description: item.PrintingOptionDescription,
-            });
-          }
-      
-          if (item.OrderItemDetailId && !existingItem.orderItemDetails.some(od => od.ColorOptionId === item.ColorOptionId)) {
-            existingItem.orderItemDetails.push({
-              ColorOptionId: item.ColorOptionId,
-              Quantity: item.OrderItemDetailQuanity,
-              Priority: item.OrderItemDetailPriority,
-            });
-          }
-        } else {
-          acc.push({
+      const orderData = await this.orderRepository
+        .createQueryBuilder('order')
+        .leftJoin('client', 'client', 'order.ClientId = client.Id')
+        .leftJoin('clientevent', 'event', 'order.OrderEventId = event.Id')
+        .leftJoin('orderstatus', 'status', 'order.OrderStatusId = status.Id')
+        .select([
+          'order.Id AS Id',
+          'order.ClientId AS ClientId',
+          'client.Name AS ClientName',
+          'order.OrderEventId AS OrderEventId',
+          'event.EventName AS EventName',
+          'order.Description AS Description',
+          'order.OrderStatusId AS OrderStatusId',
+          'status.StatusName AS StatusName',
+          'order.Deadline AS Deadline',
+          'order.OrderPriority AS OrderPriority',
+          'order.OrderNumber AS OrderNumber',
+          'order.OrderName AS OrderName',
+          'order.ExternalOrderId AS ExternalOrderId'
+        ])
+        .where('order.Id = :id', { id })
+        .getRawOne();
+    
+      if (!orderData) {
+        throw new Error('Order not found');
+      }
+    
+      const orderItemsData = await this.orderItemRepository
+        .createQueryBuilder('orderItem')
+        .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
+        .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
+        .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
+        .leftJoin('orderitemdetails', 'orderItemDetail', 'orderItem.Id = orderItemDetail.OrderItemId')
+        .leftJoin('coloroption', 'colorOption', 'orderItemDetail.ColorOptionId = colorOption.Id')
+        .select([
+          'orderItem.Id AS Id',
+          'orderItem.ProductId AS ProductId',
+          'product.Name AS ProductName',
+          'orderItem.Description AS Description',
+          'orderItem.OrderItemPriority AS OrderItemPriority',
+          'orderItem.ImageId AS ImageId',
+          'orderItem.FileId AS FileId',
+          'orderItem.VideoId AS VideoId',
+          'printingOption.Id AS PrintingOptionId',
+          'printingOption.Description AS PrintingOptionDescription',
+          'printingoptions.Type AS PrintingOptionName',
+          'orderItemDetail.Id AS OrderItemDetailId',
+          'orderItemDetail.ColorOptionId AS ColorOptionId',
+          'colorOption.Name AS ColorOptionName',
+          'orderItemDetail.Quantity AS Quantity',
+          'orderItemDetail.Priority AS Priority'
+        ])
+        .where('orderItem.OrderId = :orderId', { orderId: id })
+        .getRawMany();
+    
+      const processedItems = [];
+      const itemMap = new Map();
+    
+      for (const item of orderItemsData) {
+        if (!itemMap.has(item.Id)) {
+          // Create new item entry
+          const newItem = {
             Id: item.Id,
             ProductId: item.ProductId,
+            ProductName: item.ProductName || 'Unknown Product',
             Description: item.Description,
-            OrderNumber: order.OrderNumber,
-            OrderName: order.OrderName,
-            ExternalOrderId: order.ExternalOrderId,
+            OrderNumber: orderData.OrderNumber,
+            OrderName: orderData.OrderName,
+            ExternalOrderId: orderData.ExternalOrderId,
             OrderItemPriority: item.OrderItemPriority,
             ImageId: item.ImageId,
             FileId: item.FileId,
             VideoId: item.VideoId,
-            printingOptions: item.PrintingOptionId
-              ? [
-                  {
-                    PrintingOptionId: item.PrintingOptionId,
-                    Description: item.PrintingOptionDescription,
-                  },
-                ]
-              : [],
-            orderItemDetails: item.OrderItemDetailId
-              ? [
-                  {
-                    ColorOptionId: item.ColorOptionId,
-                    Quantity: item.OrderItemDetailQuanity,
-                    Priority: item.OrderItemDetailPriority,
-                  },
-                ]
-              : [],
+            printingOptions: [],
+            orderItemDetails: []
+          };
+          
+          itemMap.set(item.Id, newItem);
+          processedItems.push(newItem);
+        }
+        
+        const currentItem = itemMap.get(item.Id);
+        
+        if (item.PrintingOptionId && !currentItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
+          currentItem.printingOptions.push({
+            PrintingOptionId: item.PrintingOptionId,
+            PrintingOptionName: item.PrintingOptionName,
+            Description: item.PrintingOptionDescription
           });
         }
-        return acc;
-      }, []);
-  
-    const response = {
-      ClientId: order.ClientId,
-      OrderEventId: order.OrderEventId,
-      OrderPriority: order.OrderPriority,
-      Description: order.Description,
-      OrderNumber: order.OrderNumber,
-      OrderName: order.OrderName,
-      ExternalOrderId: order.ExternalOrderId,
-      OrderStatusId: order.OrderStatusId,
-      Deadline: order.Deadline,
-      items: formattedOrderItems,
-    };
-  
-    return response;
+        
+        if (item.ColorOptionId && !currentItem.orderItemDetails.some(od => od.ColorOptionId === item.ColorOptionId)) {
+          currentItem.orderItemDetails.push({
+            ColorOptionId: item.ColorOptionId,
+            ColorOptionName: item.ColorOptionName || 'Unknown Color',
+            Quantity: item.Quantity,
+            Priority: item.Priority
+          });
+        }
+      }
+    
+      return {
+        Id: orderData.Id,
+        ClientId: orderData.ClientId,
+        ClientName: orderData.ClientName || 'Unknown Client',
+        OrderEventId: orderData.OrderEventId,
+        EventName: orderData.EventName || 'Unknown Event',
+        OrderPriority: orderData.OrderPriority,
+        Description: orderData.Description,
+        OrderNumber: orderData.OrderNumber,
+        OrderName: orderData.OrderName,
+        ExternalOrderId: orderData.ExternalOrderId,
+        OrderStatusId: orderData.OrderStatusId,
+        StatusName: orderData.StatusName || 'Unknown Status',
+        Deadline: orderData.Deadline,
+        items: processedItems
+      };
+    } catch (error) {
+      console.error('Error in getEditOrder:', error);
+      throw error;
+    }
   }
 
   async getOrderItemsByOrderId(orderId: number): Promise<any> {
