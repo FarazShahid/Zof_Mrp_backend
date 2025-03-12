@@ -461,7 +461,8 @@ export class OrdersService {
       .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
       .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
       .leftJoin('orderitemdetails', 'orderItemColor', 'orderItem.Id = orderItemColor.OrderItemId')
-      .leftJoin('coloroption', 'colorOption', 'orderItemColor.ColorOptionId = colorOption.Id')
+      .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderItemColor.ColorOptionId = colorOption.Id')
+      .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId = colorOption.Id')
       .select([
         'orderItem.Id AS Id',
         'orderItem.OrderId AS OrderId',
