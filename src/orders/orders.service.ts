@@ -364,7 +364,9 @@ export class OrdersService {
         .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
         .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
         .leftJoin('orderitemdetails', 'orderItemDetail', 'orderItem.Id = orderItemDetail.OrderItemId')
-        .leftJoin('coloroption', 'colorOption', 'orderItemDetail.ColorOptionId = colorOption.Id')
+        .leftJoin('orderitemdetails', 'orderitemdetails', 'orderItem.Id = orderitemdetails.OrderItemId')
+        .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderitemdetails.ColorOptionId = availablecoloroptions.Id')
+        .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId = colorOption.Id')
         .select([
           'orderItem.Id AS Id',
           'orderItem.ProductId AS ProductId',
@@ -460,9 +462,9 @@ export class OrdersService {
       .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
       .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
       .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
-      .leftJoin('orderitemdetails', 'orderItemColor', 'orderItem.Id = orderItemColor.OrderItemId')
-      .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderItemColor.ColorOptionId = colorOption.Id')
-      .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId = colorOption.Id')
+      .leftJoin('orderitemdetails', 'orderitemdetails', 'orderItem.Id = orderitemdetails.OrderItemId')
+      .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderitemdetails.ColorOptionId = availablecoloroptions.Id')
+      .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId = colorOption.Id') 
       .select([
         'orderItem.Id AS Id',
         'orderItem.OrderId AS OrderId',
@@ -479,10 +481,11 @@ export class OrdersService {
         'printingOption.PrintingOptionId AS PrintingOptionId',
         'printingOption.Description AS PrintingOptionDescription',
         'printingoptions.Type AS PrintingOptionName',
-        'orderItemColor.ColorOptionId AS ColorOptionId',
-        'colorOption.Name AS ColorName',
-        'orderItemColor.Quantity AS OrderItemDetailQuanity',
-        'orderItemColor.Priority AS OrderItemDetailPriority'
+        'orderitemdetails.ColorOptionId AS ColorOptionId',
+        'availablecoloroptions.colorId AS ColorId',
+        'colorOption.Name AS ColorName',  // Ensure this alias matches your database column
+        'orderitemdetails.Quantity AS OrderItemDetailQuantity',
+        'orderitemdetails.Priority AS OrderItemDetailPriority'
       ])
       .where('orderItem.OrderId = :orderId', { orderId })
       .getRawMany();
@@ -506,8 +509,9 @@ export class OrdersService {
         if (item.ColorOptionId && !existingItem.colors.some(c => c.ColorOptionId === item.ColorOptionId)) {
           existingItem.colors.push({
             ColorOptionId: item.ColorOptionId,
-            ColorName: item.ColorName,
-            Quantity: item.OrderItemDetailQuanity,
+            ColorId: item.ColorId,  // Debugging: check if ColorId is being picked correctly
+            ColorName: item.ColorName || 'Unknown',  // Debugging: Check if ColorName is NULL
+            Quantity: item.OrderItemDetailQuantity,
             Priority: item.OrderItemDetailPriority,
           });
         }
@@ -537,8 +541,9 @@ export class OrdersService {
             ? [
                 {
                   ColorOptionId: item.ColorOptionId,
-                  ColorName: item.ColorName,
-                  Quantity: item.OrderItemDetailQuanity,
+                  ColorId: item.ColorId,  // Debugging: Check if this is correct
+                  ColorName: item.ColorName || 'Unknown',  // Default value to check if it exists
+                  Quantity: item.OrderItemDetailQuantity,
                   Priority: item.OrderItemDetailPriority,
                 },
               ]
@@ -551,4 +556,5 @@ export class OrdersService {
   
     return formattedItems;
   }
+  
 }
