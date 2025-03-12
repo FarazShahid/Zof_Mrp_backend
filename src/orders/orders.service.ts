@@ -186,7 +186,7 @@ export class OrdersService {
     }
   
     return orders.map((order) => ({
-      Id: order.order_Id,
+      Id: order.Id,
       OrderName: order.OrderName,
       OrderNumber: order.OrderNumber,
       ExternalOrderId: order.ExternalOrderId,
