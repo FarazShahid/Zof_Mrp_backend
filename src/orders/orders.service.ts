@@ -7,6 +7,7 @@ import { OrderItemsPrintingOption } from './entities/order-item-printiing.option
 import { CreateOrderDto } from './dto/create-orders.dto';
 import { OrderItemDetails } from './entities/order-item-details';
 import { DataSource } from 'typeorm';
+import { PaginationDto } from './dto/pagination.dto';
 
 @Injectable()
 export class OrdersService {
@@ -92,59 +93,51 @@ export class OrdersService {
     return savedOrder;
   }  
 
-  async getAllOrders(): Promise<any[]> {
-    const orders = await this.orderRepository
-      .createQueryBuilder('order')
-      .leftJoinAndMapOne(
-        'order.EventName',
-        'clientevent',
-        'event',
-        'order.OrderEventId = event.Id',
-      )
-      .leftJoinAndMapOne(
-        'order.ClientName',
-        'client',
-        'client',
-        'order.ClientId = client.Id',
-      )
-      .leftJoinAndMapOne(
-        'order.StatusName',
-        'orderstatus',
-        'status',
-        'order.OrderStatusId = status.Id',
-      )
-      .select([
-        'order.Id',
-        'order.Description',
-        'order.OrderEventId',
-        'order.ClientId',
-        'order.OrderStatusId',
-        'order.Deadline',
-        'order.OrderPriority AS OrderPriority',
-        'order.OrderNumber  AS OrderNumber ',
-        'order.OrderName AS OrderName',
-        'order.ExternalOrderId AS ExternalOrderId',
-        'event.EventName AS EventName',
-        'client.Name AS ClientName',
-        'status.StatusName AS StatusName',
-      ])
-      .getRawMany();
-  
-    return orders.map((order) => ({
-      Id: order.order_Id,
-      OrderName: order.OrderName,
-      OrderNumber: order.OrderNumber,
-      ExternalOrderId: order.ExternalOrderId,
-      Description: order.order_Description,
-      OrderEventId: order.order_OrderEventId,
-      ClientId: order.order_ClientId,
-      OrderStatusId: order.order_OrderStatusId,
-      OrderPriority: order.OrderPriority || null,
-      Deadline: order.order_Deadline,
-      EventName: order.EventName || null,
-      ClientName: order.ClientName || null,
-      StatusName: order.StatusName || null,
-    }));
+  async getAllOrders(paginationDto?: PaginationDto): Promise<any> {
+    try {
+      const { page = 1, limit = 10 } = paginationDto || {};
+      const skip = (page - 1) * limit;
+
+      const [orders, total] = await this.orderRepository
+        .createQueryBuilder('order')
+        .leftJoin('client', 'client', 'order.ClientId = client.Id')
+        .leftJoin('clientevent', 'event', 'order.OrderEventId = event.Id')
+        .leftJoin('orderstatus', 'status', 'order.OrderStatusId = status.Id')
+        .select([
+          'order.Id AS Id',
+          'order.ClientId AS ClientId',
+          'client.Name AS ClientName',
+          'order.OrderEventId AS OrderEventId',
+          'event.EventName AS EventName',
+          'order.Description AS Description',
+          'order.OrderStatusId AS OrderStatusId',
+          'status.StatusName AS StatusName',
+          'order.Deadline AS Deadline',
+          'order.OrderPriority AS OrderPriority',
+          'order.OrderNumber AS OrderNumber',
+          'order.OrderName AS OrderName',
+          'order.ExternalOrderId AS ExternalOrderId',
+          'order.CreatedOn AS CreatedOn',
+          'order.UpdatedOn AS UpdatedOn'
+        ])
+        .orderBy('order.CreatedOn', 'DESC')
+        .skip(skip)
+        .take(limit)
+        .getManyAndCount();
+
+      return {
+        data: orders,
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit)
+        }
+      };
+    } catch (error) {
+      console.error('Error in getAllOrders:', error);
+      throw error;
+    }
   }
   
 
@@ -330,7 +323,7 @@ export class OrdersService {
 
   async getEditOrder(id: number): Promise<any> {
     try {
-  
+      // Get order with related data using query builder
       const orderData = await this.orderRepository
         .createQueryBuilder('order')
         .leftJoin('client', 'client', 'order.ClientId = client.Id')
@@ -358,6 +351,7 @@ export class OrdersService {
         throw new Error('Order not found');
       }
     
+      // Get order items with related data using query builder
       const orderItemsData = await this.orderItemRepository
         .createQueryBuilder('orderItem')
         .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
@@ -386,6 +380,7 @@ export class OrdersService {
         .where('orderItem.OrderId = :orderId', { orderId: id })
         .getRawMany();
     
+      // Process order items to group printing options and color options
       const processedItems = [];
       const itemMap = new Map();
     
@@ -414,6 +409,7 @@ export class OrdersService {
         
         const currentItem = itemMap.get(item.Id);
         
+        // Add printing option if it exists and is not already added
         if (item.PrintingOptionId && !currentItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
           currentItem.printingOptions.push({
             PrintingOptionId: item.PrintingOptionId,
@@ -422,6 +418,7 @@ export class OrdersService {
           });
         }
         
+        // Add color option if it exists and is not already added
         if (item.ColorOptionId && !currentItem.orderItemDetails.some(od => od.ColorOptionId === item.ColorOptionId)) {
           currentItem.orderItemDetails.push({
             ColorOptionId: item.ColorOptionId,
@@ -432,6 +429,7 @@ export class OrdersService {
         }
       }
     
+      // Return formatted order with related data
       return {
         Id: orderData.Id,
         ClientId: orderData.ClientId,

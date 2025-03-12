@@ -34,18 +34,53 @@ import { ProductregionstandardModule } from './productregionstandard/productregi
 import { ProductRegionStandard } from './productregionstandard/_/product-region-standard.entity';
 
 @Module({
-  imports: [TypeOrmModule.forRoot({
-    type: 'mysql',
-    host: 'localhost',
-    port: 3306,
-    username: 'root',
-    password: '',
-    database: 'zof_mrp',
-    autoLoadEntities: true, 
-    entities: [Client, Product, User, ClientEvent, OrderStatus, Order, OrderItem, OrderItemsPrintingOption, PrintingOptions, SizeOption, ProductCutOption, OrderItemDetails, ProductCategory, SleeveType, FabricType, ColorOption, ProductRegionStandard],
-    // Make Sync False for Prod
-    synchronize: false
-  }), ClientsModule, ProductsModule, AuthModule, UserModule, EventsModule, OrderstatusModule, OrderModule, PrintingoptionsModule, SizeoptionsModule, ProductcutoptionsModule, ProductCategoryModule, SleeveTypeModule, FabricTypeModule, ColorOptionModule, ProductregionstandardModule],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT || '3306', 10),
+      username: process.env.DB_USERNAME || 'root',
+      password: process.env.DB_PASSWORD || '',
+      database: process.env.DB_DATABASE || 'zof_mrp',
+      autoLoadEntities: true, 
+      entities: [
+        Client, 
+        Product, 
+        User, 
+        ClientEvent, 
+        OrderStatus, 
+        Order, 
+        OrderItem, 
+        OrderItemsPrintingOption, 
+        PrintingOptions, 
+        SizeOption, 
+        ProductCutOption, 
+        OrderItemDetails, 
+        ProductCategory, 
+        SleeveType, 
+        FabricType, 
+        ColorOption, 
+        ProductRegionStandard
+      ],
+      // Make Sync False for Prod
+      synchronize: process.env.NODE_ENV === 'development'
+    }), 
+    ClientsModule, 
+    ProductsModule, 
+    AuthModule, 
+    UserModule, 
+    EventsModule, 
+    OrderstatusModule, 
+    OrderModule, 
+    PrintingoptionsModule, 
+    SizeoptionsModule, 
+    ProductcutoptionsModule, 
+    ProductCategoryModule, 
+    SleeveTypeModule, 
+    FabricTypeModule, 
+    ColorOptionModule, 
+    ProductregionstandardModule
+  ],
   controllers: []
 })
 export class AppModule {}

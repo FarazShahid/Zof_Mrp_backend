@@ -1,4 +1,4 @@
-import { IsString, IsEmail, Length, IsPhoneNumber, IsDate } from 'class-validator';
+import { IsString, IsEmail, Length, IsPhoneNumber, IsOptional } from 'class-validator';
 
 export class CreateClientDto {
 
@@ -10,7 +10,9 @@ export class CreateClientDto {
     @Length(1, 255)
     Email: string;
 
-    @IsPhoneNumber()
+    @IsPhoneNumber(undefined, { 
+      message: 'Phone number must be a valid phone number with country code (e.g., +1234567890)' 
+    })
     @Length(1, 255)
     Phone: string;
 
@@ -31,15 +33,6 @@ export class CreateClientDto {
     CompleteAddress: string;
 
     @IsString()
-    @Length(1, 255)
-    iS: string;
-
-    ClientStatusId?: any;
-
-    @IsDate()
-    @Length(1, 255)
-    CreatedOn: string;
-
-    CreatedBy: any;
-
+    @IsOptional()
+    ClientStatusId?: string;
 }

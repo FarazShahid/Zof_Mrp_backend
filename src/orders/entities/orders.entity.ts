@@ -1,10 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { BaseEntity } from '../../common/entities/base.entity';
+import { Client } from '../../clients/entities/client.entity';
+import { ClientEvent } from '../../events/entities/clientevent.entity';
+import { OrderStatus } from '../../orderstatus/entities/orderstatus.entity';
+import { OrderItem } from './order-item.entity';
 
 @Entity('orders')
-export class Order {
-  @PrimaryGeneratedColumn()
-  Id: number;
-
+export class Order extends BaseEntity {
   @Column()
   ClientId: number;
 
@@ -20,28 +22,31 @@ export class Order {
   @Column({ type: 'int', nullable: true })
   OrderPriority: number;
 
-  @Column({ type: 'timestamp',  default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   Deadline: Date;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  CreatedOn: Date;
+  @Column({ nullable: true })
+  OrderNumber: string;
 
-  @Column()
-  CreatedBy: number;
-
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
-  UpdatedOn: Date;
-
-  @Column()
-  UpdatedBy: number;
-
-  
-  @Column()
-  OrderNumber?: string;
-
-  @Column()
-  OrderName?: string;
+  @Column({ nullable: true })
+  OrderName: string;
 
   @Column()
   ExternalOrderId: string;
+
+  // Relations
+  @ManyToOne(() => Client)
+  @JoinColumn({ name: 'ClientId' })
+  client: Client;
+
+  @ManyToOne(() => ClientEvent)
+  @JoinColumn({ name: 'OrderEventId' })
+  event: ClientEvent;
+
+  @ManyToOne(() => OrderStatus)
+  @JoinColumn({ name: 'OrderStatusId' })
+  status: OrderStatus;
+
+  @OneToMany(() => OrderItem, orderItem => orderItem.order)
+  orderItems: OrderItem[];
 }

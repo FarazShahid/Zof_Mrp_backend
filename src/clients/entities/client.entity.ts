@@ -35,5 +35,10 @@ export class Client {
 
     @Column()
     CreatedBy: string;
+    
+    @Column({ nullable: true })
+    UpdatedOn: string;
 
+    @Column({ nullable: true })
+    UpdatedBy: string;
 }

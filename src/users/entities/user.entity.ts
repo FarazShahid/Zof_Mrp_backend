@@ -14,6 +14,15 @@ export class User {
   @Column()
   CreatedOn: string;
 
+  @Column()
+  CreatedBy: string;
+
+  @Column()
+  UpdatedOn: string;
+
+  @Column()
+  UpdatedBy: string;
+
   @Column({ default: true })
   isActive: boolean;
 }

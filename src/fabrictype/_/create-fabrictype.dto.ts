@@ -14,9 +14,4 @@ export class CreateFabricTypeDto {
   @IsInt()
   @IsNotEmpty()
   gsm: number;
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
-  createdBy: string;
 }

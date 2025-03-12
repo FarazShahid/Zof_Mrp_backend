@@ -10,11 +10,16 @@ import { OrderItemDetails } from './entities/order-item-details';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem, OrderItemsPrintingOption, OrderItemDetails]),
+    TypeOrmModule.forFeature([
+      Order,
+      OrderItem,
+      OrderItemsPrintingOption,
+      OrderItemDetails
+    ]),
     UserModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],
-  exports: [OrdersService], 
+  exports: [OrdersService]
 })
 export class OrderModule {}

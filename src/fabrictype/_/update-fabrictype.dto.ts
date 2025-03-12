@@ -1,6 +1,11 @@
-import { IsString, IsInt, IsOptional, MaxLength, IsNotEmpty } from 'class-validator';
+import { IsString, IsInt, IsOptional, MaxLength, IsDate, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class UpdateFabricTypeDto {
+  @IsNumber()
+  @IsOptional()
+  id?: number;
+
   @IsString()
   @IsOptional()
   @MaxLength(255)
@@ -15,8 +20,18 @@ export class UpdateFabricTypeDto {
   @IsOptional()
   gsm?: number;
 
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  createdOn?: Date;
+
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MaxLength(100)
-  updatedBy: string;
+  createdBy?: string;
+
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  updatedOn?: Date;
 }
