@@ -14,13 +14,21 @@ export class ClientsService {
     private readonly clientRepository: Repository<Client>,
   ) {}
 
-  create(createClientDto: CreateClientDto, userEmail: string) {
+  async create(createClientDto: CreateClientDto, userEmail: string) {
     this.logger.log(`Creating client with data: ${JSON.stringify(createClientDto)}, createdBy: ${userEmail}`);
-    return this.clientRepository.save({
-      ...createClientDto,
-      CreatedOn: String(new Date()),
+    const client = this.clientRepository.create({
+      Name: createClientDto.Name,
+      Email: createClientDto.Email,
+      Phone: createClientDto.Phone,
+      Country: createClientDto.Country,
+      State: createClientDto.State,
+      City: createClientDto.City,
+      CompleteAddress: createClientDto.CompleteAddress,
+      ClientStatusId: createClientDto.ClientStatusId,
       CreatedBy: userEmail,
+      UpdatedBy: userEmail,
     });
+    return await this.clientRepository.save(client);
   }
 
   findAll() {
@@ -28,9 +36,13 @@ export class ClientsService {
     return this.clientRepository.find();
   }
 
-  findOne(Id: number) {
+  async findOne(Id: number) {
     this.logger.log(`Finding client with id: ${Id}`);
-    return this.clientRepository.findOneBy({ Id });
+    const client = await this.clientRepository.findOneBy({ Id });
+    if (!client) {
+      throw new NotFoundException(`Client with ID ${Id} not found`);
+    }
+    return client;
   }
 
   async update(Id: number, updateClientDto: UpdateClientDto, userEmail: string) {
@@ -42,12 +54,21 @@ export class ClientsService {
       throw new NotFoundException(`Client with ID ${Id} not found`);
     }
     
-    // Add updatedBy and updatedOn
+    // Create the update data with proper types
     const updateData = {
-      ...updateClientDto,
-      UpdatedOn: String(new Date()),
-      UpdatedBy: userEmail,
+      Name: updateClientDto.Name,
+      Email: updateClientDto.Email,
+      Phone: updateClientDto.Phone,
+      Country: updateClientDto.Country,
+      State: updateClientDto.State,
+      City: updateClientDto.City,
+      CompleteAddress: updateClientDto.CompleteAddress,
+      ClientStatusId: updateClientDto.ClientStatusId,
+      UpdatedBy: userEmail
     };
+        Object.keys(updateData).forEach(key => 
+      updateData[key] === undefined && delete updateData[key]
+    );
     
     await this.clientRepository.update(Id, updateData);
     return this.clientRepository.findOneBy({ Id });

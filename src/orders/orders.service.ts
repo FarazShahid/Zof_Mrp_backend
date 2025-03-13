@@ -98,7 +98,7 @@ export class OrdersService {
       const { page = 1, limit = 10 } = paginationDto || {};
       const skip = (page - 1) * limit;
 
-      const [orders, total] = await this.orderRepository
+      const result = await this.orderRepository
         .createQueryBuilder('order')
         .leftJoin('client', 'client', 'order.ClientId = client.Id')
         .leftJoin('clientevent', 'event', 'order.OrderEventId = event.Id')
@@ -121,12 +121,34 @@ export class OrdersService {
           'order.UpdatedOn AS UpdatedOn'
         ])
         .orderBy('order.CreatedOn', 'DESC')
-        .skip(skip)
-        .take(limit)
-        .getManyAndCount();
+        .offset(skip)
+        .limit(limit)
+        .getRawMany();
+
+      const total = await this.orderRepository
+        .createQueryBuilder('order')
+        .getCount();
+
+      const formattedOrders = result.map(order => ({
+        Id: order.Id,
+        ClientId: order.ClientId,
+        ClientName: order.ClientName,
+        OrderEventId: order.OrderEventId,
+        EventName: order.EventName,
+        Description: order.Description,
+        OrderStatusId: order.OrderStatusId,
+        StatusName: order.StatusName,
+        Deadline: order.Deadline,
+        OrderPriority: order.OrderPriority,
+        OrderNumber: order.OrderNumber,
+        OrderName: order.OrderName,
+        ExternalOrderId: order.ExternalOrderId,
+        CreatedOn: order.CreatedOn,
+        UpdatedOn: order.UpdatedOn
+      }));
 
       return {
-        data: orders,
+        data: formattedOrders,
         meta: {
           total,
           page,
