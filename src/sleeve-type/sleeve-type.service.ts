@@ -5,7 +5,6 @@ import { SleeveType } from './entities/sleeve-type.entity/sleeve-type.entity';
 import { CreateSleeveTypeDto } from './dto/create-sleeve-type.dto/create-sleeve-type.dto';
 import { UpdateSleeveTypeDto } from './dto/update-sleeve-type.dto/update-sleeve-type.dto';
 import { ProductCategory } from 'src/product-category/entities/product-category.entity';
-import { PaginationDto } from '../orders/dto/pagination.dto';
 
 @Injectable()
 export class SleeveTypeService {

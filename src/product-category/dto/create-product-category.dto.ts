@@ -4,8 +4,4 @@ export class CreateProductCategoryDto {
   @IsString()
   @IsNotEmpty()
   type: string;
-
-  @IsInt()
-  @IsOptional()
-  createdBy?: string;
 }

@@ -1,10 +1,9 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, ParseIntPipe, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, ParseIntPipe, HttpCode, HttpStatus } from '@nestjs/common';
 import { SleeveTypeService } from './sleeve-type.service';
 import { CreateSleeveTypeDto } from "./dto/create-sleeve-type.dto/create-sleeve-type.dto";
 import { UpdateSleeveTypeDto } from './dto/update-sleeve-type.dto/update-sleeve-type.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
-import { PaginationDto } from '../orders/dto/pagination.dto';
 
 @Controller('sleeve-type')
 @UseGuards(JwtAuthGuard)
