@@ -2,10 +2,7 @@ import { Injectable, ConflictException, NotFoundException, Logger, BadRequestExc
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
-import { validate } from 'class-validator';
-import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class UserService {
@@ -21,15 +18,6 @@ export class UserService {
 
     this.logger.log(`Creating user with email: ${Email}`);
     
-    // Validate required fields for creation
-    if (!Email) {
-      throw new BadRequestException(['Email is required']);
-    }
-    
-    if (!Password) {
-      throw new BadRequestException(['Password is required for new users']);
-    }
-    
     const existingUser = await this.userRepository.findOne({ where: { Email } });
     if (existingUser) {
       throw new ConflictException(['Email already in use']);
@@ -41,20 +29,14 @@ export class UserService {
     const newUser = this.userRepository.create({
       Email,
       Password: hashedPassword,
-      CreatedOn: String(new Date()),
-      CreatedBy: createdBy || 'system',
-      UpdatedOn: String(new Date()),
-      UpdatedBy: createdBy || 'system',
+      CreatedBy: createdBy,
+      UpdatedBy: createdBy,
       isActive: data.isActive !== undefined ? data.isActive : true
     });
 
     const savedUser = await this.userRepository.save(newUser);
     
-    // Create a new object with password masked
-    const userWithoutPassword = { ...savedUser };
-    userWithoutPassword.Password = '';
-    
-    return userWithoutPassword;
+    return { ...savedUser, Password: '' };
   }
 
   async getAllUsers(): Promise<User[]> {
@@ -88,7 +70,7 @@ export class UserService {
     
     this.logger.log(`Updating user with id: ${id}, data: ${JSON.stringify({
       ...data,
-      Password: Password ? '********' : undefined // Mask password in logs
+      Password: Password ? '********' : undefined
     })}`);
     
     try {
@@ -98,18 +80,10 @@ export class UserService {
         throw new NotFoundException([`User with ID ${id} not found`]);
       }
 
-      // Validate email format if provided
       if (Email) {
-        // Check if email is valid
-        if (!this.isValidEmail(Email)) {
-          throw new BadRequestException([`Email: Please provide a valid email address`]);
-        }
-        
-        // Check if email is already in use by another user
         const existingUser = await this.userRepository.findOne({ 
           where: { Email }
         });
-        
         if (existingUser && existingUser.Id !== id) {
           throw new ConflictException([`Email ${Email} is already in use by another user`]);
         }
@@ -117,7 +91,6 @@ export class UserService {
         user.Email = Email;
       }
       
-      // Update password if provided (optional)
       if (Password && Password.trim() !== '') {
         this.logger.log(`Updating password for user with id: ${id}`);
         const saltRounds = 10;
@@ -125,15 +98,13 @@ export class UserService {
       } else {
         this.logger.log(`No password update for user with id: ${id}`);
       }
-      
-      // Update isActive if provided
+
       if (isActive !== undefined) {
         user.isActive = isActive;
       }
       
-      // Always update these fields
-      user.UpdatedOn = String(new Date());
       user.UpdatedBy = updatedBy || 'system';
+      this.logger.log(`${user.UpdatedOn}`);
 
       const savedUser = await this.userRepository.save(user);
       
@@ -154,12 +125,6 @@ export class UserService {
       // For any other errors, throw a BadRequestException with the error message
       throw new BadRequestException([`Failed to update user: ${error.message}`]);
     }
-  }
-
-  // Helper method to validate email format
-  private isValidEmail(email: string): boolean {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return emailRegex.test(email);
   }
 
   async deleteUser(id: number): Promise<void> {

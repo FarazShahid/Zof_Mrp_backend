@@ -1,14 +1,17 @@
-import { IsString, IsEmail, IsBoolean, IsOptional } from 'class-validator';
+import { IsString, IsEmail, IsBoolean, IsOptional, IsNotEmpty, MaxLength } from 'class-validator';
 
 export class CreateUserDto {
-  @IsEmail({}, { message: 'Please provide a valid email address' })
+  @IsEmail()
+  @IsNotEmpty()
+  @MaxLength(255)
   Email: string;
 
-  @IsString({ message: 'Password must be a string' })
-  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
   Password?: string;
 
-  @IsBoolean({ message: 'isActive must be a boolean value (true or false)' })
-  @IsOptional()
-  isActive?: boolean;
+  @IsBoolean()
+  @IsNotEmpty()
+  isActive: boolean;
 }

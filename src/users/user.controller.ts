@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Put, Delete, UseGuards, Logger, BadRequestException, NotFoundException, ConflictException, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Put, Delete, UseGuards, Logger, BadRequestException, HttpCode, ConflictException, HttpException, HttpStatus } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -14,21 +14,17 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   async create(@Body() createUserDto: CreateUserDto, @CurrentUser() currentUser: any): Promise<User> {
     try {
-      // For creation, we need to ensure Password is provided
-      if (!createUserDto.Password) {
-        throw new BadRequestException(['Password is required when creating a new user']);
-      }
-      
       this.logger.log(`Creating user: ${JSON.stringify({
         ...createUserDto,
-        Password: '********' // Mask password in logs
+        Password: '********'
       })}, User: ${JSON.stringify(currentUser)}`);
       
       const data = {
         ...createUserDto,
-        createdBy: currentUser.email // JWT payload has lowercase 'email'
+        createdBy: currentUser.email
       };
       
       return await this.userService.createUser(data);
@@ -39,6 +35,7 @@ export class UserController {
   }
 
   @Get()
+  @HttpCode(HttpStatus.OK)
   async findAll(): Promise<User[]> {
     try {
       this.logger.log('Getting all users');
@@ -50,6 +47,7 @@ export class UserController {
   }
 
   @Get(':id')
+  @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: number): Promise<User> {
     try {
       this.logger.log(`Getting user with id: ${id}`);
@@ -61,6 +59,7 @@ export class UserController {
   }
 
   @Put(':id')
+  @HttpCode(HttpStatus.OK)
   async update(
     @Param('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
@@ -69,13 +68,12 @@ export class UserController {
     try {
       this.logger.log(`Updating user with id: ${id}, data: ${JSON.stringify({
         ...updateUserDto,
-        Password: updateUserDto.Password ? '********' : undefined // Mask password in logs
+        Password: updateUserDto.Password ? '********' : undefined
       })}, User: ${JSON.stringify(currentUser)}`);
       
-      // For updates, Password is optional
       const data = {
         ...updateUserDto,
-        updatedBy: currentUser.email // JWT payload has lowercase 'email'
+        updatedBy: currentUser.email 
       };
       
       return await this.userService.updateUser(id, data);
@@ -86,6 +84,7 @@ export class UserController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: number): Promise<void> {
     try {
       this.logger.log(`Deleting user with id: ${id}`);

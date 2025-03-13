@@ -7,9 +7,9 @@ export class UpdateUserDto {
 
   @IsString({ message: 'Password must be a string' })
   @IsOptional()
-  Password?: string;
+  Password: string;
 
   @IsBoolean({ message: 'isActive must be a boolean value (true or false)' })
   @IsOptional()
-  isActive?: boolean;
+  isActive: boolean;
 } 
