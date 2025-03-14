@@ -1,54 +1,81 @@
-import { IsNotEmpty, ValidateNested, IsArray } from 'class-validator';
+import { IsNotEmpty, ValidateNested, IsArray, IsNumber, IsInt, Min, IsString, MaxLength, IsOptional, ArrayMinSize } from 'class-validator';
+import { Type } from 'class-transformer';
 
 class ProductColorDto {
   Id: number;
 
-  @IsNotEmpty({ message: 'ColorName is required' })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
   colorId: number;
 
-  @IsNotEmpty({ message: 'ImageId is required' })
+  @IsNotEmpty()
   ImageId: string;
 }
 
 export class ProductDetailDto {
   Id: number;
 
-  @IsNotEmpty({ message: 'ProductCutOptionId is required' })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
   ProductCutOptionId: number;
 
-  @IsNotEmpty({ message: 'ProductSizeMeasurementId is required' })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
   ProductSizeMeasurementId: number;
 
-  @IsNotEmpty({ message: 'ProductRegionId is required' })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
   ProductRegionId: number;
 
-  @IsNotEmpty({ message: 'SleeveTypeId is required' })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
   SleeveTypeId: number;
 }
 
 export class CreateProductDto {
-  @IsNotEmpty({ message: 'ProductCategoryId is required' })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
   ProductCategoryId: number;
 
-  @IsNotEmpty({ message: 'FabricTypeId is required' })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
   FabricTypeId: number;
 
-  @IsNotEmpty({ message: 'Name is required' })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
   Name: string;
 
-  @IsNotEmpty({ message: 'CreatedBy is required' })
-  CreatedBy: string;
-
-  @IsNotEmpty({ message: 'UpdatedBy is required' })
-  UpdatedBy: string;
-
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
   Description?: string;
 
-  @IsArray({ message: 'productColors must be an array' })
+  @IsArray()
   @ValidateNested({ each: true })
+  @Type(() => ProductColorDto)
+  @IsNotEmpty()
+  @ArrayMinSize(1, { message: 'At least one Product Color is required' })
   productColors: ProductColorDto[];
 
-  @IsArray({ message: 'productDetails must be an array' })
+  @IsArray()
   @ValidateNested({ each: true })
+  @Type(() => ProductDetailDto)
+  @IsNotEmpty()
+  @ArrayMinSize(1, { message: 'At least one Product Detail Option is required' })
   productDetails: ProductDetailDto[];
 }

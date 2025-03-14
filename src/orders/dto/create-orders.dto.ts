@@ -10,10 +10,6 @@ import {
   IsInt,
   ArrayMinSize,
   Max,
-  IsUrl,
-  IsBoolean,
-  IsEnum,
-  ValidateIf,
   MaxLength
 } from 'class-validator';
 import { Type } from 'class-transformer';

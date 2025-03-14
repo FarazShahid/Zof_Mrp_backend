@@ -15,24 +15,17 @@ export class ProductsService {
     private dataSource: DataSource
   ) { }
 
-  async create(createProductDto: CreateProductDto): Promise<Product> {
+  async create(createProductDto: CreateProductDto, createdBy: string): Promise<Product> {
     try {
-      const requiredFields = ['ProductCategoryId', 'FabricTypeId', 'Name', 'CreatedBy', 'UpdatedBy'];
-      for (const field of requiredFields) {
-        if (!createProductDto[field]) {
-          throw new BadRequestException(`${field} is required`);
-        }
-      }
   
       const newProduct = this.productRepository.create({
         ...createProductDto,
-        CreatedOn: new Date(),
-        UpdatedOn: new Date(),
+        CreatedBy: createdBy,
+        UpdatedBy: createdBy,
       });
   
       const savedProduct = await this.productRepository.save(newProduct);
   
-      // If either productColors or productDetails exist, run them in a transaction
       if (
         (createProductDto.productColors && createProductDto.productColors.length > 0) ||
         (createProductDto.productDetails && createProductDto.productDetails.length > 0)
@@ -42,40 +35,35 @@ export class ProductsService {
         await queryRunner.startTransaction();
   
         try {
-          // Insert product colors if provided
+          
           if (createProductDto.productColors && createProductDto.productColors.length > 0) {
             for (const color of createProductDto.productColors) {
               await queryRunner.query(
-                `INSERT INTO availablecoloroptions (colorId, ProductId, ImageId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO availablecoloroptions (colorId, ProductId, ImageId, CreatedBy, UpdatedBy) 
+                 VALUES (?, ?, ?, ?, ?)`,
                 [
                   color.colorId,
                   savedProduct.Id,
                   color.ImageId,
-                  new Date(),
-                  createProductDto.CreatedBy,
-                  new Date(),
-                  createProductDto.UpdatedBy,
+                  createdBy,
+                  createdBy,
                 ]
               );
             }
           }
   
-          // Insert product details if provided
           if (createProductDto.productDetails && createProductDto.productDetails.length > 0) {
             for (const detail of createProductDto.productDetails) {
               await queryRunner.query(
                 `INSERT INTO productdetails 
-                (ProductId, ProductCutOptionId, ProductSizeMeasurementId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, ProductRegionId, SleeveTypeId) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                (ProductId, ProductCutOptionId, ProductSizeMeasurementId, CreatedBy, UpdatedBy, ProductRegionId, SleeveTypeId) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)`,
                 [
                   savedProduct.Id,
                   detail.ProductCutOptionId,
                   detail.ProductSizeMeasurementId,
-                  new Date(),
-                  createProductDto.CreatedBy,
-                  new Date(),
-                  createProductDto.UpdatedBy,
+                  createdBy,
+                  createdBy,
                   detail.ProductRegionId,
                   detail.SleeveTypeId,
                 ]
@@ -166,23 +154,18 @@ export class ProductsService {
     };
   }  
 
-  async update(id: number, updateProductDto: UpdateProductDto): Promise<{ message: string }> {
+  async update(id: number, updateProductDto: UpdateProductDto, updatedBy: string): Promise<any> {
     const product = await this.productRepository.findOne({ where: { Id: id } });
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
   
-    const requiredFields = ['ProductCategoryId', 'FabricTypeId', 'Name', 'UpdatedBy'];
-    for (const field of requiredFields) {
-      if (updateProductDto[field] === undefined || updateProductDto[field] === '') {
-        throw new BadRequestException(`${field} is required`);
-      }
-    }
-  
     const { productColors, productDetails, ...productData } = updateProductDto;
   
-    await this.productRepository.update(id, {
+    const updatedProduct = await this.productRepository.save({
       ...productData,
+      Id: id,
+      UpdatedBy: updatedBy,
       UpdatedOn: new Date(),
     });
   
@@ -216,7 +199,7 @@ export class ProductsService {
                   color.colorId,
                   color.ImageId,
                   new Date(),
-                  updateProductDto.UpdatedBy,
+                  updatedBy,
                   color.Id,
                 ]
               );
@@ -230,9 +213,9 @@ export class ProductsService {
                   color.colorId,
                   color.ImageId,
                   new Date(),
-                  updateProductDto.UpdatedBy,
+                  updatedBy,
                   new Date(),
-                  updateProductDto.UpdatedBy,
+                  updatedBy,
                 ]
               );
             }
@@ -261,7 +244,7 @@ export class ProductsService {
                   detail.ProductCutOptionId,
                   detail.ProductSizeMeasurementId,
                   new Date(),
-                  updateProductDto.UpdatedBy,
+                  updatedBy,
                   detail.ProductRegionId,
                   detail.SleeveTypeId,
                   detail.Id,
@@ -277,9 +260,9 @@ export class ProductsService {
                   detail.ProductCutOptionId,
                   detail.ProductSizeMeasurementId,
                   new Date(),
-                  updateProductDto.UpdatedBy,
+                  updatedBy,
                   new Date(),
-                  updateProductDto.UpdatedBy,
+                  updatedBy,
                   detail.ProductRegionId,
                   detail.SleeveTypeId,
                 ]
@@ -297,7 +280,7 @@ export class ProductsService {
       }
     }
   
-    return { message: `Product with ID ${id} has been updated successfully` };
+    return updatedProduct;
   }
 
   async remove(id: number): Promise<{ message: string }> {
