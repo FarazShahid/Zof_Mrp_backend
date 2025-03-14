@@ -1,6 +1,6 @@
 Create Database Zof_MRP; 
-Use Zof_MRP; 
-
+Use Zof_MRP;
+ 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
@@ -15,6 +15,36 @@ CREATE TABLE `availablecoloroptions` (
   `UpdatedOn` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `UpdatedBy` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `availablecoloroptions`
+--
+
+INSERT INTO `availablecoloroptions` (`Id`, `colorId`, `ProductId`, `ImageId`, `CreatedOn`, `CreatedBy`, `UpdatedOn`, `UpdatedBy`) VALUES
+(6, 1, 261, 0, '2025-03-12 13:14:48', 'Hassaan', '2025-03-12 13:14:48', 'Malik'),
+(7, 1, 261, 0, '2025-03-12 13:14:48', 'Hassaan', '2025-03-12 13:14:48', 'Malik'),
+(8, 1, 261, 0, '2025-03-12 13:14:48', 'Hassaan', '2025-03-12 13:14:48', 'Malik'),
+(9, 1, 262, 0, '2025-03-14 11:43:12', 'test@dev.com', '2025-03-14 11:43:12', 'test@dev.com'),
+(10, 1, 262, 0, '2025-03-14 11:43:12', 'test@dev.com', '2025-03-14 11:43:12', 'test@dev.com'),
+(11, 1, 262, 0, '2025-03-14 11:43:12', 'test@dev.com', '2025-03-14 11:43:12', 'test@dev.com'),
+(12, 1, 263, 0, '2025-03-14 11:43:24', 'test@dev.com', '2025-03-14 11:43:24', 'test@dev.com'),
+(13, 1, 263, 0, '2025-03-14 11:43:24', 'test@dev.com', '2025-03-14 11:43:24', 'test@dev.com'),
+(14, 1, 263, 0, '2025-03-14 11:43:24', 'test@dev.com', '2025-03-14 11:43:24', 'test@dev.com'),
+(15, 1, 264, 0, '2025-03-14 11:46:40', 'test@dev.com', '2025-03-14 11:46:40', 'test@dev.com'),
+(16, 1, 264, 0, '2025-03-14 11:46:40', 'test@dev.com', '2025-03-14 11:46:40', 'test@dev.com'),
+(17, 1, 264, 0, '2025-03-14 11:46:40', 'test@dev.com', '2025-03-14 11:46:40', 'test@dev.com'),
+(18, 1, 265, 0, '2025-03-14 11:48:17', 'test@dev.com', '2025-03-14 11:48:17', 'test@dev.com'),
+(19, 1, 265, 0, '2025-03-14 11:48:17', 'test@dev.com', '2025-03-14 11:48:17', 'test@dev.com'),
+(20, 1, 265, 0, '2025-03-14 11:48:17', 'test@dev.com', '2025-03-14 11:48:17', 'test@dev.com'),
+(21, 1, 266, 0, '2025-03-14 11:56:21', 'test@dev.com', '2025-03-14 11:56:21', 'test@dev.com'),
+(22, 1, 266, 0, '2025-03-14 11:56:21', 'test@dev.com', '2025-03-14 11:56:21', 'test@dev.com'),
+(23, 1, 266, 0, '2025-03-14 11:56:21', 'test@dev.com', '2025-03-14 11:56:21', 'test@dev.com'),
+(24, 1, 267, 0, '2025-03-14 12:05:01', 'test@dev.com', '2025-03-14 12:05:01', 'test@dev.com'),
+(25, 1, 267, 0, '2025-03-14 12:05:01', 'test@dev.com', '2025-03-14 12:05:01', 'test@dev.com'),
+(26, 1, 267, 0, '2025-03-14 12:05:01', 'test@dev.com', '2025-03-14 12:05:01', 'test@dev.com'),
+(42, 1, 268, 0, '2025-03-14 12:17:32', 'test@dev.com', '2025-03-14 12:17:32', 'test@dev.com'),
+(43, 1, 268, 0, '2025-03-14 12:17:32', 'test@dev.com', '2025-03-14 12:17:32', 'test@dev.com'),
+(44, 1, 268, 0, '2025-03-14 12:17:32', 'test@dev.com', '2025-03-14 12:17:32', 'test@dev.com');
 
 -- --------------------------------------------------------
 
@@ -32,17 +62,20 @@ CREATE TABLE `client` (
   `City` varchar(255) NOT NULL,
   `CompleteAddress` varchar(255) NOT NULL,
   `ClientStatusId` varchar(255) NOT NULL,
-  `CreatedOn` varchar(255) NOT NULL,
-  `CreatedBy` varchar(255) NOT NULL
+  `CreatedOn` datetime NOT NULL DEFAULT current_timestamp(),
+  `CreatedBy` varchar(255) NOT NULL,
+  `UpdatedOn` datetime NOT NULL DEFAULT current_timestamp(),
+  `UpdatedBy` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `client`
 --
 
-INSERT INTO `client` (`Id`, `Name`, `Email`, `Phone`, `Country`, `State`, `City`, `CompleteAddress`, `ClientStatusId`, `CreatedOn`, `CreatedBy`) VALUES
-(1, 'Comprehensive Spine Center', 'info@spinecenter.com', '', '', '', '', '', '', '', ''),
-(2, 'Charlotte Rise FC', 'contact@charlotterisefc.com', '', '', '', '', '', '', '', '');
+INSERT INTO `client` (`Id`, `Name`, `Email`, `Phone`, `Country`, `State`, `City`, `CompleteAddress`, `ClientStatusId`, `CreatedOn`, `CreatedBy`, `UpdatedOn`, `UpdatedBy`) VALUES
+(1, 'Comprehensive Spine Center', 'info@spinecenter.com', '', '', '', '', '', '', '0000-00-00 00:00:00', '', '2025-03-12 11:42:59', ''),
+(2, 'Charlotte Rise FC', 'contact@charlotterisefc.com', '', '', '', '', '', '', '0000-00-00 00:00:00', '', '2025-03-12 11:42:59', ''),
+(8, 'Hassaan Malikm', 'test@dev.comm', '+923014999044', 'Pakistan', 'Punjab', 'Lahore', 'Canal Road', '1', '2025-03-13 11:00:54', 'test@dev.com', '2025-03-13 11:01:36', 'test@dev.com');
 
 -- --------------------------------------------------------
 
@@ -77,10 +110,10 @@ CREATE TABLE `clientevent` (
   `Id` int(11) NOT NULL,
   `EventName` varchar(255) NOT NULL,
   `Description` varchar(255) NOT NULL,
-  `CreatedBy` int(11) NOT NULL,
-  `CreatedOn` varchar(255) NOT NULL,
-  `UpdatedBy` int(11) NOT NULL,
-  `UpdatedOn` varchar(255) NOT NULL
+  `CreatedBy` varchar(255) NOT NULL,
+  `CreatedOn` datetime NOT NULL DEFAULT current_timestamp(),
+  `UpdatedBy` varchar(255) NOT NULL,
+  `UpdatedOn` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -88,16 +121,17 @@ CREATE TABLE `clientevent` (
 --
 
 INSERT INTO `clientevent` (`Id`, `EventName`, `Description`, `CreatedBy`, `CreatedOn`, `UpdatedBy`, `UpdatedOn`) VALUES
-(1, 'Winter Soccer League', '', 0, '', 0, ''),
-(2, 'Best of Best Tryouts', '', 0, '', 0, ''),
-(3, 'Indoor Futsals Championship', '', 0, '', 0, ''),
-(4, 'Summer Football Camp', '', 0, '', 0, ''),
-(5, 'Regional Soccer Cup', '', 0, '', 0, ''),
-(6, 'All-Star Soccer Weekend', '', 0, '', 0, ''),
-(7, 'National Soccer Finals', '', 0, '', 0, ''),
-(8, 'Youth Football Carnival', '', 0, '', 0, ''),
-(9, 'Spring Soccer Festival', '', 0, '', 0, ''),
-(10, 'Rising Stars Tryouts', '', 0, '', 0, '');
+(1, 'Winter Soccer League', '', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00'),
+(2, 'Best of Best Tryouts', '', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00'),
+(3, 'Indoor Futsals Championship', '', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00'),
+(4, 'Summer Football Camp', '', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00'),
+(5, 'Regional Soccer Cup', '', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00'),
+(6, 'All-Star Soccer Weekend', '', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00'),
+(7, 'National Soccer Finals', '', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00'),
+(8, 'Youth Football Carnival', '', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00'),
+(9, 'Spring Soccer Festival', '', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00'),
+(10, 'Rising Stars Tryouts', '', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00'),
+(11, 'test EventName', '', 'test@dev.com', '2025-03-14 14:40:11', 'test@dev.com', '2025-03-14 14:40:11');
 
 -- --------------------------------------------------------
 
@@ -143,7 +177,9 @@ CREATE TABLE `coloroption` (
 --
 
 INSERT INTO `coloroption` (`Id`, `Name`, `CreatedOn`, `CreatedBy`, `UpdatedOn`, `UpdatedBy`) VALUES
-(1, 'Red', '2025-02-28 15:59:22', 'Admin', '2025-02-28 16:22:25', NULL);
+(1, 'Red', '2025-02-28 15:59:22', 'Admin', '2025-02-28 16:22:25', NULL),
+(3, 'Green', '2025-03-14 12:52:39', 'test@dev.com', '2025-03-14 12:52:39', 'test@dev.com'),
+(4, 'Blue', '2025-03-14 12:52:52', 'test@dev.com', '2025-03-14 12:52:52', 'test@dev.com');
 
 -- --------------------------------------------------------
 
@@ -231,12 +267,15 @@ INSERT INTO `fabrictype` (`Id`, `Type`, `Name`, `GSM`, `CreatedOn`, `CreatedBy`,
 (11, 'Woven', 'Scuba380', 380, '2025-01-05 15:52:52', 'Admin', '2025-01-05 15:52:52', NULL),
 (12, 'Woven', 'Scuba420', 420, '2025-01-05 15:52:52', 'Admin', '2025-01-05 15:52:52', NULL),
 (13, 'knitwear', 'Scuba-Flees320', 320, '2025-01-05 15:52:52', 'Admin', '2025-01-05 15:52:52', NULL),
-(14, 'knitwear', 'Scuba-Flees340', 340, '2025-01-05 15:52:52', 'Admin', '2025-01-05 15:52:52', NULL),
-(15, 'knitwear', 'Scuba-Flees380', 380, '2025-01-05 15:52:52', 'Admin', '2025-01-05 15:52:52', NULL),
-(16, 'knitwear', 'Poly-Lycra170', 170, '2025-01-05 15:52:52', 'Admin', '2025-01-05 15:52:52', NULL),
-(17, 'knitwear', 'Poly-Lycra206', 206, '2025-01-05 15:52:52', 'Admin', '2025-01-05 15:52:52', NULL),
-(18, 'knitwear', 'Nylon-Lycra180', 180, '2025-01-05 15:52:52', 'Admin', '2025-01-05 15:52:52', NULL),
-(19, 'knitwear', 'Nylon-Lycra200', 200, '2025-01-05 15:52:52', 'Admin', '2025-01-05 15:52:52', NULL);
+(24, 'dsfdsgsf', 'Premium Cotton |U 23', 200, '2025-03-12 16:08:05', NULL, '2025-03-12 16:08:36', NULL),
+(25, 'Cotton', 'Premium Cotton', 200, '2025-03-12 16:10:29', NULL, '2025-03-12 16:10:29', NULL),
+(26, 'Cotton', 'Premium Cotton', 200, '2025-03-12 16:11:29', NULL, '2025-03-12 16:11:29', NULL),
+(27, 'Cotton', 'Premium Cotton', 200, '2025-03-12 16:11:51', NULL, '2025-03-12 16:11:51', NULL),
+(28, 'Cotton', 'Premium Cotton', 200, '2025-03-12 16:14:52', NULL, '2025-03-12 16:14:52', NULL),
+(29, 'Cotton', 'Premium Cotton', 200, '2025-03-12 16:15:29', 'test@dev.com', '2025-03-12 16:15:29', NULL),
+(30, 'Cotton', 'Premium Cotton', 2000, '2025-03-13 10:23:15', 'test@dev.com', '2025-03-13 10:24:10', 'test@dev.com'),
+(31, 'Cotton', 'Premium Cotton', 200, '2025-03-13 10:25:38', 'test@dev.com', '2025-03-13 10:25:38', NULL),
+(32, 'Cotton', 'Premium Cotton', 200, '2025-03-13 12:48:01', 'test@dev.com', '2025-03-13 12:48:01', NULL);
 
 -- --------------------------------------------------------
 
@@ -312,9 +351,24 @@ CREATE TABLE `orderitemdetails` (
   `Priority` int(11) NOT NULL DEFAULT 0,
   `CreatedOn` datetime NOT NULL DEFAULT current_timestamp(),
   `UpdatedOn` datetime NOT NULL DEFAULT current_timestamp(),
-  `CreatedBy` int(11) NOT NULL,
-  `UpdatedBy` int(11) NOT NULL
+  `CreatedBy` varchar(255) NOT NULL,
+  `UpdatedBy` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `orderitemdetails`
+--
+
+INSERT INTO `orderitemdetails` (`Id`, `ColorOptionId`, `OrderItemId`, `Quantity`, `Priority`, `CreatedOn`, `UpdatedOn`, `CreatedBy`, `UpdatedBy`) VALUES
+(40, 6, 34, 10, 9, '2025-03-13 16:53:17', '2025-03-13 16:53:17', '0', '0'),
+(41, 7, 34, 10, 9, '2025-03-13 16:53:17', '2025-03-13 16:53:17', '0', '0'),
+(42, 8, 34, 10, 9, '2025-03-13 16:53:17', '2025-03-13 16:53:17', '0', '0'),
+(43, 6, 35, 10, 9, '2025-03-14 10:28:13', '2025-03-14 10:28:13', '0', '0'),
+(44, 7, 35, 10, 9, '2025-03-14 10:28:13', '2025-03-14 10:28:13', '0', '0'),
+(45, 8, 35, 10, 9, '2025-03-14 10:28:13', '2025-03-14 10:28:13', '0', '0'),
+(46, 6, 36, 10, 9, '2025-03-14 10:29:04', '2025-03-14 10:29:04', '0', '0'),
+(47, 7, 36, 10, 9, '2025-03-14 10:29:04', '2025-03-14 10:29:04', '0', '0'),
+(48, 8, 36, 10, 9, '2025-03-14 10:29:04', '2025-03-14 10:29:04', '0', '0');
 
 -- --------------------------------------------------------
 
@@ -329,13 +383,22 @@ CREATE TABLE `orderitems` (
   `ImageId` int(11) DEFAULT NULL,
   `FileId` int(11) DEFAULT NULL,
   `VideoId` int(11) DEFAULT NULL,
-  `CreatedOn` datetime NOT NULL,
-  `UpdatedOn` datetime NOT NULL,
+  `CreatedOn` datetime NOT NULL DEFAULT current_timestamp(),
+  `UpdatedOn` datetime NOT NULL DEFAULT current_timestamp(),
   `OrderItemPriority` int(11) NOT NULL DEFAULT 0,
   `Description` varchar(255) DEFAULT NULL,
-  `CreatedBy` int(11) NOT NULL,
-  `UpdatedBy` int(11) NOT NULL
+  `CreatedBy` varchar(255) NOT NULL,
+  `UpdatedBy` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `orderitems`
+--
+
+INSERT INTO `orderitems` (`Id`, `OrderId`, `ProductId`, `ImageId`, `FileId`, `VideoId`, `CreatedOn`, `UpdatedOn`, `OrderItemPriority`, `Description`, `CreatedBy`, `UpdatedBy`) VALUES
+(34, 18, 261, 201, 301, 401, '0000-00-00 00:00:00', '0000-00-00 00:00:00', 19, 'Product 1 Description', '0', '0'),
+(35, 19, 261, 201, 301, 401, '0000-00-00 00:00:00', '0000-00-00 00:00:00', 19, 'Product 1 Description', '0', '0'),
+(36, 20, 261, 201, 301, 401, '0000-00-00 00:00:00', '0000-00-00 00:00:00', 19, 'Product 1 Description', '0', '0');
 
 -- --------------------------------------------------------
 
@@ -347,8 +410,21 @@ CREATE TABLE `orderitemsprintingoptions` (
   `Id` int(11) NOT NULL,
   `OrderItemId` int(11) NOT NULL,
   `PrintingOptionId` int(11) NOT NULL,
-  `Description` varchar(255) DEFAULT NULL
+  `Description` varchar(255) DEFAULT NULL,
+  `CreatedOn` datetime NOT NULL DEFAULT current_timestamp(),
+  `CreatedBy` varchar(100) NOT NULL,
+  `UpdatedOn` datetime NOT NULL DEFAULT current_timestamp(),
+  `UpdatedBy` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `orderitemsprintingoptions`
+--
+
+INSERT INTO `orderitemsprintingoptions` (`Id`, `OrderItemId`, `PrintingOptionId`, `Description`, `CreatedOn`, `CreatedBy`, `UpdatedOn`, `UpdatedBy`) VALUES
+(43, 34, 1, 'Option 1 for Product 1', '2025-03-13 16:53:17', '', '2025-03-13 16:53:17', ''),
+(44, 35, 1, 'Option 1 for Product 1', '2025-03-14 10:28:13', '', '2025-03-14 10:28:13', ''),
+(45, 36, 1, 'Option 1 for Product 1', '2025-03-14 10:29:04', '', '2025-03-14 10:29:04', '');
 
 -- --------------------------------------------------------
 
@@ -367,11 +443,20 @@ CREATE TABLE `orders` (
   `Description` varchar(255) DEFAULT NULL,
   `Deadline` timestamp NOT NULL DEFAULT current_timestamp(),
   `CreatedOn` timestamp NOT NULL DEFAULT current_timestamp(),
-  `CreatedBy` int(11) NOT NULL,
+  `CreatedBy` varchar(255) NOT NULL,
   `UpdatedOn` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `UpdatedBy` int(11) NOT NULL,
+  `UpdatedBy` varchar(255) NOT NULL,
   `OrderNumber` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`Id`, `ClientId`, `OrderEventId`, `OrderStatusId`, `OrderPriority`, `OrderName`, `ExternalOrderId`, `Description`, `Deadline`, `CreatedOn`, `CreatedBy`, `UpdatedOn`, `UpdatedBy`, `OrderNumber`) VALUES
+(18, 1, 2, 1, 2, '2025-01-10T00:00:00Z', '1', 'Order for event', '2025-01-10 00:00:00', '2025-03-13 11:53:17', '0', '2025-03-13 11:53:17', '0', 'COHJ9859'),
+(19, 1, 2, 1, 2, '2025-01-10T00:00:00Z', '1', 'Order for event', '2025-01-10 00:00:00', '2025-03-14 05:28:13', '0', '2025-03-14 05:28:13', '0', 'COAU9686'),
+(20, 1, 2, 1, 2, '2025-01-10T00:00:00Z', '1', 'Order for event', '2025-01-10 00:00:00', '2025-03-14 05:29:04', 'test@dev.com', '2025-03-14 05:29:04', 'test@dev.com', 'COLH2417');
 
 --
 -- Triggers `orders`
@@ -495,8 +580,8 @@ CREATE TABLE `orderserviceunits` (
 CREATE TABLE `orderstatus` (
   `Id` int(11) NOT NULL,
   `StatusName` varchar(255) NOT NULL,
-  `CreatedOn` datetime NOT NULL,
-  `UpdatedOn` datetime NOT NULL,
+  `CreatedOn` datetime NOT NULL DEFAULT current_timestamp(),
+  `UpdatedOn` datetime NOT NULL DEFAULT current_timestamp(),
   `Description` varchar(255) NOT NULL,
   `CreatedBy` varchar(255) NOT NULL,
   `UpdatedBy` varchar(255) NOT NULL
@@ -559,7 +644,8 @@ INSERT INTO `printingoptions` (`Id`, `Type`, `CreatedOn`, `UpdatedOn`, `CreatedB
 (2, 'DTF', '2024-12-30 01:26:27', '2024-12-30 01:26:27', '', ''),
 (3, 'Vinyl', '2024-12-30 01:26:27', '2024-12-30 01:26:27', '', ''),
 (4, 'Siliconprinting', '2024-12-30 01:26:27', '2024-12-30 01:26:27', '', ''),
-(5, 'DTG', '2024-12-30 01:26:27', '2024-12-30 01:26:27', '', '');
+(5, 'DTG', '2024-12-30 01:26:27', '2024-12-30 01:26:27', '', ''),
+(6, 'Test Name', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 'test@dev.com', '');
 
 -- --------------------------------------------------------
 
@@ -572,8 +658,8 @@ CREATE TABLE `product` (
   `ProductCategoryId` int(11) NOT NULL,
   `FabricTypeId` int(11) NOT NULL,
   `Name` varchar(255) NOT NULL,
-  `CreatedOn` datetime NOT NULL,
-  `UpdatedOn` datetime NOT NULL,
+  `CreatedOn` datetime NOT NULL DEFAULT current_timestamp(),
+  `UpdatedOn` datetime NOT NULL DEFAULT current_timestamp(),
   `Description` varchar(255) NOT NULL,
   `CreatedBy` varchar(255) NOT NULL,
   `UpdatedBy` varchar(255) NOT NULL
@@ -748,7 +834,19 @@ INSERT INTO `product` (`Id`, `ProductCategoryId`, `FabricTypeId`, `Name`, `Creat
 (247, 8, 12, 'Scuba420 Wool Socks', '2025-01-15 01:32:19', '2025-01-15 01:32:19', '', '', ''),
 (248, 8, 17, 'Poly-Lycra206 Wool Socks', '2025-01-15 01:32:19', '2025-01-15 01:32:19', '', '', ''),
 (249, 8, 1, 'Interlock160 Wool Socks', '2025-01-15 01:32:19', '2025-01-15 01:32:19', '', '', ''),
-(252, 11, 15, 'Scuba-Flees380 Doctor Long Coats', '2025-02-04 20:09:05', '2025-02-04 20:09:05', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'Hassaan', 'Malik');
+(252, 11, 15, 'Scuba-Flees380 Doctor Long Coats', '2025-02-04 20:09:05', '2025-02-04 20:09:05', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'Hassaan', 'Malik'),
+(255, 11, 15, 'Scuba-Flees380 Doctor Long Coats', '2025-03-12 12:59:58', '2025-03-12 12:59:58', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'Hassaan', 'Malik'),
+(256, 11, 15, 'Scuba-Flees380 Doctor Long Coats', '2025-03-12 13:04:31', '2025-03-12 13:04:31', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'Hassaan', 'Malik'),
+(257, 11, 15, 'Scuba-Flees380 Doctor Long Coats', '2025-03-12 13:08:54', '2025-03-12 13:08:54', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'Hassaan', 'Malik'),
+(258, 11, 15, 'Scuba-Flees380 Doctor Long Coats', '2025-03-12 13:11:36', '2025-03-12 13:11:36', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'Hassaan', 'Malik'),
+(261, 11, 15, 'Scuba-Flees380 Doctor Long Coats', '2025-03-12 13:14:48', '2025-03-12 13:14:48', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'Hassaan', 'Malik'),
+(262, 11, 15, 'Scuba-Flees380 Doctor Long Coats', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', '', ''),
+(263, 11, 15, 'Scuba-Flees380 Doctor Long Coats', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', '', ''),
+(264, 11, 15, 'Scuba-Flees380 Doctor Long Coats', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '', '', ''),
+(265, 11, 15, 'Scuba-Flees380 Doctor Long Coats', '2025-03-14 11:48:17', '2025-03-14 11:48:17', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', '', ''),
+(266, 11, 15, 'Scuba-Flees380 Doctor Long Coats', '2025-03-14 11:56:21', '2025-03-14 11:56:21', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', '', ''),
+(267, 11, 15, 'Scuba-Flees380 Doctor Long Coats', '2025-03-14 12:05:01', '2025-03-14 12:05:01', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', '', ''),
+(268, 11, 15, 'Scuba-Flees380 Doctor Long Coats Ypdste', '2025-03-14 12:06:12', '2025-03-14 12:17:32', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', '', 'test@dev.com');
 
 -- --------------------------------------------------------
 
@@ -781,7 +879,9 @@ INSERT INTO `productcategory` (`Id`, `Type`, `CreatedOn`, `CreatedBy`, `UpdatedO
 (9, 'Polos', '2025-01-05 15:52:52', 'Admin', '2025-01-05 15:52:52', NULL),
 (10, 'Scrubs', '2025-01-05 15:52:52', 'Admin', '2025-01-05 15:52:52', NULL),
 (11, 'Doctor Long Coats', '2025-01-05 15:52:52', 'Admin', '2025-01-05 15:52:52', NULL),
-(13, 'Electronics Test', '2025-01-29 14:32:14', 'Hassaan', '2025-01-29 14:41:59', 'Hassaan Malik');
+(13, 'Electronics drgd sdfsdf dr uuuugd', '2025-01-29 14:32:14', 'Hassaan', '2025-03-13 15:42:33', 'Hassaan Malik'),
+(14, 'Electronics Test drgd', '2025-03-13 15:32:18', NULL, '2025-03-13 15:32:18', NULL),
+(15, 'Electronics sdfsdf drgd', '2025-03-13 15:32:37', NULL, '2025-03-13 15:32:37', NULL);
 
 -- --------------------------------------------------------
 
@@ -792,8 +892,8 @@ INSERT INTO `productcategory` (`Id`, `Type`, `CreatedOn`, `CreatedBy`, `UpdatedO
 CREATE TABLE `productcutoptions` (
   `Id` int(11) NOT NULL,
   `OptionProductCutOptions` varchar(255) NOT NULL,
-  `CreatedOn` datetime NOT NULL,
-  `UpdatedOn` datetime NOT NULL,
+  `CreatedOn` datetime NOT NULL DEFAULT current_timestamp(),
+  `UpdatedOn` datetime NOT NULL DEFAULT current_timestamp(),
   `CreatedBy` varchar(255) NOT NULL,
   `UpdatedBy` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1000,7 +1100,23 @@ INSERT INTO `productdetails` (`Id`, `ProductId`, `ProductCutOptionId`, `ProductS
 (161, 16, 4, NULL, '2025-01-24 23:02:36', 'Admin', '2025-01-24 23:02:36', NULL, 3, NULL),
 (162, 17, 4, NULL, '2025-01-24 23:02:36', 'Admin', '2025-01-24 23:02:36', NULL, 3, NULL),
 (163, 18, 6, NULL, '2025-01-24 23:02:36', 'Admin', '2025-01-24 23:02:36', NULL, 3, NULL),
-(164, 19, 2, NULL, '2025-01-24 23:02:36', 'Admin', '2025-01-24 23:02:36', NULL, 1, NULL);
+(164, 19, 2, NULL, '2025-01-24 23:02:36', 'Admin', '2025-01-24 23:02:36', NULL, 1, NULL),
+(258, 261, 201, 301, '2025-03-12 13:14:48', 'Hassaan', '2025-03-12 13:14:48', 'Malik', 401, 501),
+(259, 261, 202, 302, '2025-03-12 13:14:48', 'Hassaan', '2025-03-12 13:14:48', 'Malik', 402, 502),
+(260, 262, 201, 301, '2025-03-14 11:43:12', 'test@dev.com', '2025-03-14 11:43:12', 'test@dev.com', 401, 501),
+(261, 262, 202, 302, '2025-03-14 11:43:12', 'test@dev.com', '2025-03-14 11:43:12', 'test@dev.com', 402, 502),
+(262, 263, 201, 301, '2025-03-14 11:43:24', 'test@dev.com', '2025-03-14 11:43:24', 'test@dev.com', 401, 501),
+(263, 263, 202, 302, '2025-03-14 11:43:24', 'test@dev.com', '2025-03-14 11:43:24', 'test@dev.com', 402, 502),
+(264, 264, 201, 301, '2025-03-14 11:46:40', 'test@dev.com', '2025-03-14 11:46:40', 'test@dev.com', 401, 501),
+(265, 264, 202, 302, '2025-03-14 11:46:40', 'test@dev.com', '2025-03-14 11:46:40', 'test@dev.com', 402, 502),
+(266, 265, 201, 301, '2025-03-14 11:48:17', 'test@dev.com', '2025-03-14 11:48:17', 'test@dev.com', 401, 501),
+(267, 265, 202, 302, '2025-03-14 11:48:17', 'test@dev.com', '2025-03-14 11:48:17', 'test@dev.com', 402, 502),
+(268, 266, 201, 301, '2025-03-14 11:56:21', 'test@dev.com', '2025-03-14 11:56:21', 'test@dev.com', 401, 501),
+(269, 266, 202, 302, '2025-03-14 11:56:21', 'test@dev.com', '2025-03-14 11:56:21', 'test@dev.com', 402, 502),
+(270, 267, 201, 301, '2025-03-14 12:05:01', 'test@dev.com', '2025-03-14 12:05:01', 'test@dev.com', 401, 501),
+(271, 267, 202, 302, '2025-03-14 12:05:01', 'test@dev.com', '2025-03-14 12:05:01', 'test@dev.com', 402, 502),
+(282, 268, 201, 301, '2025-03-14 12:17:32', 'test@dev.com', '2025-03-14 12:17:32', 'test@dev.com', 401, 501),
+(283, 268, 202, 302, '2025-03-14 12:17:32', 'test@dev.com', '2025-03-14 12:17:32', 'test@dev.com', 402, 502);
 
 -- --------------------------------------------------------
 
@@ -1156,9 +1272,12 @@ INSERT INTO `sleevetype` (`Id`, `SleeveTypeName`, `ProductCategoryId`, `CreatedO
 (1, 'Regular', 2, '2025-01-15 01:03:34', 'Admin', '2025-01-15 01:03:34', NULL),
 (4, 'Raglan', 11, '2025-01-15 01:03:34', 'Admin', '2025-01-15 01:03:34', NULL),
 (7, 'Self fabric arms', 2, '2025-01-15 01:03:34', 'Admin', '2025-01-15 01:03:34', NULL),
-(10, 'Grip armss s', 11, '2025-01-15 01:03:34', 'Admin', '2025-01-31 21:03:57', NULL),
+(10, 'Grip armss s', 11, '2025-01-15 01:03:34', 'Admin', '2025-03-13 15:27:48', 'test@dev.com'),
 (13, 'Self fabric feet', 5, '2025-01-15 01:03:34', 'Admin', '2025-01-15 01:03:34', NULL),
-(16, 'Grip feet', 5, '2025-01-15 01:03:34', 'Admin', '2025-01-15 01:03:34', NULL);
+(16, 'Grip feet', 5, '2025-01-15 01:03:34', 'Admin', '2025-01-15 01:03:34', NULL),
+(21, 'Full Sleeveee', 2, '2025-03-13 15:08:57', 'test@dev.com', '2025-03-13 15:08:57', 'test@dev.com'),
+(22, 'Full Sleeveeegg', 2, '2025-03-13 15:14:19', 'test@dev.com', '2025-03-13 15:14:19', 'test@dev.com'),
+(23, 'Full Sleedcveeegg', 2, '2025-03-13 15:23:25', 'test@dev.com', '2025-03-13 15:23:25', 'test@dev.com');
 
 -- --------------------------------------------------------
 
@@ -1170,16 +1289,27 @@ CREATE TABLE `users` (
   `Id` int(11) NOT NULL,
   `Email` varchar(255) NOT NULL,
   `Password` varchar(255) NOT NULL,
-  `CreatedOn` varchar(255) NOT NULL,
-  `isActive` tinyint(4) NOT NULL DEFAULT 1
+  `CreatedOn` datetime NOT NULL DEFAULT current_timestamp(),
+  `isActive` tinyint(4) NOT NULL DEFAULT 1,
+  `CreatedBy` varchar(100) NOT NULL,
+  `UpdatedOn` datetime NOT NULL DEFAULT current_timestamp(),
+  `UpdatedBy` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`Id`, `Email`, `Password`, `CreatedOn`, `isActive`) VALUES
-(1, 'test@dev.com', '$2b$10$32n2s8wSQwWSImFf.hCEZ.FMoHG73ZbcRAHvmSEGO8In5w2K1z5Dy', '', 1);
+INSERT INTO `users` (`Id`, `Email`, `Password`, `CreatedOn`, `isActive`, `CreatedBy`, `UpdatedOn`, `UpdatedBy`) VALUES
+(1, 'test@dev.com', '$2b$10$32n2s8wSQwWSImFf.hCEZ.FMoHG73ZbcRAHvmSEGO8In5w2K1z5Dy', '0000-00-00 00:00:00', 1, '', '2025-03-12 11:51:35', ''),
+(2, 'test@dev.commm', '$2b$10$aiR.eWJ58EZVl3oGeRsiNexP5cxGIR0FvE1dvU6Djwc/x0yeawFSO', '0000-00-00 00:00:00', 1, '', '2025-03-12 11:56:02', ''),
+(3, 'test@dev.commmm', '$2b$10$fqJ.x0YRqpiQb79GuivgjOBR4Q3axM.rO5bK0RaDLG7QQ7m3c2QYW', '0000-00-00 00:00:00', 1, 'test@dev.com', '0000-00-00 00:00:00', 'test@dev.com'),
+(4, 'test@dev.commmmm', '$2b$10$mp9t5gR9mioAls53pQGam.Zgofs3IQqd.bp4DhPqkDtff0sApOy6q', '0000-00-00 00:00:00', 1, 'test@dev.com', '0000-00-00 00:00:00', 'test@dev.com'),
+(5, 'test@dev.commmmmm', '$2b$10$kIeQoDrLW2eMRBqYG3UK3OnGzdhW/pLmpqfkqanwjPiY5C4KAd0k6', '0000-00-00 00:00:00', 1, 'test@dev.com', '0000-00-00 00:00:00', 'test@dev.com'),
+(6, 'test@dev.commmmmmm', '$2b$10$M4d8PLeaf2sIvKlobruUvOTKr84MmXvp3CSa/tKYKG1siKYN/uqxe', '0000-00-00 00:00:00', 1, 'test@dev.com', '0000-00-00 00:00:00', 'test@dev.com'),
+(7, 'test@dev.commmmmmdm', '$2b$10$q9psFHXft5nU5NoE6zKtnukhqq4nYW4M8sycDecw7gJJLPTL7hpx2', '0000-00-00 00:00:00', 1, 'test@dev.com', '0000-00-00 00:00:00', 'test@dev.com'),
+(12, 'test@dev.commmmmmddm', '$2b$10$D20JFTXl7jxyQ2Mmvm74iuVnu3pN787kIgCf0uUBJ33mJlA4NJ2rW', '0000-00-00 00:00:00', 1, 'test@dev.com', '0000-00-00 00:00:00', 'test@dev.com'),
+(14, 'test@dev.commmmmmsddddm', '$2b$10$XBEKYQh7GbwvXsai/iJkVeSWkFHcSCZdAr8r/b2Kk1xVr/ydwCytO', '2025-03-13 14:29:10', 0, 'test@dev.com', '0000-00-00 00:00:00', 'test@dev.com');
 
 --
 -- Indexes for dumped tables
@@ -1431,13 +1561,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `availablecoloroptions`
 --
 ALTER TABLE `availablecoloroptions`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `client`
 --
 ALTER TABLE `client`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `clientassociates`
@@ -1449,7 +1579,7 @@ ALTER TABLE `clientassociates`
 -- AUTO_INCREMENT for table `clientevent`
 --
 ALTER TABLE `clientevent`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `clientstatus`
@@ -1461,7 +1591,7 @@ ALTER TABLE `clientstatus`
 -- AUTO_INCREMENT for table `coloroption`
 --
 ALTER TABLE `coloroption`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `docstatus`
@@ -1485,7 +1615,7 @@ ALTER TABLE `document`
 -- AUTO_INCREMENT for table `fabrictype`
 --
 ALTER TABLE `fabrictype`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `ordercategory`
@@ -1509,25 +1639,25 @@ ALTER TABLE `orderevent`
 -- AUTO_INCREMENT for table `orderitemdetails`
 --
 ALTER TABLE `orderitemdetails`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `orderitems`
 --
 ALTER TABLE `orderitems`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `orderitemsprintingoptions`
 --
 ALTER TABLE `orderitemsprintingoptions`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `orderservices`
@@ -1557,7 +1687,7 @@ ALTER TABLE `orderserviceunits`
 -- AUTO_INCREMENT for table `orderstatus`
 --
 ALTER TABLE `orderstatus`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `ordertype`
@@ -1569,37 +1699,37 @@ ALTER TABLE `ordertype`
 -- AUTO_INCREMENT for table `printingoptions`
 --
 ALTER TABLE `printingoptions`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `product`
 --
 ALTER TABLE `product`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=255;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=270;
 
 --
 -- AUTO_INCREMENT for table `productcategory`
 --
 ALTER TABLE `productcategory`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `productcutoptions`
 --
 ALTER TABLE `productcutoptions`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `productdetails`
 --
 ALTER TABLE `productdetails`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=256;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=284;
 
 --
 -- AUTO_INCREMENT for table `productregionstandard`
 --
 ALTER TABLE `productregionstandard`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `productsizemeasurements`
@@ -1623,13 +1753,13 @@ ALTER TABLE `sizeoptions`
 -- AUTO_INCREMENT for table `sleevetype`
 --
 ALTER TABLE `sleevetype`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- Constraints for dumped tables

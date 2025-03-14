@@ -52,7 +52,7 @@ async function bootstrap() {
   logger.log('Global response transformation configured');
 
   // API prefix - comment this out to remove the prefix
-  // app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api');
   // logger.log('Global prefix set to "api"');
 
   try {
