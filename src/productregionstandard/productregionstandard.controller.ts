@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { ProductRegionStandardService } from './productregionstandard.service';
 import { CreateProductRegionStandardDto } from './_/create-product-region-standard.dto';
 import { UpdateProductRegionStandardDto } from './_/update-product-region-standard.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { CurrentUser } from 'src/auth/current-user.decorator';
 
 @Controller('product-region-standard')
 @UseGuards(JwtAuthGuard)
@@ -10,27 +11,52 @@ export class ProductRegionStandardController {
   constructor(private readonly service: ProductRegionStandardService) {}
 
   @Post()
-  create(@Body() dto: CreateProductRegionStandardDto) {
-    return this.service.create(dto);
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() dto: CreateProductRegionStandardDto, @CurrentUser() currentUser: any) {
+    try {
+      return this.service.create(dto, currentUser.email);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get()
+  @HttpCode(HttpStatus.OK)
   findAll() {
-    return this.service.findAll();
+    try {
+      return this.service.findAll();
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get(':id')
+  @HttpCode(HttpStatus.OK)
   findOne(@Param('id') id: number) {
-    return this.service.findOne(id);
+    try {
+      return this.service.findOne(id);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Put(':id')
-  update(@Param('id') id: number, @Body() dto: UpdateProductRegionStandardDto) {
-    return this.service.update(id, dto);
+  @HttpCode(HttpStatus.OK)
+  update(@Param('id') id: number, @Body() dto: UpdateProductRegionStandardDto, @CurrentUser() currentUser: any) {
+    try {
+      return this.service.update(id, dto, currentUser.email);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: number) {
-    return this.service.remove(id);
+    try {
+      return this.service.remove(id);
+    } catch (error) {
+      throw error;
+    }
   }
 }
