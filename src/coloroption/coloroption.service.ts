@@ -12,8 +12,12 @@ export class ColorOptionService {
     private readonly colorOptionRepository: Repository<ColorOption>,
   ) {}
 
-  async create(createColorOptionDto: CreateColorOptionDto): Promise<ColorOption> {
-    const newColor = this.colorOptionRepository.create(createColorOptionDto);
+  async create(createColorOptionDto: CreateColorOptionDto, createdBy: string): Promise<ColorOption> {
+    const newColor = this.colorOptionRepository.create({
+      ...createColorOptionDto,
+      CreatedBy: createdBy,
+      UpdatedBy: createdBy,
+    });
     return this.colorOptionRepository.save({
         Id: newColor.Id,
         Name: newColor.Name,
@@ -36,8 +40,8 @@ export class ColorOptionService {
     return color;
   }
 
-  async update(id: number, updateColorOptionDto: UpdateColorOptionDto): Promise<ColorOption> {
-    await this.colorOptionRepository.update(id, updateColorOptionDto);
+  async update(id: number, updateColorOptionDto: UpdateColorOptionDto, updatedBy: string): Promise<ColorOption> {
+    await this.colorOptionRepository.update(id, {...updateColorOptionDto, UpdatedBy: updatedBy, UpdatedOn: new Date()});
     return this.findOne(id);
   }
 

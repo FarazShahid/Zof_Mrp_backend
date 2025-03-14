@@ -1,5 +1,8 @@
+import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
+
 export class CreateColorOptionDto {
-    Name: string;
-    CreatedBy?: string;
-  }
-  
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  Name: string;
+}
