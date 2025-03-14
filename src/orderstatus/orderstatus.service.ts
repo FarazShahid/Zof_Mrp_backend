@@ -29,7 +29,7 @@ export class OrderstatusService {
     };
   }
 
-  async create(data: CreateOrderStatusDto): Promise<any> {
+  async create(data: CreateOrderStatusDto, createdBy: string): Promise<any> {
     const existingOrderStatus = await this.orderStatusRepository.findOne({ where: { StatusName: data.Name } });
     if (existingOrderStatus) {
       throw new BadRequestException(`Order Status Name already exists.`);
@@ -37,9 +37,8 @@ export class OrderstatusService {
     const newOrderStatus = this.orderStatusRepository.create({
       StatusName: data.Name,
       Description: data.Description,
-      CreatedBy: data.CreatedBy,
-      CreatedOn: new Date(),
-      UpdatedOn: new Date()
+      CreatedBy: createdBy,
+      UpdatedBy: createdBy
     });
     const saveOrderStatus = await this.orderStatusRepository.save(newOrderStatus);
     return {
@@ -62,7 +61,7 @@ export class OrderstatusService {
     await this.orderStatusRepository.delete(id);
   }
 
-  async update(id: number, data: UpdateOrderStatusDto): Promise<any> {
+  async update(id: number, data: UpdateOrderStatusDto, updatedBy: string): Promise<any> {
     const orderStatus = await this.getOrderStatusById(id);
 
     if (data.Name) {
@@ -81,7 +80,7 @@ export class OrderstatusService {
       Description: data.Description || orderStatus.Description,
       CreatedBy: orderStatus.CreatedBy,
       CreatedOn: orderStatus.CreatedOn,
-      UpdatedBy: data.UpdatedBy || orderStatus.UpdatedBy,
+      UpdatedBy: updatedBy,
       UpdatedOn: new Date()
     });
 

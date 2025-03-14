@@ -1,35 +1,61 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { OrderstatusService } from './orderstatus.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateOrderStatusDto, UpdateOrderStatusDto } from './dto/order-status.dto';
+import { CurrentUser } from 'src/auth/current-user.decorator';
 
 @Controller('orderstatuses')
 @UseGuards(JwtAuthGuard)
 export class OrderStatusController {
-  constructor(private readonly orderStatusService: OrderstatusService) {}
+  constructor(private readonly orderStatusService: OrderstatusService) { }
 
   @Get()
+  @HttpCode(HttpStatus.OK)
   async findAll() {
-    return this.orderStatusService.getAllOrderStatuses();
+    try {
+      return this.orderStatusService.getAllOrderStatuses();
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get(':id')
+  @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: number) {
-    return this.orderStatusService.getOrderStatusById(id);
+    try {
+      return this.orderStatusService.getOrderStatusById(id);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Post()
-  create(@Body() createOrderStatusDto: CreateOrderStatusDto) {
-    return this.orderStatusService.create(createOrderStatusDto);
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() createOrderStatusDto: CreateOrderStatusDto, @CurrentUser() currentUser: any) {
+    try {
+      return this.orderStatusService.create(createOrderStatusDto, currentUser.email);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateOrderStatusDto: UpdateOrderStatusDto) {
-    return this.orderStatusService.update(+id, updateOrderStatusDto);
+  @HttpCode(HttpStatus.OK)
+  update(@Param('id') id: string, @Body() updateOrderStatusDto: UpdateOrderStatusDto, @CurrentUser() currentUser: any) {
+    try {
+      return this.orderStatusService.update(+id, updateOrderStatusDto, currentUser.email);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: number): Promise<void> {
-    return this.orderStatusService.remove(id);
+    try {
+      return this.orderStatusService.remove(id);
+    } catch (error) {
+      throw error;
+    }
   }
 }
