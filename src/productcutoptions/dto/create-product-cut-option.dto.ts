@@ -1,12 +1,8 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
 export class CreateProductCutOptionDto {
-  @IsNotEmpty({ message: 'OptionProductCutOptions is required' })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
   OptionProductCutOptions: string;
-
-  @IsNotEmpty({ message: 'CreatedBy is required' })
-  CreatedBy: string;
-
-  @IsNotEmpty({ message: 'UpdatedBy is required' })
-  UpdatedBy: string;
 }
