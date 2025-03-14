@@ -16,16 +16,14 @@ export class PrintingoptionsService {
     return printingOptions;
   }
 
-  async create(data: CreatePrintingOptionDto): Promise<any> {
+  async create(data: CreatePrintingOptionDto, createdBy: string): Promise<any> {
     const existingSizeOption = await this.printingOptionsRepository.findOne({ where: { Type: data.Name } });
     if (existingSizeOption) {
       throw new BadRequestException(`Printing Option Name already exists.`);
     }
     const newPrintingOption = this.printingOptionsRepository.create({
       Type: data.Name,
-      CreatedBy: data.createdBy,
-      CreatedOn: new Date(),
-      UpdatedOn: new Date()
+      CreatedBy: createdBy
     });
     const savedPrintingOption = await this.printingOptionsRepository.save(newPrintingOption);
     return {
@@ -64,7 +62,7 @@ export class PrintingoptionsService {
     await this.printingOptionsRepository.delete(id);
   }
 
-  async update(id: number, data: UpdatePrintingOptionDto): Promise<any> {
+  async update(id: number, data: UpdatePrintingOptionDto, updatedBy: string): Promise<any> {
     const printingOption = await this.findOne(id);
 
     if (data.Name) {
@@ -78,7 +76,7 @@ export class PrintingoptionsService {
     }
 
     printingOption.Type = data.Name || printingOption.Type;
-    printingOption.UpdatedBy = data.UpdatedBy || printingOption.UpdatedBy;
+    printingOption.UpdatedBy = updatedBy || printingOption.UpdatedBy;
     printingOption.UpdatedOn = new Date();
 
     const savedPrintingOption = await this.printingOptionsRepository.save(printingOption);
