@@ -20,18 +20,6 @@ export class OrderItemDetails extends BaseEntity {
   @Column()
   Priority: number;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
-  CreatedOn: Date;
-
-  @Column()
-  CreatedBy: number;
-
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
-  UpdatedOn: Date;
-
-  @Column()
-  UpdatedBy: number;
-
   // Relations
   @ManyToOne(() => OrderItem, orderItem => orderItem.orderItemDetails)
   @JoinColumn({ name: 'OrderItemId' })

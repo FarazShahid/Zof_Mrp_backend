@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In  } from 'typeorm';
 import { Order } from './entities/orders.entity';
@@ -8,6 +8,11 @@ import { CreateOrderDto } from './dto/create-orders.dto';
 import { OrderItemDetails } from './entities/order-item-details';
 import { DataSource } from 'typeorm';
 import { PaginationDto } from './dto/pagination.dto';
+import { Client } from '../clients/entities/client.entity';
+import { ClientEvent } from '../events/entities/clientevent.entity';
+import { OrderStatus } from '../orderstatus/entities/orderstatus.entity';
+import { Product } from '../products/entities/product.entity';
+import { PrintingOptions } from '../printingoptions/entities/printingoptions.entity';
 
 @Injectable()
 export class OrdersService {
@@ -20,12 +25,58 @@ export class OrdersService {
     private orderItemsPrintingOptionRepository: Repository<OrderItemsPrintingOption>,
     @InjectRepository(OrderItemDetails)
     private orderItemDetailRepository: Repository<OrderItemDetails>,
+    @InjectRepository(Client)
+    private clientRepository: Repository<Client>,
+    @InjectRepository(ClientEvent)
+    private eventRepository: Repository<ClientEvent>,
+    @InjectRepository(OrderStatus)
+    private statusRepository: Repository<OrderStatus>,
+    @InjectRepository(Product)
+    private productRepository: Repository<Product>,
+    @InjectRepository(PrintingOptions)
+    private printingOptionRepository: Repository<PrintingOptions>,
     private dataSource: DataSource,
   ) {}
 
-  async createOrder(createOrderDto: CreateOrderDto, createdBy: number): Promise<Order> {
-    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, OrderPriority,ExternalOrderId,OrderName,OrderNumber, items } = createOrderDto;
-  
+  async createOrder(createOrderDto: CreateOrderDto, createdBy: any): Promise<Order> {
+    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, OrderPriority, ExternalOrderId, OrderName, OrderNumber, items } = createOrderDto;
+
+    // Validate client exists
+    const client = await this.clientRepository.findOne({ where: { Id: ClientId } });
+    if (!client) {
+      throw new NotFoundException(`Client with ID ${ClientId} not found`);
+    }
+
+    // Validate event exists
+    const event = await this.eventRepository.findOne({ where: { Id: OrderEventId } });
+    if (!event) {
+      throw new NotFoundException(`Event with ID ${OrderEventId} not found`);
+    }
+
+    // Validate status exists
+    const status = await this.statusRepository.findOne({ where: { Id: OrderStatusId } });
+    if (!status) {
+      throw new NotFoundException(`Order status with ID ${OrderStatusId} not found`);
+    }
+
+    // Validate all products exist
+    const productIds = items.map(item => item.ProductId);
+    const products = await this.productRepository.find({ where: { Id: In(productIds) } });
+    if (products.length !== productIds.length) {
+      throw new NotFoundException('One or more products not found');
+    }
+
+    // Validate all printing options exist
+    const printingOptionIds = items.flatMap(item => 
+      item.printingOptions ? item.printingOptions.map(option => option.PrintingOptionId) : []
+    );
+    if (printingOptionIds.length > 0) {
+      const printingOptions = await this.printingOptionRepository.find({ where: { Id: In(printingOptionIds) } });
+      if (printingOptions.length !== printingOptionIds.length) {
+        throw new NotFoundException('One or more printing options not found');
+      }
+    }
+
     const newOrder = this.orderRepository.create({
       ClientId,
       OrderEventId,
@@ -36,15 +87,12 @@ export class OrdersService {
       ExternalOrderId,
       OrderName,
       CreatedBy: createdBy,
-      UpdatedBy: createdBy,
-      CreatedOn: new Date(),
-      UpdatedOn: new Date(),
+      UpdatedBy: createdBy
     });
-  
+
     const savedOrder = await this.orderRepository.save(newOrder);
-  
+
     if (Array.isArray(items) && items.length > 0) {
-      
       const orderItems = items.map((item) => ({
         OrderId: savedOrder.Id,
         ProductId: item.ProductId,
@@ -55,15 +103,13 @@ export class OrdersService {
         VideoId: item.VideoId,
         CreatedBy: createdBy,
         UpdatedBy: createdBy,
-        CreatedOn: new Date(),
-        UpdatedOn: new Date(),
       }));
-  
+
       const savedOrderItems = await this.orderItemRepository.save(orderItems);
-  
+
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
-  
+
         if (Array.isArray(item.orderItemDetails) && item.ProductId) {
           const orderItemDetails = item.orderItemDetails.map((option) => ({
             OrderItemId: savedOrderItems[i].Id,
@@ -72,32 +118,28 @@ export class OrdersService {
             Priority: option.Priority,
             CreatedBy: createdBy,
             UpdatedBy: createdBy,
-            CreatedOn: new Date(),
-            UpdatedOn: new Date(),
           }));
           await this.orderItemDetailRepository.save(orderItemDetails);
         }
-  
+
         if (Array.isArray(item.printingOptions) && item.printingOptions.length > 0) {
           const printingOptions = item.printingOptions.map((option) => ({
             OrderItemId: savedOrderItems[i].Id,
             PrintingOptionId: option.PrintingOptionId,
             Description: option.Description,
           }));
-  
+
           await this.orderItemsPrintingOptionRepository.save(printingOptions);
         }
       }
     }
-  
+
     return savedOrder;
   }  
 
   async getAllOrders(paginationDto?: PaginationDto): Promise<any> {
     try {
-      const { page = 1, limit = 10 } = paginationDto || {};
-      const skip = (page - 1) * limit;
-
+     
       const result = await this.orderRepository
         .createQueryBuilder('order')
         .leftJoin('client', 'client', 'order.ClientId = client.Id')
@@ -121,8 +163,6 @@ export class OrdersService {
           'order.UpdatedOn AS UpdatedOn'
         ])
         .orderBy('order.CreatedOn', 'DESC')
-        .offset(skip)
-        .limit(limit)
         .getRawMany();
 
       const total = await this.orderRepository
@@ -147,15 +187,7 @@ export class OrdersService {
         UpdatedOn: order.UpdatedOn
       }));
 
-      return {
-        data: formattedOrders,
-        meta: {
-          total,
-          page,
-          limit,
-          totalPages: Math.ceil(total / limit)
-        }
-      };
+      return formattedOrders;
     } catch (error) {
       console.error('Error in getAllOrders:', error);
       throw error;
@@ -226,44 +258,70 @@ export class OrdersService {
    
   async updateOrder(id: number, updateOrderDto: any, updatedBy: number): Promise<Order> {
     const order = await this.orderRepository.findOne({ where: { Id: id } });
-  
     if (!order) {
-      throw new Error('Order not found');
+      throw new NotFoundException(`Order with ID ${id} not found`);
     }
-  
-    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, items, OrderPriority, ExternalOrderId,OrderName,OrderNumber } =
-      updateOrderDto;
-  
-    order.ClientId = ClientId ?? order.ClientId;
-    order.OrderEventId = OrderEventId ?? order.OrderEventId;
-    order.Description = Description ?? order.Description;
-    order.OrderStatusId = OrderStatusId ?? order.OrderStatusId;
-    order.Deadline = Deadline ?? order.Deadline;
-    order.OrderPriority = OrderPriority ?? order.OrderPriority;
-    order.UpdatedBy = updatedBy;
-    order.UpdatedOn = new Date();
-    order.ExternalOrderId = ExternalOrderId;
-    order.OrderName = OrderName;
-  
-    const updatedOrder = await this.orderRepository.save(order);
-  
+
+    const { items, ...updateData } = updateOrderDto;
+
+    // Validate client exists if provided
+    if (updateData.ClientId) {
+      const client = await this.clientRepository.findOne({ where: { Id: updateData.ClientId } });
+      if (!client) {
+        throw new NotFoundException(`Client with ID ${updateData.ClientId} not found`);
+      }
+    }
+
+    // Validate event exists if provided
+    if (updateData.OrderEventId) {
+      const event = await this.eventRepository.findOne({ where: { Id: updateData.OrderEventId } });
+      if (!event) {
+        throw new NotFoundException(`Event with ID ${updateData.OrderEventId} not found`);
+      }
+    }
+
+    // Validate status exists if provided
+    if (updateData.OrderStatusId) {
+      const status = await this.statusRepository.findOne({ where: { Id: updateData.OrderStatusId } });
+      if (!status) {
+        throw new NotFoundException(`Order status with ID ${updateData.OrderStatusId} not found`);
+      }
+    }
+
     if (Array.isArray(items) && items.length > 0) {
+      // Validate all products exist
+      const productIds = items.map(item => item.ProductId);
+      const products = await this.productRepository.find({ where: { Id: In(productIds) } });
+      if (products.length !== productIds.length) {
+        throw new NotFoundException('One or more products not found');
+      }
+
+      // Validate all printing options exist
+      const printingOptionIds = items.flatMap(item => 
+        item.printingOptions ? item.printingOptions.map(option => option.PrintingOptionId) : []
+      );
+      if (printingOptionIds.length > 0) {
+        const printingOptions = await this.printingOptionRepository.find({ where: { Id: In(printingOptionIds) } });
+        if (printingOptions.length !== printingOptionIds.length) {
+          throw new NotFoundException('One or more printing options not found');
+        }
+      }
 
       const existingOrderItems = await this.orderItemRepository.find({ where: { OrderId: id } });
       const existingOrderItemIds = existingOrderItems.map((item) => item.Id);
-  
+
       if (existingOrderItemIds.length > 0) {
         await this.orderItemsPrintingOptionRepository.delete({
           OrderItemId: In(existingOrderItemIds),
         });
-  
+
         await this.orderItemDetailRepository.delete({
           OrderItemId: In(existingOrderItemIds),
         });
       }
-  
+
       await this.orderItemRepository.delete({ OrderId: id });
-  
+
       const newOrderItems = items.map((item) => ({
         OrderId: id,
         ProductId: item.ProductId,
@@ -277,19 +335,19 @@ export class OrdersService {
         UpdatedOn: new Date(),
         OrderItemPriority: item.OrderItemPriority,
       }));
-  
+
       const savedOrderItems = await this.orderItemRepository.save(newOrderItems);
-  
+
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
-  
+
         if (Array.isArray(item.printingOptions) && item.printingOptions.length > 0) {
           const printingOptions = item.printingOptions.map((option) => ({
             OrderItemId: savedOrderItems[i].Id,
             PrintingOptionId: option.PrintingOptionId,
             Description: option.Description,
           }));
-  
+
           await this.orderItemsPrintingOptionRepository.save(printingOptions);
         }
 
@@ -313,7 +371,14 @@ export class OrdersService {
         }
       }
     }
-  
+
+    const updatedOrder = await this.orderRepository.save({
+      ...order,
+      ...updateData,
+      UpdatedBy: updatedBy,
+      UpdatedOn: new Date(),
+    });
+
     return updatedOrder;
   }
 
@@ -321,7 +386,7 @@ export class OrdersService {
     const order = await this.orderRepository.findOne({ where: { Id: id } });
   
     if (!order) {
-      throw new Error('Order not found');
+      throw new NotFoundException([`Order with ID ${id} not found`]);
     }
   
     const orderItems = await this.orderItemRepository.find({ where: { OrderId: id } });
@@ -370,7 +435,7 @@ export class OrdersService {
         .getRawOne();
     
       if (!orderData) {
-        throw new Error('Order not found');
+          throw new NotFoundException([`Order with ID ${id} not found`]);
       }
     
       // Get order items with related data using query builder
@@ -380,7 +445,8 @@ export class OrdersService {
         .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
         .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
         .leftJoin('orderitemdetails', 'orderItemDetail', 'orderItem.Id = orderItemDetail.OrderItemId')
-        .leftJoin('coloroption', 'colorOption', 'orderItemDetail.ColorOptionId = colorOption.Id')
+        .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderItemDetail.ColorOptionId = availablecoloroptions.Id')
+        .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId  = colorOption.Id')
         .select([
           'orderItem.Id AS Id',
           'orderItem.ProductId AS ProductId',
@@ -480,8 +546,8 @@ export class OrdersService {
       .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
       .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
       .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
-      .leftJoin('orderitemdetails', 'orderItemColor', 'orderItem.Id = orderItemColor.OrderItemId')
-      .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderItemColor.ColorOptionId = colorOption.Id')
+      .leftJoin('orderitemdetails', 'orderitemdetails', 'orderItem.Id = orderitemdetails.OrderItemId')
+      .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderitemdetails.ColorOptionId = availablecoloroptions.Id')
       .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId = colorOption.Id')
       .select([
         'orderItem.Id AS Id',
@@ -499,10 +565,10 @@ export class OrdersService {
         'printingOption.PrintingOptionId AS PrintingOptionId',
         'printingOption.Description AS PrintingOptionDescription',
         'printingoptions.Type AS PrintingOptionName',
-        'orderItemColor.ColorOptionId AS ColorOptionId',
+        'orderitemdetails.ColorOptionId AS ColorOptionId',
         'colorOption.Name AS ColorName',
-        'orderItemColor.Quantity AS OrderItemDetailQuanity',
-        'orderItemColor.Priority AS OrderItemDetailPriority'
+        'orderitemdetails.Quantity AS OrderItemDetailQuanity',
+        'orderitemdetails.Priority AS OrderItemDetailPriority'
       ])
       .where('orderItem.OrderId = :orderId', { orderId })
       .getRawMany();

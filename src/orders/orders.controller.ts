@@ -18,7 +18,7 @@ import { CreateOrderDto } from './dto/create-orders.dto';
 import { UpdateOrderDto } from './dto/update-orders.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PaginationDto } from './dto/pagination.dto';
-
+import { CurrentUser } from 'src/auth/current-user.decorator';
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
 export class OrdersController {
@@ -26,19 +26,33 @@ export class OrdersController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createOrderDto: CreateOrderDto, @Req() req): Promise<any> {
-    const userId = req.user.id;
-    return this.ordersService.createOrder(createOrderDto, userId);
+  async create(@Body() createOrderDto: CreateOrderDto, @CurrentUser() currentUser: any): Promise<any> {
+    try {
+      return this.ordersService.createOrder(createOrderDto, currentUser.email);
+    } catch (error) {
+      console.error('Error creating order:', error);
+      throw error;
+    }
   }
 
   @Get()
   async findAll(@Query() paginationDto: PaginationDto): Promise<any> {
-    return this.ordersService.getAllOrders(paginationDto);
+    try {
+      return this.ordersService.getAllOrders(paginationDto);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      throw error;
+    }
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<any> {
-    return this.ordersService.getOrdersByClientId(id);
+    try {
+      return this.ordersService.getOrdersByClientId(id);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      throw error;
+    }
   }
 
   @Put(':id')
@@ -47,23 +61,43 @@ export class OrdersController {
     @Body() updateOrderDto: UpdateOrderDto, 
     @Req() req
   ): Promise<any> {
-    const userId = req.user.id; 
-    return this.ordersService.updateOrder(id, updateOrderDto, userId);
+    try {
+      const userId = req.user.id; 
+      return this.ordersService.updateOrder(id, updateOrderDto, userId);
+    } catch (error) {
+      console.error('Error updating order:', error);
+      throw error;
+    }
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.ordersService.deleteOrder(id);
+    try {
+      return this.ordersService.deleteOrder(id);
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      throw error;
+    }
   }
 
   @Get('items/:id')
   async getOrderItems(@Param('id', ParseIntPipe) orderId: number): Promise<any> {
-    return this.ordersService.getOrderItemsByOrderId(orderId);
+    try {
+      return this.ordersService.getOrderItemsByOrderId(orderId);
+    } catch (error) {
+      console.error('Error fetching order items:', error);
+      throw error;
+    }
   }
 
   @Get('get-edit/:id')
   async getOrdersEdit(@Param('id', ParseIntPipe) orderId: number): Promise<any> {
-    return this.ordersService.getEditOrder(orderId);
+    try {
+      return this.ordersService.getEditOrder(orderId);
+    } catch (error) {
+      console.error('Error fetching edit order:', error);
+      throw error;
+    }
   }
 }
