@@ -57,7 +57,7 @@ CREATE TABLE `client` (
 INSERT INTO `client` (`Id`, `Name`, `Email`, `Phone`, `Country`, `State`, `City`, `CompleteAddress`, `ClientStatusId`, `CreatedOn`, `CreatedBy`, `UpdatedOn`, `UpdatedBy`) VALUES
 (1, 'Comprehensive Spine Center', 'info@spinecenter.com', '', '', '', '', '', '', '0000-00-00 00:00:00', '', '2025-03-12 11:42:59', ''),
 (2, 'Charlotte Rise FC', 'contact@charlotterisefc.com', '', '', '', '', '', '', '0000-00-00 00:00:00', '', '2025-03-12 11:42:59', ''),
-(8, 'Hassaan Malik', 'test@dev.comm', '+923014999000', 'Pakistan', 'Punjab', 'Lahore', 'Canal Road', '1', '2025-03-13 11:00:54', 'test@dev.com', '2025-03-13 11:01:36', 'test@dev.com');
+(8, 'Hassaan Malikm', 'test@dev.comm', '+923014999044', 'Pakistan', 'Punjab', 'Lahore', 'Canal Road', '1', '2025-03-13 11:00:54', 'test@dev.com', '2025-03-13 11:01:36', 'test@dev.com');
 
 -- --------------------------------------------------------
 
@@ -1196,8 +1196,8 @@ CREATE TABLE `sizemeasurements` (
 CREATE TABLE `sizeoptions` (
   `Id` int(11) NOT NULL,
   `OptionSizeOptions` varchar(255) NOT NULL,
-  `CreatedOn` datetime NOT NULL,
-  `UpdatedOn` datetime NOT NULL,
+  `CreatedOn` datetime NOT NULL DEFAULT current_timestamp(),
+  `UpdatedOn` datetime NOT NULL DEFAULT current_timestamp(),
   `CreatedBy` varchar(255) NOT NULL,
   `UpdatedBy` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1235,7 +1235,8 @@ INSERT INTO `sizeoptions` (`Id`, `OptionSizeOptions`, `CreatedOn`, `UpdatedOn`, 
 (26, '8yo-UK', '2025-01-05 15:52:52', '2025-01-05 15:52:52', '', ''),
 (27, '12yo-US', '2025-01-05 15:52:52', '2025-01-05 15:52:52', '', ''),
 (28, '12yo-UK', '2025-01-05 15:52:52', '2025-01-05 15:52:52', '', ''),
-(30, 'Large Updated', '2025-02-04 21:50:55', '2025-02-04 21:52:50', 'admin', 'Okay Test Updated By');
+(30, 'Large Updated refs', '2025-02-04 21:50:55', '2025-03-17 16:50:46', 'admin', 'test@dev.com'),
+(31, 'Large', '2025-03-17 16:49:21', '2025-03-17 16:49:21', 'test@dev.com', 'test@dev.com');
 
 -- --------------------------------------------------------
 
@@ -1555,7 +1556,7 @@ ALTER TABLE `availablecoloroptions`
 -- AUTO_INCREMENT for table `client`
 --
 ALTER TABLE `client`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `clientassociates`
@@ -1735,7 +1736,7 @@ ALTER TABLE `sizemeasurements`
 -- AUTO_INCREMENT for table `sizeoptions`
 --
 ALTER TABLE `sizeoptions`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `sleevetype`

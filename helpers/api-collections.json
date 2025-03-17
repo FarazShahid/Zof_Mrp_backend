@@ -816,7 +816,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/products/availablecolors/273",
+							"raw": "http://localhost:3000/api/products/availablecolors/156",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -826,7 +826,7 @@
 								"api",
 								"products",
 								"availablecolors",
-								"273"
+								"156"
 							]
 						}
 					},
@@ -1058,26 +1058,17 @@
 				{
 					"name": "Get All",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg2NzA5MzUsImV4cCI6MTczODc1NzMzNX0.S2SVga3wYjrI_uP-wfEtXbnWr8UyZ-HPtTZndQTrYcg",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/sizeoptions",
+							"raw": "http://localhost:3000/api/sizeoptions",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "3000",
 							"path": [
+								"api",
 								"sizeoptions"
 							]
 						}
@@ -1087,21 +1078,11 @@
 				{
 					"name": "Add",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg2NzA5MzUsImV4cCI6MTczODc1NzMzNX0.S2SVga3wYjrI_uP-wfEtXbnWr8UyZ-HPtTZndQTrYcg",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"OptionSizeOptions\": \"Large\",\r\n  \"CreatedBy\": \"admin\",\r\n  \"UpdatedBy\": \"admin\"\r\n}\r\n",
+							"raw": "{\r\n  \"OptionSizeOptions\": \"Large\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1109,13 +1090,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/sizeoptions",
+							"raw": "http://localhost:3000/api/sizeoptions",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "3000",
 							"path": [
+								"api",
 								"sizeoptions"
 							]
 						}
@@ -1155,28 +1137,19 @@
 				{
 					"name": "Get One",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg2NzA5MzUsImV4cCI6MTczODc1NzMzNX0.S2SVga3wYjrI_uP-wfEtXbnWr8UyZ-HPtTZndQTrYcg",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/sizeoptions/30",
+							"raw": "http://localhost:3000/api/sizeoptions/31",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "3000",
 							"path": [
+								"api",
 								"sizeoptions",
-								"30"
+								"31"
 							]
 						}
 					},
@@ -1185,21 +1158,11 @@
 				{
 					"name": "Update",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3Mzg2NzA5MzUsImV4cCI6MTczODc1NzMzNX0.S2SVga3wYjrI_uP-wfEtXbnWr8UyZ-HPtTZndQTrYcg",
-									"type": "string"
-								}
-							]
-						},
 						"method": "PUT",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"OptionSizeOptions\": \"Large Updated\",\r\n    \"CreatedOn\": \"2025-02-04T16:50:55.000Z\",\r\n    \"CreatedBy\": \"admin\",\r\n    \"UpdatedBy\": \"Okay Test Updated By\"\r\n}",
+							"raw": "{\r\n        \"Id\": 30,\r\n        \"OptionSizeOptions\": \"Large Updated refs\",\r\n        \"CreatedOn\": \"2025-02-04T16:50:55.000Z\",\r\n        \"CreatedBy\": \"admin\",\r\n        \"UpdatedOn\": \"2025-02-04T16:52:50.000Z\",\r\n        \"UpdatedBy\": \"Okay Test Updated By\"\r\n    }",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1207,13 +1170,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/sizeoptions/30",
+							"raw": "http://localhost:3000/api/sizeoptions/30",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "3000",
 							"path": [
+								"api",
 								"sizeoptions",
 								"30"
 							]
@@ -1920,7 +1884,7 @@
 		"bearer": [
 			{
 				"key": "token",
-				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZGV2LmNvbSIsInN1YiI6MSwiaWF0IjoxNzQyMTkxMTI4LCJleHAiOjE3NDIyNzc1Mjh9.Dqpov6eaG2cVnCevjbwDmGxM-6bg1Gi2UehSoW6ylr8",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZGV2LmNvbSIsInN1YiI6MSwiaWF0IjoxNzQyMjExOTcyLCJleHAiOjE3NDIyOTgzNzJ9.MEDpnrpjdW4ixtZCN-V4WK0zRW5_31eS2SIq1umwatQ",
 				"type": "string"
 			}
 		]
