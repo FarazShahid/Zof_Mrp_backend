@@ -56,15 +56,14 @@ export class ProductsService {
             for (const detail of createProductDto.productDetails) {
               await queryRunner.query(
                 `INSERT INTO productdetails 
-                (ProductId, ProductCutOptionId, ProductSizeMeasurementId, CreatedBy, UpdatedBy, ProductRegionId, SleeveTypeId) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                (ProductId, ProductCutOptionId, ProductSizeMeasurementId, CreatedBy, UpdatedBy, SleeveTypeId) 
+                VALUES (?, ?, ?, ?, ?, ?)`,
                 [
                   savedProduct.Id,
                   detail.ProductCutOptionId,
                   detail.ProductSizeMeasurementId,
                   createdBy,
                   createdBy,
-                  detail.ProductRegionId,
                   detail.SleeveTypeId,
                 ]
               );
@@ -101,7 +100,6 @@ export class ProductsService {
           'fabric.Type AS FabricType',
           'fabric.Name AS FabricName',
           'fabric.GSM AS GSM',
-          'product.Name AS Name',
           'product.Description AS Description',
           'product.CreatedOn AS CreatedOn',
           'product.UpdatedOn AS UpdatedOn',
@@ -114,16 +112,15 @@ export class ProductsService {
         Id: product.Id,
         ProductCategoryId: product.ProductCategoryId,
         ProductCategoryName: product.ProductCategoryName,
-        FabricTypeId: product.FabricTypeId,
-        FabricType: product.FabricType,
-        FabricName: product.FabricName,
-        GSM: product.GSM,
-        Name: product.Name,
-        Description: product.Description,
-        CreatedBy: product.CreatedBy,
-        UpdatedBy: product.UpdatedBy,
-        CreatedOn: product.CreatedOn,
-        UpdatedOn: product.UpdatedOn
+        FabricTypeId: product.FabricTypeId || "",
+        FabricType: product.FabricType || "",
+        FabricName: product.FabricName || "",
+        GSM: product.GSM || "",
+        Description: product.Description || "",
+        CreatedBy: product.CreatedBy || "",
+        UpdatedBy: product.UpdatedBy || "",
+        CreatedOn: product.CreatedOn || "",
+        UpdatedOn: product.UpdatedOn || ""
       }));
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -238,14 +235,13 @@ export class ProductsService {
             if (detail.Id) {
               await queryRunner.query(
                 `UPDATE productdetails 
-                 SET ProductCutOptionId = ?, ProductSizeMeasurementId = ?, UpdatedOn = ?, UpdatedBy = ?, ProductRegionId = ?, SleeveTypeId = ? 
+                 SET ProductCutOptionId = ?, ProductSizeMeasurementId = ?, UpdatedOn = ?, UpdatedBy = ?, SleeveTypeId = ? 
                  WHERE Id = ?`,
                 [
                   detail.ProductCutOptionId,
                   detail.ProductSizeMeasurementId,
                   new Date(),
                   updatedBy,
-                  detail.ProductRegionId,
                   detail.SleeveTypeId,
                   detail.Id,
                 ]
@@ -253,8 +249,8 @@ export class ProductsService {
             } else {
               await queryRunner.query(
                 `INSERT INTO productdetails 
-                  (ProductId, ProductCutOptionId, ProductSizeMeasurementId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, ProductRegionId, SleeveTypeId) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                  (ProductId, ProductCutOptionId, ProductSizeMeasurementId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, SleeveTypeId) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                   id,
                   detail.ProductCutOptionId,
@@ -263,7 +259,6 @@ export class ProductsService {
                   updatedBy,
                   new Date(),
                   updatedBy,
-                  detail.ProductRegionId,
                   detail.SleeveTypeId,
                 ]
               );
@@ -320,7 +315,8 @@ export class ProductsService {
         .leftJoin('coloroption', 'color', 'color.Id = colors.colorId') 
         .select([
           'colors.Id AS Id',
-          'color.Name AS ColorName', 
+          'color.Name AS ColorName',
+          'color.HexCode AS HexCode',
           'colors.ImageId AS ImageId',
         ])
         .where('product.Id = :productId', { productId })
@@ -334,6 +330,7 @@ export class ProductsService {
       return availableColors.map((color) => ({
         Id: color.Id,
         ColorName: color.ColorName,
+        HexCode: color.HexCode,
         ImageId: color.ImageId,
       }));
     } catch (error) {

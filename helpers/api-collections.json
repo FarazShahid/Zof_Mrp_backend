@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "8d658c22-8f84-4e43-9fe1-a74a0566a815",
+		"_postman_id": "718257f0-4620-493c-90f4-3ef1cd03f4dc",
 		"name": "MRP Backend",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "40740062"
@@ -94,7 +94,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/fabrictype/30",
+							"raw": "http://localhost:3000/fabrictype/30",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -140,7 +140,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/clients",
+							"raw": "http://localhost:3000/clients",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -168,7 +168,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/clients/8",
+							"raw": "http://localhost:3000/clients/8",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -197,7 +197,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/clients",
+							"raw": "http://localhost:3000/clients",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -432,7 +432,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/sleeve-type/21",
+							"raw": "http://localhost:3000/sleeve-type/21",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -707,7 +707,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"ClientId\": 1,\r\n  \"OrderEventId\": 2,\r\n  \"Description\": \"Order for event\",\r\n  \"OrderStatusId\": 1,\r\n  \"Deadline\": \"2025-01-10T00:00:00Z\",\r\n  \"OrderName\": \"2025-01-10T00:00:00Z\",\r\n  \"ExternalOrderId\": 1,\r\n  \"OrderPriority\": 2,\r\n  \"items\": [\r\n    {\r\n      \"ProductId\": 261,\r\n      \"Description\": \"Product 1 Description\",\r\n      \"OrderItemPriority\": 19,\r\n      \"ImageId\": 201,\r\n      \"FileId\": 301,\r\n      \"VideoId\": 401,\r\n      \"orderItemDetails\": [{\r\n        \"ColorOptionId\": 6,\r\n        \"Quantity\": 10,\r\n        \"Priority\": 9\r\n      },{\r\n        \"ColorOptionId\": 7,\r\n        \"Quantity\": 10,\r\n        \"Priority\": 9\r\n      },{\r\n        \"ColorOptionId\": 8,\r\n        \"Quantity\": 10,\r\n        \"Priority\": 9\r\n      }],\r\n      \"printingOptions\": [\r\n        {\r\n          \"PrintingOptionId\": 1,\r\n          \"Description\": \"Option 1 for Product 1\"\r\n        }\r\n       \r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+							"raw": "{\r\n  \"ClientId\": 1,\r\n  \"OrderEventId\": 2,\r\n  \"Description\": \"Order for event\",\r\n  \"Deadline\": \"2025-01-10T00:00:00Z\",\r\n  \"OrderName\": \"2025-01-10T00:00:00Z\",\r\n  \"ExternalOrderId\": 1,\r\n  \"OrderPriority\": 2,\r\n  \"items\": [\r\n    {\r\n      \"ProductId\": 261,\r\n      \"Description\": \"Product 1 Description\",\r\n      \"OrderItemPriority\": 19,\r\n      \"ImageId\": 201,\r\n      \"FileId\": 301,\r\n      \"VideoId\": 401,\r\n      \"orderItemDetails\": [{\r\n        \"ColorOptionId\": 6,\r\n        \"Quantity\": 10,\r\n        \"Priority\": 9\r\n      },{\r\n        \"ColorOptionId\": 7,\r\n        \"Quantity\": 10,\r\n        \"Priority\": 9\r\n      },{\r\n        \"ColorOptionId\": 8,\r\n        \"Quantity\": 10,\r\n        \"Priority\": 9\r\n      }],\r\n      \"printingOptions\": [\r\n        {\r\n          \"PrintingOptionId\": 1,\r\n          \"Description\": \"Option 1 for Product 1\"\r\n        }\r\n       \r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -784,7 +784,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"ProductCategoryId\": 11,\r\n  \"FabricTypeId\": 15,\r\n  \"Name\": \"Scuba-Flees380 Doctor Long Coats\",\r\n  \"Description\": \"Premium quality doctor long coats made with Scuba-Flees380 fabric.\",\r\n  \"productColors\": [\r\n    {\r\n      \"colorId\": 1,\r\n      \"ImageId\": \"img123\"\r\n    },\r\n    {\r\n      \"colorId\": 1,\r\n      \"ImageId\": \"img124\"\r\n    },\r\n    {\r\n      \"colorId\": 1,\r\n      \"ImageId\": \"img125\"\r\n    }\r\n  ],\r\n   \"productDetails\": [\r\n    {\r\n      \"ProductCutOptionId\": 201,\r\n      \"ProductSizeMeasurementId\": 301,\r\n      \"ProductRegionId\": 401,\r\n      \"SleeveTypeId\": 501\r\n    },\r\n    {\r\n      \"ProductCutOptionId\": 202,\r\n      \"ProductSizeMeasurementId\": 302,\r\n      \"ProductRegionId\": 402,\r\n      \"SleeveTypeId\": 502\r\n    }\r\n  ]\r\n}",
+							"raw": "{\r\n  \"ProductCategoryId\": 11,\r\n  \"FabricTypeId\": 15,\r\n  \"Description\": \"Premium quality doctor long coats made with Scuba-Flees380 fabric.\",\r\n  \"productColors\": [\r\n    {\r\n      \"colorId\": 3,\r\n      \"ImageId\": \"img123\"\r\n    },\r\n    {\r\n      \"colorId\": 4,\r\n      \"ImageId\": \"img124\"\r\n    }\r\n  ],\r\n   \"productDetails\": [\r\n    {\r\n      \"ProductCutOptionId\": 201,\r\n      \"ProductSizeMeasurementId\": 301,\r\n      \"SleeveTypeId\": 501\r\n    },\r\n    {\r\n      \"ProductCutOptionId\": 202,\r\n      \"ProductSizeMeasurementId\": 302,\r\n      \"SleeveTypeId\": 502\r\n    }\r\n  ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -812,7 +812,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/products/availablecolors/269",
+							"raw": "http://localhost:3000/api/products/availablecolors/273",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -822,7 +822,7 @@
 								"api",
 								"products",
 								"availablecolors",
-								"269"
+								"273"
 							]
 						}
 					},
@@ -854,7 +854,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/products/260",
+							"raw": "http://localhost:3000/api/products/273",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -863,7 +863,7 @@
 							"path": [
 								"api",
 								"products",
-								"260"
+								"273"
 							]
 						}
 					},
@@ -876,7 +876,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n        \"Id\": 268,\r\n        \"ProductCategoryId\": 11,\r\n        \"FabricTypeId\": 15,\r\n        \"Name\": \"Scuba-Flees380 Doctor Long Coats Ypdste\",\r\n        \"Description\": \"Premium quality doctor long coats made with Scuba-Flees380 fabric.\",\r\n        \"CreatedOn\": \"2025-03-14T07:06:12.000Z\",\r\n        \"CreatedBy\": \"\",\r\n        \"UpdatedOn\": \"2025-03-14T07:06:12.000Z\",\r\n        \"UpdatedBy\": \"\",\r\n        \"productColors\": [\r\n            {\r\n                \"Id\": 27,\r\n                \"colorId\": 1,\r\n                \"ProductId\": 268,\r\n                \"ImageId\": 0,\r\n                \"CreatedOn\": \"2025-03-14T07:06:12.000Z\",\r\n                \"CreatedBy\": \"test@dev.com\",\r\n                \"UpdatedOn\": \"2025-03-14T07:06:12.000Z\",\r\n                \"UpdatedBy\": \"test@dev.com\"\r\n            },\r\n            {\r\n                \"Id\": 28,\r\n                \"colorId\": 1,\r\n                \"ProductId\": 268,\r\n                \"ImageId\": 0,\r\n                \"CreatedOn\": \"2025-03-14T07:06:12.000Z\",\r\n                \"CreatedBy\": \"test@dev.com\",\r\n                \"UpdatedOn\": \"2025-03-14T07:06:12.000Z\",\r\n                \"UpdatedBy\": \"test@dev.com\"\r\n            },\r\n            {\r\n                \"Id\": 29,\r\n                \"colorId\": 1,\r\n                \"ProductId\": 268,\r\n                \"ImageId\": 0,\r\n                \"CreatedOn\": \"2025-03-14T07:06:12.000Z\",\r\n                \"CreatedBy\": \"test@dev.com\",\r\n                \"UpdatedOn\": \"2025-03-14T07:06:12.000Z\",\r\n                \"UpdatedBy\": \"test@dev.com\"\r\n            }\r\n        ],\r\n        \"productDetails\": [\r\n            {\r\n                \"Id\": 272,\r\n                \"ProductId\": 268,\r\n                \"ProductCutOptionId\": 201,\r\n                \"ProductSizeMeasurementId\": 301,\r\n                \"CreatedOn\": \"2025-03-14T07:06:12.000Z\",\r\n                \"CreatedBy\": \"test@dev.com\",\r\n                \"UpdatedOn\": \"2025-03-14T07:06:12.000Z\",\r\n                \"UpdatedBy\": \"test@dev.com\",\r\n                \"ProductRegionId\": 401,\r\n                \"SleeveTypeId\": 501\r\n            },\r\n            {\r\n                \"Id\": 273,\r\n                \"ProductId\": 268,\r\n                \"ProductCutOptionId\": 202,\r\n                \"ProductSizeMeasurementId\": 302,\r\n                \"CreatedOn\": \"2025-03-14T07:06:12.000Z\",\r\n                \"CreatedBy\": \"test@dev.com\",\r\n                \"UpdatedOn\": \"2025-03-14T07:06:12.000Z\",\r\n                \"UpdatedBy\": \"test@dev.com\",\r\n                \"ProductRegionId\": 402,\r\n                \"SleeveTypeId\": 502\r\n            }\r\n        ]\r\n    }",
+							"raw": "{\r\n        \"Id\": 268,\r\n        \"ProductCategoryId\": 11,\r\n        \"FabricTypeId\": 15,\r\n        \"Description\": \"Premium quality doctor long coats made with Scuba-Flees380 fabric.\",\r\n       \r\n        \"productColors\": [\r\n            {\r\n                \"Id\": 27,\r\n                \"colorId\": 1,\r\n                \"ProductId\": 268,\r\n                \"ImageId\": 0\r\n               \r\n            },\r\n            {\r\n                \"Id\": 28,\r\n                \"colorId\": 1,\r\n                \"ProductId\": 268,\r\n                \"ImageId\": 0\r\n            },\r\n            {\r\n                \"Id\": 29,\r\n                \"colorId\": 1,\r\n                \"ProductId\": 268,\r\n                \"ImageId\": 0\r\n            }\r\n        ],\r\n        \"productDetails\": [\r\n            {\r\n                \"Id\": 272,\r\n                \"ProductId\": 268,\r\n                \"ProductCutOptionId\": 201,\r\n                \"ProductSizeMeasurementId\": 301,\r\n                \"SleeveTypeId\": 501\r\n            },\r\n            {\r\n                \"Id\": 273,\r\n                \"ProductId\": 268,\r\n                \"ProductCutOptionId\": 202,\r\n                \"ProductSizeMeasurementId\": 302,\r\n                \"SleeveTypeId\": 502\r\n            }\r\n        ]\r\n    }",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -884,7 +884,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/products/268",
+							"raw": "http://localhost:3000/api/products/270",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -893,7 +893,7 @@
 							"path": [
 								"api",
 								"products",
-								"268"
+								"270"
 							]
 						}
 					},
@@ -905,7 +905,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/products/268",
+							"raw": "http://localhost:3000/api/products/270",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -914,7 +914,7 @@
 							"path": [
 								"api",
 								"products",
-								"268"
+								"270"
 							]
 						}
 					},
@@ -1067,7 +1067,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/sizeoptions",
+							"raw": "http://localhost:3000/sizeoptions",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1105,7 +1105,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/sizeoptions",
+							"raw": "http://localhost:3000/sizeoptions",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1134,7 +1134,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/sizeoptions/29",
+							"raw": "http://localhost:3000/sizeoptions/29",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1164,7 +1164,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/sizeoptions/30",
+							"raw": "http://localhost:3000/sizeoptions/30",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1203,7 +1203,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/sizeoptions/30",
+							"raw": "http://localhost:3000/sizeoptions/30",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1249,7 +1249,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"Name\": \"Green\"\r\n}\r\n",
+							"raw": "{\r\n  \"Name\": \"Green Test\",\r\n  \"HexCode\": \"#0000FF\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1277,7 +1277,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/coloroption/54345",
+							"raw": "http://localhost:3000/api/coloroption/4",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1286,7 +1286,7 @@
 							"path": [
 								"api",
 								"coloroption",
-								"54345"
+								"4"
 							]
 						}
 					},
@@ -1298,7 +1298,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/coloroption/5",
+							"raw": "http://localhost:3000/api/coloroption/6",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1307,7 +1307,7 @@
 							"path": [
 								"api",
 								"coloroption",
-								"5"
+								"6"
 							]
 						}
 					},
@@ -1320,7 +1320,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n        \"Id\": 5,\r\n        \"Name\": \"Green Updated\",\r\n        \"CreatedOn\": \"2025-03-14T07:52:59.000Z\",\r\n        \"CreatedBy\": \"test@dev.com\",\r\n        \"UpdatedOn\": \"2025-03-14T07:52:59.000Z\",\r\n        \"UpdatedBy\": \"test@dev.com\"\r\n    }",
+							"raw": "{\r\n       \"Name\": \"Blue\",\r\n        \"HexCode\": \"#0000FF\"\r\n    }",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1328,7 +1328,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/coloroption/5",
+							"raw": "http://localhost:3000/api/coloroption/4",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1337,7 +1337,7 @@
 							"path": [
 								"api",
 								"coloroption",
-								"5"
+								"4"
 							]
 						}
 					},
@@ -1374,7 +1374,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/product-region-standard/8",
+							"raw": "http://localhost:3000/product-region-standard/8",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1403,7 +1403,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/product-region-standard",
+							"raw": "http://localhost:3000/product-region-standard",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1431,7 +1431,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/product-region-standard/8",
+							"raw": "http://localhost:3000/product-region-standard/8",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1788,7 +1788,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/printingoptions/6",
+							"raw": "http://localhost:3000/printingoptions/6",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1916,7 +1916,7 @@
 		"bearer": [
 			{
 				"key": "token",
-				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZGV2LmNvbSIsInN1YiI6MSwiaWF0IjoxNzQxOTUyMzA1LCJleHAiOjE3NDIwMzg3MDV9.Ge1zDXkKnxFBoC8L_b0SoF_RI_cFRDleHl2IcIJYnew",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZGV2LmNvbSIsInN1YiI6MSwiaWF0IjoxNzQyMTkxMTI4LCJleHAiOjE3NDIyNzc1Mjh9.Dqpov6eaG2cVnCevjbwDmGxM-6bg1Gi2UehSoW6ylr8",
 				"type": "string"
 			}
 		]

@@ -8,6 +8,9 @@ export class ColorOption {
   @Column({ type: 'varchar', length: 255 })
   Name: string;
 
+  @Column({ type: 'varchar', length: 20 })
+  HexCode: string;
+
   @CreateDateColumn({ type: 'datetime' })
   CreatedOn: Date;
 

@@ -5,4 +5,9 @@ export class CreateColorOptionDto {
   @IsNotEmpty()
   @MaxLength(255)
   Name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(20)
+  HexCode: string;
 }

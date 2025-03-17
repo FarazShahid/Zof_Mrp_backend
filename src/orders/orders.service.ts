@@ -39,7 +39,7 @@ export class OrdersService {
   ) {}
 
   async createOrder(createOrderDto: CreateOrderDto, createdBy: any): Promise<Order> {
-    const { ClientId, OrderEventId, Description, OrderStatusId, Deadline, OrderPriority, ExternalOrderId, OrderName, OrderNumber, items } = createOrderDto;
+    const { ClientId, OrderEventId, Description, Deadline, OrderPriority, ExternalOrderId, OrderName, OrderNumber, items } = createOrderDto;
 
     // Validate client exists
     const client = await this.clientRepository.findOne({ where: { Id: ClientId } });
@@ -51,12 +51,6 @@ export class OrdersService {
     const event = await this.eventRepository.findOne({ where: { Id: OrderEventId } });
     if (!event) {
       throw new NotFoundException(`Event with ID ${OrderEventId} not found`);
-    }
-
-    // Validate status exists
-    const status = await this.statusRepository.findOne({ where: { Id: OrderStatusId } });
-    if (!status) {
-      throw new NotFoundException(`Order status with ID ${OrderStatusId} not found`);
     }
 
     // Validate all products exist
@@ -81,7 +75,6 @@ export class OrdersService {
       ClientId,
       OrderEventId,
       Description,
-      OrderStatusId,
       Deadline,
       OrderPriority,
       ExternalOrderId,
@@ -277,14 +270,6 @@ export class OrdersService {
       const event = await this.eventRepository.findOne({ where: { Id: updateData.OrderEventId } });
       if (!event) {
         throw new NotFoundException(`Event with ID ${updateData.OrderEventId} not found`);
-      }
-    }
-
-    // Validate status exists if provided
-    if (updateData.OrderStatusId) {
-      const status = await this.statusRepository.findOne({ where: { Id: updateData.OrderStatusId } });
-      if (!status) {
-        throw new NotFoundException(`Order status with ID ${updateData.OrderStatusId} not found`);
       }
     }
 

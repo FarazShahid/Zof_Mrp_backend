@@ -16,7 +16,7 @@ export class Order extends BaseEntity {
   @Column({ nullable: true })
   Description: string;
 
-  @Column()
+  @Column({default: 1})
   OrderStatusId: number;
 
   @Column({ type: 'int', nullable: true })

@@ -33,12 +33,6 @@ export class ProductDetailDto {
   @IsNotEmpty()
   @IsInt()
   @Min(1)
-  ProductRegionId: number;
-
-  @IsNumber()
-  @IsNotEmpty()
-  @IsInt()
-  @Min(1)
   SleeveTypeId: number;
 }
 
@@ -54,11 +48,6 @@ export class CreateProductDto {
   @IsInt()
   @Min(1)
   FabricTypeId: number;
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(255)
-  Name: string;
 
   @IsString()
   @IsOptional()

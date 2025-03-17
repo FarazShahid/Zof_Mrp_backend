@@ -117,12 +117,6 @@ export class CreateOrderDto {
   @MaxLength(2000)
   Description: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  @IsInt()
-  @Min(1)
-  OrderStatusId: number;
-
   @IsDateString()
   @IsNotEmpty()
   Deadline: string;

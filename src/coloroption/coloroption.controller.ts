@@ -31,9 +31,9 @@ export class ColorOptionController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id') id: string) {
     try {
-      return this.colorOptionService.findOne(id);
+      return this.colorOptionService.findOne(+id);
     } catch (error) {
       throw error;
     }

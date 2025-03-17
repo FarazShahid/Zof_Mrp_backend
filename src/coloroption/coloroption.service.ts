@@ -21,6 +21,7 @@ export class ColorOptionService {
     return this.colorOptionRepository.save({
         Id: newColor.Id,
         Name: newColor.Name,
+        HexCode: newColor.HexCode,
         CreatedOn: newColor.CreatedOn,
         CreatedBy: newColor.CreatedBy,
         UpdatedOn: newColor.UpdatedOn,
