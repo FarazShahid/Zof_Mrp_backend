@@ -89,4 +89,14 @@ export class ProductsController {
       throw error;
     }
   }
+
+  @Get('sleeve-types/:id')
+  @HttpCode(HttpStatus.OK)
+  async getProductSleeveTypes(@Param('id') id: string) {
+    try {
+      return await this.productsService.getAvailableSleeveTypesByProductId(+id);
+    } catch (error) {
+      throw error;
+    }
+  }
 }

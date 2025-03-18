@@ -788,7 +788,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"ProductCategoryId\": 11,\r\n  \"FabricTypeId\": 15,\r\n  \"Description\": \"Premium quality doctor long coats made with Scuba-Flees380 fabric.\",\r\n  \"productColors\": [\r\n    {\r\n      \"colorId\": 3,\r\n      \"ImageId\": \"img123\"\r\n    },\r\n    {\r\n      \"colorId\": 4,\r\n      \"ImageId\": \"img124\"\r\n    }\r\n  ],\r\n   \"productDetails\": [\r\n    {\r\n      \"ProductCutOptionId\": 201,\r\n      \"ProductSizeMeasurementId\": 301,\r\n      \"SleeveTypeId\": 501\r\n    },\r\n    {\r\n      \"ProductCutOptionId\": 202,\r\n      \"ProductSizeMeasurementId\": 302,\r\n      \"SleeveTypeId\": 502\r\n    }\r\n  ]\r\n}",
+							"raw": "{\r\n  \"ProductCategoryId\": 11,\r\n  \"FabricTypeId\": 15,\r\n  \"Description\": \"Premium quality doctor long coats made with Scuba-Flees380 fabric.\",\r\n  \"productColors\": [\r\n    {\r\n      \"colorId\": 3,\r\n      \"ImageId\": \"img123\"\r\n    },\r\n    {\r\n      \"colorId\": 4,\r\n      \"ImageId\": \"img124\"\r\n    }\r\n  ],\r\n   \"productDetails\": [\r\n    {\r\n      \"ProductCutOptionId\": 201,\r\n      \"ProductSizeMeasurementId\": 1,\r\n      \"SleeveTypeId\": 501\r\n    },\r\n    {\r\n      \"ProductCutOptionId\": 202,\r\n      \"ProductSizeMeasurementId\": 1,\r\n      \"SleeveTypeId\": 502\r\n    }\r\n  ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -909,7 +909,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/products/270",
+							"raw": "http://localhost:3000/api/products/274",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -918,7 +918,7 @@
 							"path": [
 								"api",
 								"products",
-								"270"
+								"274"
 							]
 						}
 					},
@@ -952,7 +952,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/products/size-measurements/160",
+							"raw": "http://localhost:3000/api/products/size-measurements/274",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -962,7 +962,29 @@
 								"api",
 								"products",
 								"size-measurements",
-								"160"
+								"274"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product Sleeve Types",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/products/sleeve-types/276",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"products",
+								"sleeve-types",
+								"276"
 							]
 						}
 					},

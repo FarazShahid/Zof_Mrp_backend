@@ -372,29 +372,34 @@ export class ProductsService {
       const sizeMeasurements = await this.productRepository
         .createQueryBuilder('product')
         .leftJoin('productdetails', 'details', 'details.ProductId = product.Id')
-        .leftJoin('sizeoptions', 'sizeOption', 'sizeOption.Id = details.ProductSizeMeasurementId')
-        .select([
-          'details.Id AS ProductDetailId',
-          'sizeOption.Id AS SizeOptionId',
-          'sizeOption.OptionSizeOptions AS SizeName'
-        ])
+        .leftJoin('sizemeasurements', 'sizemeasurements', 'sizemeasurements.Id = details.ProductSizeMeasurementId')
+        .select(['DISTINCT details.ProductSizeMeasurementId', 'sizemeasurements.*'])
         .where('product.Id = :productId', { productId })
-        .andWhere('details.Id IS NOT NULL')
-        .andWhere('sizeOption.Id IS NOT NULL')
+        .andWhere('details.ProductSizeMeasurementId IS NOT NULL')
+        .andWhere('sizemeasurements.Id IS NOT NULL')
         .getRawMany();
-
-      if (!sizeMeasurements || sizeMeasurements.length === 0) {
-        return [];
-      }
-
-      return sizeMeasurements.map((measurement) => ({
-        ProductDetailId: measurement.ProductDetailId,
-        SizeOptionId: measurement.SizeOptionId,
-        SizeName: measurement.SizeName
-      }));
+      return sizeMeasurements;
     } catch (error) {
       console.error("Error fetching available size measurements:", error);
       throw new BadRequestException('Error fetching size measurements for product');
+    }
+  }
+  
+  async getAvailableSleeveTypesByProductId(productId: number): Promise<any[]> {
+    try {
+      const sleevetypes = await this.productRepository
+        .createQueryBuilder('product')
+        .leftJoin('productdetails', 'details', 'details.ProductId = product.Id')
+        .leftJoin('sleevetype', 'sleevetype', 'sleevetype.Id = details.SleeveTypeId ')
+        .select(['DISTINCT details.SleeveTypeId ', 'sleevetype.*'])
+        .where('product.Id = :productId', { productId })
+        .andWhere('details.SleeveTypeId  IS NOT NULL')
+        .andWhere('sleevetype.Id IS NOT NULL')
+        .getRawMany();
+      return sleevetypes;
+    } catch (error) {
+      console.error("Error fetching available Sleeve Types:", error);
+      throw new BadRequestException('Error fetching sleeve types for product');
     }
   }
 }
