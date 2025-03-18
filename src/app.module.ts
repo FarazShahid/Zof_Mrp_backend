@@ -32,7 +32,8 @@ import { ColorOptionModule } from './coloroption/coloroption.module';
 import { ColorOption } from './coloroption/_/color-option.entity';
 import { ProductregionstandardModule } from './productregionstandard/productregionstandard.module';
 import { ProductRegionStandard } from './productregionstandard/_/product-region-standard.entity';
-
+import { SizeMeasurementsModule } from './size-measurements/size-measurements.module';
+import { SizeMeasurement } from './size-measurements/entities/size-measurement.entity';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -60,10 +61,11 @@ import { ProductRegionStandard } from './productregionstandard/_/product-region-
         SleeveType, 
         FabricType, 
         ColorOption, 
-        ProductRegionStandard
+        ProductRegionStandard,
+        SizeMeasurement
       ],
       // Make Sync False for Prod
-      synchronize: process.env.NODE_ENV === 'development'
+      synchronize: false
     }), 
     ClientsModule, 
     ProductsModule, 
@@ -79,7 +81,8 @@ import { ProductRegionStandard } from './productregionstandard/_/product-region-
     SleeveTypeModule, 
     FabricTypeModule, 
     ColorOptionModule, 
-    ProductregionstandardModule
+    ProductregionstandardModule,
+    SizeMeasurementsModule
   ],
   controllers: []
 })

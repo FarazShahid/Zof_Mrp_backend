@@ -821,19 +821,6 @@ INSERT INTO `product` (`Id`, `ProductCategoryId`, `FabricTypeId`, `CreatedOn`, `
 (247, 8, 12, '2025-01-15 01:32:19', '2025-01-15 01:32:19', '', '', ''),
 (248, 8, 17, '2025-01-15 01:32:19', '2025-01-15 01:32:19', '', '', ''),
 (249, 8, 1, '2025-01-15 01:32:19', '2025-01-15 01:32:19', '', '', ''),
-(252, 11, 15, '2025-02-04 20:09:05', '2025-02-04 20:09:05', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'Hassaan', 'Malik'),
-(255, 11, 15, '2025-03-12 12:59:58', '2025-03-12 12:59:58', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'Hassaan', 'Malik'),
-(256, 11, 15, '2025-03-12 13:04:31', '2025-03-12 13:04:31', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'Hassaan', 'Malik'),
-(257, 11, 15, '2025-03-12 13:08:54', '2025-03-12 13:08:54', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'Hassaan', 'Malik'),
-(258, 11, 15, '2025-03-12 13:11:36', '2025-03-12 13:11:36', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'Hassaan', 'Malik'),
-(261, 11, 15, '2025-03-12 13:14:48', '2025-03-12 13:14:48', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'Hassaan', 'Malik'),
-(262, 11, 15, '0000-00-00 00:00:00', '0000-00-00 00:00:00', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', '', ''),
-(263, 11, 15, '0000-00-00 00:00:00', '0000-00-00 00:00:00', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', '', ''),
-(264, 11, 15, '0000-00-00 00:00:00', '0000-00-00 00:00:00', '', '', ''),
-(265, 11, 15, '2025-03-14 11:48:17', '2025-03-14 11:48:17', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', '', ''),
-(266, 11, 15, '2025-03-14 11:56:21', '2025-03-14 11:56:21', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', '', ''),
-(267, 11, 15, '2025-03-14 12:05:01', '2025-03-14 12:05:01', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', '', ''),
-(268, 11, 15, '2025-03-14 12:06:12', '2025-03-14 12:17:32', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', '', 'test@dev.com'),
 (273, 11, 15, '2025-03-17 11:51:04', '2025-03-17 11:51:04', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'test@dev.com', 'test@dev.com');
 
 -- --------------------------------------------------------
@@ -1088,22 +1075,6 @@ INSERT INTO `productdetails` (`Id`, `ProductId`, `ProductCutOptionId`, `ProductS
 (162, 17, 4, NULL, '2025-01-24 23:02:36', 'Admin', '2025-01-24 23:02:36', NULL, NULL),
 (163, 18, 6, NULL, '2025-01-24 23:02:36', 'Admin', '2025-01-24 23:02:36', NULL, NULL),
 (164, 19, 2, NULL, '2025-01-24 23:02:36', 'Admin', '2025-01-24 23:02:36', NULL, NULL),
-(258, 261, 201, 301, '2025-03-12 13:14:48', 'Hassaan', '2025-03-12 13:14:48', 'Malik', 501),
-(259, 261, 202, 302, '2025-03-12 13:14:48', 'Hassaan', '2025-03-12 13:14:48', 'Malik', 502),
-(260, 262, 201, 301, '2025-03-14 11:43:12', 'test@dev.com', '2025-03-14 11:43:12', 'test@dev.com', 501),
-(261, 262, 202, 302, '2025-03-14 11:43:12', 'test@dev.com', '2025-03-14 11:43:12', 'test@dev.com', 502),
-(262, 263, 201, 301, '2025-03-14 11:43:24', 'test@dev.com', '2025-03-14 11:43:24', 'test@dev.com', 501),
-(263, 263, 202, 302, '2025-03-14 11:43:24', 'test@dev.com', '2025-03-14 11:43:24', 'test@dev.com', 502),
-(264, 264, 201, 301, '2025-03-14 11:46:40', 'test@dev.com', '2025-03-14 11:46:40', 'test@dev.com', 501),
-(265, 264, 202, 302, '2025-03-14 11:46:40', 'test@dev.com', '2025-03-14 11:46:40', 'test@dev.com', 502),
-(266, 265, 201, 301, '2025-03-14 11:48:17', 'test@dev.com', '2025-03-14 11:48:17', 'test@dev.com', 501),
-(267, 265, 202, 302, '2025-03-14 11:48:17', 'test@dev.com', '2025-03-14 11:48:17', 'test@dev.com', 502),
-(268, 266, 201, 301, '2025-03-14 11:56:21', 'test@dev.com', '2025-03-14 11:56:21', 'test@dev.com', 501),
-(269, 266, 202, 302, '2025-03-14 11:56:21', 'test@dev.com', '2025-03-14 11:56:21', 'test@dev.com', 502),
-(270, 267, 201, 301, '2025-03-14 12:05:01', 'test@dev.com', '2025-03-14 12:05:01', 'test@dev.com', 501),
-(271, 267, 202, 302, '2025-03-14 12:05:01', 'test@dev.com', '2025-03-14 12:05:01', 'test@dev.com', 502),
-(282, 268, 201, 301, '2025-03-14 12:17:32', 'test@dev.com', '2025-03-14 12:17:32', 'test@dev.com', 501),
-(283, 268, 202, 302, '2025-03-14 12:17:32', 'test@dev.com', '2025-03-14 12:17:32', 'test@dev.com', 502),
 (294, 273, 201, 301, '2025-03-17 11:51:04', 'test@dev.com', '2025-03-17 11:51:04', 'test@dev.com', 501),
 (295, 273, 202, 302, '2025-03-17 11:51:04', 'test@dev.com', '2025-03-17 11:51:04', 'test@dev.com', 502);
 
@@ -1135,30 +1106,11 @@ INSERT INTO `productregionstandard` (`Id`, `Name`, `CreatedOn`, `CreatedBy`, `Up
 -- --------------------------------------------------------
 
 --
--- Table structure for table `productsizemeasurements`
---
-
-CREATE TABLE `productsizemeasurements` (
-  `Id` int(11) NOT NULL,
-  `SizeOptionsId` int(11) NOT NULL,
-  `ProductCategoryId` int(11) NOT NULL,
-  `ProductCutOptionId` int(11) NOT NULL,
-  `SizeMeasurementsId` int(11) NOT NULL,
-  `CreatedOn` datetime DEFAULT current_timestamp(),
-  `CreatedBy` varchar(100) DEFAULT NULL,
-  `UpdatedOn` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `UpdatedBy` varchar(100) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `sizemeasurements`
 --
 
 CREATE TABLE `sizemeasurements` (
   `Id` int(11) NOT NULL,
-  `ProductSizeMeasurementsId` int(11) NOT NULL,
   `Measurement1` varchar(255) DEFAULT NULL,
   `FrontLengthHPS` decimal(5,2) DEFAULT NULL,
   `BackLengthHPS` decimal(5,2) DEFAULT NULL,
@@ -1506,20 +1458,10 @@ ALTER TABLE `productregionstandard`
   ADD UNIQUE KEY `RegionName` (`Name`);
 
 --
--- Indexes for table `productsizemeasurements`
---
-ALTER TABLE `productsizemeasurements`
-  ADD PRIMARY KEY (`Id`),
-  ADD KEY `SizeOptionsId` (`SizeOptionsId`),
-  ADD KEY `ProductCategoryId` (`ProductCategoryId`),
-  ADD KEY `ProductCutOptionId` (`ProductCutOptionId`);
-
---
 -- Indexes for table `sizemeasurements`
 --
 ALTER TABLE `sizemeasurements`
-  ADD PRIMARY KEY (`Id`),
-  ADD KEY `ProductSizeMeasurementsId` (`ProductSizeMeasurementsId`);
+  ADD PRIMARY KEY (`Id`);
 
 --
 -- Indexes for table `sizeoptions`
@@ -1719,12 +1661,6 @@ ALTER TABLE `productdetails`
 --
 ALTER TABLE `productregionstandard`
   MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
-
---
--- AUTO_INCREMENT for table `productsizemeasurements`
---
-ALTER TABLE `productsizemeasurements`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `sizemeasurements`
