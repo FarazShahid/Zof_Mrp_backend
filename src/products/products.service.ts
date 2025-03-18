@@ -338,4 +338,63 @@ export class ProductsService {
       return [];
     }
   }
+
+  async getAvailableCutOptionsByProductId(productId: number): Promise<any[]> {
+    try {
+      const cutOptions = await this.productRepository
+        .createQueryBuilder('product')
+        .leftJoin('productdetails', 'details', 'details.ProductId = product.Id')
+        .leftJoin('productcutoptions', 'cutOption', 'cutOption.Id = details.ProductCutOptionId')
+        .select([
+          'cutOption.Id AS Id',
+          'cutOption.OptionProductCutOptions AS Name'
+        ])
+        .where('product.Id = :productId', { productId })
+        .andWhere('details.Id IS NOT NULL')
+        .getRawMany();
+
+      if (!cutOptions || cutOptions.length === 0) {
+        return [];
+      }
+
+      return cutOptions.map((option) => ({
+        Id: option.Id,
+        Name: option.Name
+      }));
+    } catch (error) {
+      console.error("Error fetching available cut options:", error);
+      throw new BadRequestException('Error fetching cut options for product');
+    }
+  }
+
+  async getAvailableSizeMeasurementsByProductId(productId: number): Promise<any[]> {
+    try {
+      const sizeMeasurements = await this.productRepository
+        .createQueryBuilder('product')
+        .leftJoin('productdetails', 'details', 'details.ProductId = product.Id')
+        .leftJoin('sizeoptions', 'sizeOption', 'sizeOption.Id = details.ProductSizeMeasurementId')
+        .select([
+          'details.Id AS ProductDetailId',
+          'sizeOption.Id AS SizeOptionId',
+          'sizeOption.OptionSizeOptions AS SizeName'
+        ])
+        .where('product.Id = :productId', { productId })
+        .andWhere('details.Id IS NOT NULL')
+        .andWhere('sizeOption.Id IS NOT NULL')
+        .getRawMany();
+
+      if (!sizeMeasurements || sizeMeasurements.length === 0) {
+        return [];
+      }
+
+      return sizeMeasurements.map((measurement) => ({
+        ProductDetailId: measurement.ProductDetailId,
+        SizeOptionId: measurement.SizeOptionId,
+        SizeName: measurement.SizeName
+      }));
+    } catch (error) {
+      console.error("Error fetching available size measurements:", error);
+      throw new BadRequestException('Error fetching size measurements for product');
+    }
+  }
 }

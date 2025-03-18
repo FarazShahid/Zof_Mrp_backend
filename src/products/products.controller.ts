@@ -69,4 +69,24 @@ export class ProductsController {
       throw error;
     }
   }
+
+  @Get('cut-options/:id')
+  @HttpCode(HttpStatus.OK)
+  async getProductCutOptions(@Param('id') id: string) {
+    try {
+      return await this.productsService.getAvailableCutOptionsByProductId(+id);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('size-measurements/:id')
+  @HttpCode(HttpStatus.OK)
+  async getProductSizeMeasurements(@Param('id') id: string) {
+    try {
+      return await this.productsService.getAvailableSizeMeasurementsByProductId(+id);
+    } catch (error) {
+      throw error;
+    }
+  }
 }

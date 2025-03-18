@@ -923,6 +923,28 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get Product Cut Options",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/products/cut-options/160",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"products",
+								"cut-options",
+								"160"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
