@@ -4,7 +4,9 @@ import { CreateProductRegionStandardDto } from './_/create-product-region-standa
 import { UpdateProductRegionStandardDto } from './_/update-product-region-standard.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Product Region Standards')
 @Controller('product-region-standard')
 @UseGuards(JwtAuthGuard)
 export class ProductRegionStandardController {

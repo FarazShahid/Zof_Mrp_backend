@@ -5,7 +5,9 @@ import { CreateSizeOptionDto } from './dto/create-sizeoptions.dto';
 import { SizeOption } from './entities/sizeoptions.entity';
 import { UpdateSizeOptionDto } from './dto/update-sizeoptions.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Size Options')
 @Controller('sizeoptions')
 @UseGuards(JwtAuthGuard)
 export class SizeoptionsController {

@@ -3,6 +3,9 @@ import { OrderstatusService } from './orderstatus.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateOrderStatusDto, UpdateOrderStatusDto } from './dto/order-status.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('Order Statuses')
 
 @Controller('orderstatuses')
 @UseGuards(JwtAuthGuard)

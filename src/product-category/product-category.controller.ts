@@ -4,7 +4,9 @@ import { CreateProductCategoryDto } from './dto/create-product-category.dto';
 import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Product Categories')
 @Controller('product-category')
 @UseGuards(JwtAuthGuard)
 export class ProductCategoryController {

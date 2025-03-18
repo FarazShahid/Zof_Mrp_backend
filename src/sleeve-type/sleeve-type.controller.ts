@@ -4,7 +4,9 @@ import { CreateSleeveTypeDto } from "./dto/create-sleeve-type.dto/create-sleeve-
 import { UpdateSleeveTypeDto } from './dto/update-sleeve-type.dto/update-sleeve-type.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Sleeve Types')
 @Controller('sleeve-type')
 @UseGuards(JwtAuthGuard)
 export class SleeveTypeController {

@@ -17,7 +17,9 @@ import { FabricTypeService } from './fabrictype.service';
 import { CreateFabricTypeDto } from './_/create-fabrictype.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Fabric Types')
 @Controller('fabrictype')
 @UseGuards(JwtAuthGuard)
 export class FabricTypeController {

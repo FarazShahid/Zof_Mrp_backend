@@ -5,7 +5,9 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateProductCutOptionDto } from './dto/create-product-cut-option.dto';
 import { UpdateProductCutOptionDto } from './dto/update-product-cut-option.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Product Cut Options')
 @Controller('productcutoptions')
 @UseGuards(JwtAuthGuard)
 export class ProductcutoptionsController {

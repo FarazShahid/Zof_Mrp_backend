@@ -4,6 +4,9 @@ import { CreateColorOptionDto } from './_/create-color-option.dto';
 import { UpdateColorOptionDto } from './_/update-color-option.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('Color Options')
 @Controller('coloroption')
 @UseGuards(JwtAuthGuard)
 export class ColorOptionController {

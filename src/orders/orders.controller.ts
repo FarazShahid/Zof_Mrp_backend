@@ -19,6 +19,9 @@ import { UpdateOrderDto } from './dto/update-orders.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PaginationDto } from './dto/pagination.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('Orders')
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
 export class OrdersController {

@@ -3,7 +3,9 @@ import { PrintingoptionsService } from './printingoptions.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreatePrintingOptionDto, UpdatePrintingOptionDto } from './dto/printing-option.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Printing Options')
 @Controller('printingoptions')
 @UseGuards(JwtAuthGuard)
 export class PrintingoptionsController {

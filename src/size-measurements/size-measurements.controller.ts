@@ -4,7 +4,9 @@ import { CreateSizeMeasurementDto } from './dto/create-size-measurement.dto';
 import { UpdateSizeMeasurementDto } from './dto/update-size-measurement.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Size Measurements')
 @Controller('size-measurements')
 @UseGuards(JwtAuthGuard)
 export class SizeMeasurementsController {

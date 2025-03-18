@@ -5,6 +5,9 @@ import { UserService } from 'src/users/user.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('Events')
 @Controller('events')
 @UseGuards(JwtAuthGuard)
 export class EventController {
