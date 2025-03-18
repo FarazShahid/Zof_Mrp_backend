@@ -367,18 +367,21 @@ export class ProductsService {
     }
   }
 
-  async getAvailableSizeMeasurementsByProductId(productId: number): Promise<any[]> {
+  async getAvailableSizeOptionsByProductId(productId: number): Promise<any[]> {
     try {
-      const sizeMeasurements = await this.productRepository
+      const sizeoptions = await this.productRepository
         .createQueryBuilder('product')
         .leftJoin('productdetails', 'details', 'details.ProductId = product.Id')
-        .leftJoin('sizemeasurements', 'sizemeasurements', 'sizemeasurements.Id = details.ProductSizeMeasurementId')
-        .select(['DISTINCT details.ProductSizeMeasurementId', 'sizemeasurements.*'])
+        .leftJoin('sizeoptions', 'sizeoptions', 'sizeoptions.Id = details.ProductSizeMeasurementId')
+        .select(['DISTINCT details.ProductSizeMeasurementId', 'sizeoptions.*'])
         .where('product.Id = :productId', { productId })
         .andWhere('details.ProductSizeMeasurementId IS NOT NULL')
-        .andWhere('sizemeasurements.Id IS NOT NULL')
+        .andWhere('sizeoptions.Id IS NOT NULL')
         .getRawMany();
-      return sizeMeasurements;
+      return sizeoptions.map(e=>({
+        Id: e.Id,
+        Name: e.OptionSizeOptions
+      }));
     } catch (error) {
       console.error("Error fetching available size measurements:", error);
       throw new BadRequestException('Error fetching size measurements for product');

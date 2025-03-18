@@ -947,12 +947,12 @@
 					"response": []
 				},
 				{
-					"name": "Get Product Size Measurments",
+					"name": "Get Product Size Options",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/products/size-measurements/274",
+							"raw": "http://localhost:3000/api/products/size-options/274",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -961,7 +961,7 @@
 							"path": [
 								"api",
 								"products",
-								"size-measurements",
+								"size-options",
 								"274"
 							]
 						}
@@ -1283,7 +1283,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Measurement1\": \"Standard Fit - Men s Dress Shirt\",\r\n    \"FrontLengthHPS\": 75.50,\r\n    \"BackLengthHPS\": 77.00,\r\n    \"AcrossShoulders\": 45.75,\r\n    \"ArmHole\": 25.50,\r\n    \"UpperChest\": 52.00,\r\n    \"LowerChest\": 50.50,\r\n    \"Waist\": 48.25,\r\n    \"BottomWidth\": 54.00,\r\n    \"SleeveLength\": 65.25,\r\n    \"SleeveOpening\": 16.50,\r\n    \"NeckSize\": 41.00,\r\n    \"CollarHeight\": 3.50,\r\n    \"CollarPointHeight\": 7.25,\r\n    \"StandHeightBack\": 4.00,\r\n    \"CollarStandLength\": 8.75,\r\n    \"SideVentFront\": 15.25,\r\n    \"SideVentBack\": 17.50,\r\n    \"PlacketLength\": 35.00,\r\n    \"TwoButtonDistance\": 10.25,\r\n    \"PlacketWidth\": 3.25,\r\n    \"BottomHem\": 2.50\r\n  }",
+							"raw": "{\r\n    \"SizeOptionId\": 1,\r\n    \"Measurement1\": \"Standard Fit - Men s Dress Shirt\",\r\n    \"FrontLengthHPS\": 75.50,\r\n    \"BackLengthHPS\": 77.00,\r\n    \"AcrossShoulders\": 45.75,\r\n    \"ArmHole\": 25.50,\r\n    \"UpperChest\": 52.00,\r\n    \"LowerChest\": 50.50,\r\n    \"Waist\": 48.25,\r\n    \"BottomWidth\": 54.00,\r\n    \"SleeveLength\": 65.25,\r\n    \"SleeveOpening\": 16.50,\r\n    \"NeckSize\": 41.00,\r\n    \"CollarHeight\": 3.50,\r\n    \"CollarPointHeight\": 7.25,\r\n    \"StandHeightBack\": 4.00,\r\n    \"CollarStandLength\": 8.75,\r\n    \"SideVentFront\": 15.25,\r\n    \"SideVentBack\": 17.50,\r\n    \"PlacketLength\": 35.00,\r\n    \"TwoButtonDistance\": 10.25,\r\n    \"PlacketWidth\": 3.25,\r\n    \"BottomHem\": 2.50\r\n  }",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1333,7 +1333,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n        \"Id\": 1,\r\n        \"Measurement1\": \"Standard Fit - Men s Dress Shirt |Up\",\r\n        \"FrontLengthHPS\": \"75.50\",\r\n        \"BackLengthHPS\": \"77.00\",\r\n        \"AcrossShoulders\": \"45.75\",\r\n        \"ArmHole\": \"25.50\",\r\n        \"UpperChest\": \"52.00\",\r\n        \"LowerChest\": \"50.50\",\r\n        \"Waist\": \"48.25\",\r\n        \"BottomWidth\": \"54.00\",\r\n        \"SleeveLength\": \"65.25\",\r\n        \"SleeveOpening\": \"16.50\",\r\n        \"NeckSize\": \"41.00\",\r\n        \"CollarHeight\": \"3.50\",\r\n        \"CollarPointHeight\": \"7.25\",\r\n        \"StandHeightBack\": \"4.00\",\r\n        \"CollarStandLength\": \"8.75\",\r\n        \"SideVentFront\": \"15.25\",\r\n        \"SideVentBack\": \"17.50\",\r\n        \"PlacketLength\": \"35.00\",\r\n        \"TwoButtonDistance\": \"10.25\",\r\n        \"PlacketWidth\": \"3.25\",\r\n        \"BottomHem\": \"2.50\",\r\n        \"CreatedOn\": \"2025-03-18T06:20:22.000Z\",\r\n        \"CreatedBy\": \"test@dev.com\",\r\n        \"UpdatedOn\": \"2025-03-18T06:20:22.000Z\",\r\n        \"UpdatedBy\": \"test@dev.com\"\r\n    }",
+							"raw": "{\r\n        \"Id\": 1,\r\n        \"SizeOptionId\": 3,\r\n        \"Measurement1\": \"Standard Fit - Men s Dress Shirt |Up\",\r\n        \"FrontLengthHPS\": \"75.50\",\r\n        \"BackLengthHPS\": \"77.00\",\r\n        \"AcrossShoulders\": \"45.75\",\r\n        \"ArmHole\": \"25.50\",\r\n        \"UpperChest\": \"52.00\",\r\n        \"LowerChest\": \"50.50\",\r\n        \"Waist\": \"48.25\",\r\n        \"BottomWidth\": \"54.00\",\r\n        \"SleeveLength\": \"65.25\",\r\n        \"SleeveOpening\": \"16.50\",\r\n        \"NeckSize\": \"41.00\",\r\n        \"CollarHeight\": \"3.50\",\r\n        \"CollarPointHeight\": \"7.25\",\r\n        \"StandHeightBack\": \"4.00\",\r\n        \"CollarStandLength\": \"8.75\",\r\n        \"SideVentFront\": \"15.25\",\r\n        \"SideVentBack\": \"17.50\",\r\n        \"PlacketLength\": \"35.00\",\r\n        \"TwoButtonDistance\": \"10.25\",\r\n        \"PlacketWidth\": \"3.25\",\r\n        \"BottomHem\": \"2.50\",\r\n        \"CreatedOn\": \"2025-03-18T06:20:22.000Z\",\r\n        \"CreatedBy\": \"test@dev.com\",\r\n        \"UpdatedOn\": \"2025-03-18T06:28:38.000Z\",\r\n        \"UpdatedBy\": \"test@dev.com\",\r\n        \"SizeOptionName\": \"XS-UK\"\r\n    }",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1357,12 +1357,12 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "Delete",
 					"request": {
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/size-measurements/2",
+							"raw": "http://localhost:3000/api/size-measurements/3",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1371,7 +1371,7 @@
 							"path": [
 								"api",
 								"size-measurements",
-								"2"
+								"3"
 							]
 						}
 					},

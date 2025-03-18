@@ -26,7 +26,13 @@ CREATE TABLE `availablecoloroptions` (
 
 INSERT INTO `availablecoloroptions` (`Id`, `colorId`, `ProductId`, `ImageId`, `CreatedOn`, `CreatedBy`, `UpdatedOn`, `UpdatedBy`) VALUES
 (60, 3, 273, 0, '2025-03-17 11:51:04', 'test@dev.com', '2025-03-17 11:51:04', 'test@dev.com'),
-(61, 4, 273, 0, '2025-03-17 11:51:04', 'test@dev.com', '2025-03-17 11:51:04', 'test@dev.com');
+(61, 4, 273, 0, '2025-03-17 11:51:04', 'test@dev.com', '2025-03-17 11:51:04', 'test@dev.com'),
+(62, 3, 274, 0, '2025-03-18 11:39:39', 'test@dev.com', '2025-03-18 11:39:39', 'test@dev.com'),
+(63, 4, 274, 0, '2025-03-18 11:39:39', 'test@dev.com', '2025-03-18 11:39:39', 'test@dev.com'),
+(64, 3, 275, 0, '2025-03-18 11:53:43', 'test@dev.com', '2025-03-18 11:53:43', 'test@dev.com'),
+(65, 4, 275, 0, '2025-03-18 11:53:43', 'test@dev.com', '2025-03-18 11:53:43', 'test@dev.com'),
+(66, 3, 276, 0, '2025-03-18 11:54:19', 'test@dev.com', '2025-03-18 11:54:19', 'test@dev.com'),
+(67, 4, 276, 0, '2025-03-18 11:54:19', 'test@dev.com', '2025-03-18 11:54:19', 'test@dev.com');
 
 -- --------------------------------------------------------
 
@@ -821,7 +827,10 @@ INSERT INTO `product` (`Id`, `ProductCategoryId`, `FabricTypeId`, `CreatedOn`, `
 (247, 8, 12, '2025-01-15 01:32:19', '2025-01-15 01:32:19', '', '', ''),
 (248, 8, 17, '2025-01-15 01:32:19', '2025-01-15 01:32:19', '', '', ''),
 (249, 8, 1, '2025-01-15 01:32:19', '2025-01-15 01:32:19', '', '', ''),
-(273, 11, 15, '2025-03-17 11:51:04', '2025-03-17 11:51:04', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'test@dev.com', 'test@dev.com');
+(273, 11, 15, '2025-03-17 11:51:04', '2025-03-17 11:51:04', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'test@dev.com', 'test@dev.com'),
+(274, 11, 15, '2025-03-18 11:39:39', '2025-03-18 11:39:39', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'test@dev.com', 'test@dev.com'),
+(275, 11, 15, '2025-03-18 11:53:43', '2025-03-18 11:53:43', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'test@dev.com', 'test@dev.com'),
+(276, 11, 15, '2025-03-18 11:54:19', '2025-03-18 11:54:19', 'Premium quality doctor long coats made with Scuba-Flees380 fabric.', 'test@dev.com', 'test@dev.com');
 
 -- --------------------------------------------------------
 
@@ -1076,7 +1085,13 @@ INSERT INTO `productdetails` (`Id`, `ProductId`, `ProductCutOptionId`, `ProductS
 (163, 18, 6, NULL, '2025-01-24 23:02:36', 'Admin', '2025-01-24 23:02:36', NULL, NULL),
 (164, 19, 2, NULL, '2025-01-24 23:02:36', 'Admin', '2025-01-24 23:02:36', NULL, NULL),
 (294, 273, 201, 301, '2025-03-17 11:51:04', 'test@dev.com', '2025-03-17 11:51:04', 'test@dev.com', 501),
-(295, 273, 202, 302, '2025-03-17 11:51:04', 'test@dev.com', '2025-03-17 11:51:04', 'test@dev.com', 502);
+(295, 273, 202, 302, '2025-03-17 11:51:04', 'test@dev.com', '2025-03-17 11:51:04', 'test@dev.com', 502),
+(296, 274, 201, 1, '2025-03-18 11:39:39', 'test@dev.com', '2025-03-18 11:39:39', 'test@dev.com', 501),
+(297, 274, 202, 1, '2025-03-18 11:39:39', 'test@dev.com', '2025-03-18 11:39:39', 'test@dev.com', 502),
+(298, 275, 201, 1, '2025-03-18 11:53:43', 'test@dev.com', '2025-03-18 11:53:43', 'test@dev.com', 501),
+(299, 275, 202, 1, '2025-03-18 11:53:43', 'test@dev.com', '2025-03-18 11:53:43', 'test@dev.com', 502),
+(300, 276, 201, 1, '2025-03-18 11:54:19', 'test@dev.com', '2025-03-18 11:54:19', 'test@dev.com', 1),
+(301, 276, 202, 1, '2025-03-18 11:54:19', 'test@dev.com', '2025-03-18 11:54:19', 'test@dev.com', 23);
 
 -- --------------------------------------------------------
 
@@ -1111,6 +1126,7 @@ INSERT INTO `productregionstandard` (`Id`, `Name`, `CreatedOn`, `CreatedBy`, `Up
 
 CREATE TABLE `sizemeasurements` (
   `Id` int(11) NOT NULL,
+  `SizeOptionId` int(11) NOT NULL DEFAULT 1,
   `Measurement1` varchar(255) DEFAULT NULL,
   `FrontLengthHPS` decimal(5,2) DEFAULT NULL,
   `BackLengthHPS` decimal(5,2) DEFAULT NULL,
@@ -1138,6 +1154,13 @@ CREATE TABLE `sizemeasurements` (
   `UpdatedOn` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `UpdatedBy` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `sizemeasurements`
+--
+
+INSERT INTO `sizemeasurements` (`Id`, `SizeOptionId`, `Measurement1`, `FrontLengthHPS`, `BackLengthHPS`, `AcrossShoulders`, `ArmHole`, `UpperChest`, `LowerChest`, `Waist`, `BottomWidth`, `SleeveLength`, `SleeveOpening`, `NeckSize`, `CollarHeight`, `CollarPointHeight`, `StandHeightBack`, `CollarStandLength`, `SideVentFront`, `SideVentBack`, `PlacketLength`, `TwoButtonDistance`, `PlacketWidth`, `BottomHem`, `CreatedOn`, `CreatedBy`, `UpdatedOn`, `UpdatedBy`) VALUES
+(1, 3, 'Standard Fit - Men s Dress Shirt |Up', 75.50, 77.00, 45.75, 25.50, 52.00, 50.50, 48.25, 54.00, 65.25, 16.50, 41.00, 3.50, 7.25, 4.00, 8.75, 15.25, 17.50, 35.00, 10.25, 3.25, 2.50, '2025-03-18 11:20:22', 'test@dev.com', '2025-03-18 14:14:37', 'test@dev.com');
 
 -- --------------------------------------------------------
 
@@ -1492,7 +1515,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `availablecoloroptions`
 --
 ALTER TABLE `availablecoloroptions`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
 
 --
 -- AUTO_INCREMENT for table `client`
@@ -1636,7 +1659,7 @@ ALTER TABLE `printingoptions`
 -- AUTO_INCREMENT for table `product`
 --
 ALTER TABLE `product`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=274;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=277;
 
 --
 -- AUTO_INCREMENT for table `productcategory`
@@ -1654,7 +1677,7 @@ ALTER TABLE `productcutoptions`
 -- AUTO_INCREMENT for table `productdetails`
 --
 ALTER TABLE `productdetails`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=296;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=302;
 
 --
 -- AUTO_INCREMENT for table `productregionstandard`
@@ -1666,7 +1689,7 @@ ALTER TABLE `productregionstandard`
 -- AUTO_INCREMENT for table `sizemeasurements`
 --
 ALTER TABLE `sizemeasurements`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `sizeoptions`

@@ -1,6 +1,11 @@
-import { IsString, IsNumber, IsOptional, Min, Max } from 'class-validator';
+  import { IsString, IsNumber, IsOptional, Min, Max, IsNotEmpty  } from 'class-validator';
 
 export class CreateSizeMeasurementDto {
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(1)
+  SizeOptionId: number;
+
   @IsString()
   @IsOptional()
   Measurement1?: string;
