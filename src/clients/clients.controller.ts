@@ -7,7 +7,7 @@ import { UpdateClientDto } from './dto/update-client.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { ApiTags } from '@nestjs/swagger';
-
+import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 @ApiTags('Clients')
 @Controller('clients')
 @UseGuards(JwtAuthGuard)
@@ -18,6 +18,7 @@ export class ClientsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @CommonApiResponses('Create a new client')
   create(@Body() createClientDto: CreateClientDto, @CurrentUser() user: any) {
     this.logger.log(`Creating client: ${JSON.stringify(createClientDto)}, User: ${JSON.stringify(user)}`);
     try {
@@ -30,6 +31,7 @@ export class ClientsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get all clients')
   findAll() {
     this.logger.log('Getting all clients');
     try {
@@ -42,6 +44,7 @@ export class ClientsController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get a client by id')
   findOne(@Param('id') id: string) {
     this.logger.log(`Getting client with id: ${id}`);
     try {
@@ -54,6 +57,7 @@ export class ClientsController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Update a client by id')
   update(
     @Param('id') id: string, 
     @Body() updateClientDto: UpdateClientDto,
@@ -70,6 +74,7 @@ export class ClientsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @CommonApiResponses('Delete a client by id')
   remove(@Param('id') id: string) {
     this.logger.log(`Deleting client with id: ${id}`);
     try {

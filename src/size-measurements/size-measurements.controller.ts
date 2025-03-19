@@ -5,7 +5,7 @@ import { UpdateSizeMeasurementDto } from './dto/update-size-measurement.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { ApiTags } from '@nestjs/swagger';
-
+import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 @ApiTags('Size Measurements')
 @Controller('size-measurements')
 @UseGuards(JwtAuthGuard)
@@ -14,6 +14,7 @@ export class SizeMeasurementsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @CommonApiResponses('Create a new size measurement')
   create(@Body() createSizeMeasurementDto: CreateSizeMeasurementDto, @CurrentUser() user: any) {
     try {
       return this.sizeMeasurementsService.create(createSizeMeasurementDto, user.email);
@@ -24,6 +25,7 @@ export class SizeMeasurementsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get all size measurements')
   findAll() {
     try {
       return this.sizeMeasurementsService.findAll();
@@ -34,6 +36,7 @@ export class SizeMeasurementsController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get a size measurement by id')
   findOne(@Param('id') id: string) {
     try {
       return this.sizeMeasurementsService.findOne(+id);
@@ -44,6 +47,7 @@ export class SizeMeasurementsController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Update a size measurement by id')
   update(
     @Param('id') id: string,
     @Body() updateSizeMeasurementDto: UpdateSizeMeasurementDto,
@@ -58,6 +62,7 @@ export class SizeMeasurementsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @CommonApiResponses('Delete a size measurement by id')
   remove(@Param('id') id: string) {
     try {
       return this.sizeMeasurementsService.remove(+id);

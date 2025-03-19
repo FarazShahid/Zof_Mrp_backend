@@ -6,7 +6,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { ApiTags } from '@nestjs/swagger';
-
+import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 @ApiTags('Events')
 @Controller('events')
 @UseGuards(JwtAuthGuard)
@@ -18,6 +18,7 @@ export class EventController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @CommonApiResponses('Create a new event')
   async create(@Body() createEventDto: CreateEventDto, @CurrentUser() user: any): Promise<any> {
     try {
       const event = await this.eventService.create(createEventDto, user.email);
@@ -29,6 +30,7 @@ export class EventController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get all events')
   async findAll(): Promise<any> {
     try {
       const events = await this.eventService.getAllEvents();
@@ -40,6 +42,7 @@ export class EventController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get an event by id')
   async findOne(@Param('id') id: string): Promise<any> {
     try {
       const event = await this.eventService.findOne(+id);
@@ -51,6 +54,7 @@ export class EventController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Update an event by id')
   async update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto, @CurrentUser() user: any): Promise<any> {
     try {
       const event = await this.eventService.update(+id, updateEventDto, user.email);
@@ -62,6 +66,7 @@ export class EventController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @CommonApiResponses('Delete an event by id')
   async remove(@Param('id') id: string): Promise<void> {
     try {
       await this.eventService.remove(+id);

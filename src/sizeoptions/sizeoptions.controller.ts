@@ -6,6 +6,7 @@ import { SizeOption } from './entities/sizeoptions.entity';
 import { UpdateSizeOptionDto } from './dto/update-sizeoptions.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { ApiTags } from '@nestjs/swagger';
+import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 
 @ApiTags('Size Options')
 @Controller('sizeoptions')
@@ -15,6 +16,7 @@ export class SizeoptionsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @CommonApiResponses('Create a new size option')
   async create(@Body() CreateSizeOptionDto: CreateSizeOptionDto, @CurrentUser() currentUser: any): Promise<SizeOption> {
     try {
       return this.sizeoptionsService.create(CreateSizeOptionDto, currentUser.email);
@@ -25,6 +27,7 @@ export class SizeoptionsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get all size options')
   async findAll() {
     try {
       return this.sizeoptionsService.getAllSizeOptions();
@@ -35,6 +38,7 @@ export class SizeoptionsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @CommonApiResponses('Delete a size option by id')
   async remove(@Param('id') id: number): Promise<void> {
     try {
       return this.sizeoptionsService.remove(id);
@@ -45,6 +49,7 @@ export class SizeoptionsController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get a size option by id')
   async findOne(@Param('id') id: number) {
     try {
       return this.sizeoptionsService.findOne(id);
@@ -55,6 +60,7 @@ export class SizeoptionsController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Update a size option by id')
   async update(@Param('id') id: number, @Body() updateSizeOptionDto: UpdateSizeOptionDto, @CurrentUser() currentUser: any) {
     try {
       return this.sizeoptionsService.update(id, updateSizeOptionDto, currentUser.email);

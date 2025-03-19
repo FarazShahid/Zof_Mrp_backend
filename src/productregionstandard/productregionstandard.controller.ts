@@ -5,7 +5,7 @@ import { UpdateProductRegionStandardDto } from './_/update-product-region-standa
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { ApiTags } from '@nestjs/swagger';
-
+import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 @ApiTags('Product Region Standards')
 @Controller('product-region-standard')
 @UseGuards(JwtAuthGuard)
@@ -14,6 +14,7 @@ export class ProductRegionStandardController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @CommonApiResponses('Create a new product region standard')
   create(@Body() dto: CreateProductRegionStandardDto, @CurrentUser() currentUser: any) {
     try {
       return this.service.create(dto, currentUser.email);
@@ -24,6 +25,7 @@ export class ProductRegionStandardController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get all product region standards')
   findAll() {
     try {
       return this.service.findAll();
@@ -34,6 +36,7 @@ export class ProductRegionStandardController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get a product region standard by id')
   findOne(@Param('id') id: number) {
     try {
       return this.service.findOne(id);
@@ -44,6 +47,7 @@ export class ProductRegionStandardController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Update a product region standard by id')
   update(@Param('id') id: number, @Body() dto: UpdateProductRegionStandardDto, @CurrentUser() currentUser: any) {
     try {
       return this.service.update(id, dto, currentUser.email);
@@ -54,6 +58,7 @@ export class ProductRegionStandardController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @CommonApiResponses('Delete a product region standard by id')
   remove(@Param('id') id: number) {
     try {
       return this.service.remove(id);
