@@ -1,16 +1,15 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Logger,  HttpCode, 
+import { Get, Post, Body, Param, Delete, Logger,  HttpCode, 
   HttpStatus, BadRequestException,
   Put, } from '@nestjs/common';
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
-import { ApiTags, ApiBody } from '@nestjs/swagger';
+import { ApiBody } from '@nestjs/swagger';
 import { CommonApiResponses, CommonApiResponseModal } from 'src/common/decorators/common-api-response.decorator';
-@ApiTags('Clients')
-@Controller('clients')
-@UseGuards(JwtAuthGuard)
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+
+@ControllerAuthProtector('Clients', 'clients')
 export class ClientsController {
   private readonly logger = new Logger(ClientsController.name);
 

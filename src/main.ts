@@ -61,11 +61,21 @@ async function bootstrap() {
       .setTitle('ZOF MRP API')
       .setDescription('The ZOF MRP API documentation')
       .setVersion('1.0')
-      .addBearerAuth()
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'Authorization',
+          description: 'Enter JWT token',
+          in: 'header',
+        },
+        'JWT-auth',
+      )
       .build();
     const document = swagger.SwaggerModule.createDocument(app, config);
-    swagger.SwaggerModule.setup('api/docs', app, document);
-    logger.log('Swagger documentation is available at /api/docs');
+    swagger.SwaggerModule.setup('api/docs/swagger.html', app, document);
+    logger.log('Swagger documentation is available at /api/docs/swagger.html');
   } catch (error) {
     logger.warn('Swagger module not available, documentation will not be generated');
   }

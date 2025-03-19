@@ -1,15 +1,13 @@
 
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, ParseIntPipe, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Delete, Get, Param, Post, Put, ParseIntPipe, HttpCode, HttpStatus } from '@nestjs/common';
 import { ProductcutoptionsService } from './productcutoptions.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateProductCutOptionDto } from './dto/create-product-cut-option.dto';
 import { UpdateProductCutOptionDto } from './dto/update-product-cut-option.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
-import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
-@ApiTags('Product Cut Options')
-@Controller('productcutoptions')
-@UseGuards(JwtAuthGuard)
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+
+@ControllerAuthProtector('Product Cut Options', 'productcutoptions')
 export class ProductcutoptionsController {
   constructor(private readonly productcutoptionsService: ProductcutoptionsService) { }
 

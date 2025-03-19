@@ -1,15 +1,12 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Get, Post, Body, Param, Put, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { ColorOptionService } from './coloroption.service';
 import { CreateColorOptionDto } from './_/create-color-option.dto';
 import { UpdateColorOptionDto } from './_/update-color-option.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
-import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 
-@ApiTags('Color Options')
-@Controller('coloroption')
-@UseGuards(JwtAuthGuard)
+@ControllerAuthProtector('Color Options', 'coloroption')
 export class ColorOptionController {
   constructor(private readonly colorOptionService: ColorOptionService) {}
 

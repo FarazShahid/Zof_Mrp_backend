@@ -1,15 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Delete, Get, Param, Post, Put, HttpCode, HttpStatus } from '@nestjs/common';
 import { OrderstatusService } from './orderstatus.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateOrderStatusDto, UpdateOrderStatusDto } from './dto/order-status.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
-import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 
-@ApiTags('Order Statuses')
-
-@Controller('orderstatuses')
-@UseGuards(JwtAuthGuard)
+@ControllerAuthProtector('Order Statuses', 'orderstatuses')
 export class OrderStatusController {
   constructor(private readonly orderStatusService: OrderstatusService) { }
 

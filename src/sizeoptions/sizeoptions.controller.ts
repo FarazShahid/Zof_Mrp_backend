@@ -1,16 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Delete, Get, Param, Post, Put, HttpCode, HttpStatus } from '@nestjs/common';
 import { SizeoptionsService } from './sizeoptions.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateSizeOptionDto } from './dto/create-sizeoptions.dto';
 import { SizeOption } from './entities/sizeoptions.entity';
 import { UpdateSizeOptionDto } from './dto/update-sizeoptions.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
-import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 
-@ApiTags('Size Options')
-@Controller('sizeoptions')
-@UseGuards(JwtAuthGuard)
+@ControllerAuthProtector('Size Options', 'sizeoptions')
 export class SizeoptionsController {
   constructor(private readonly sizeoptionsService: SizeoptionsService) { }
 

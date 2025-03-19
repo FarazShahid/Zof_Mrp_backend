@@ -1,14 +1,12 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
-import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
-@ApiTags('Products')
-@Controller('products')
-@UseGuards(JwtAuthGuard)
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+
+@ControllerAuthProtector('Products', 'products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 

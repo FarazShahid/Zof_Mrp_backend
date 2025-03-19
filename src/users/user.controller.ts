@@ -1,15 +1,13 @@
-import { Controller, Get, Post, Param, Body, Put, Delete, UseGuards, Logger, HttpCode, HttpStatus } from '@nestjs/common';
+import { Get, Post, Param, Body, Put, Delete, Logger, HttpCode, HttpStatus } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
-@ApiTags('Users')
-@Controller('users')
-@UseGuards(JwtAuthGuard)
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+
+@ControllerAuthProtector('Users', 'users')
 export class UserController {
   private readonly logger = new Logger(UserController.name);
 

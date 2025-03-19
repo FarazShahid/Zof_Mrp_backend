@@ -6,9 +6,9 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
-@ApiTags('Product Region Standards')
-@Controller('product-region-standard')
-@UseGuards(JwtAuthGuard)
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+
+@ControllerAuthProtector('Product Region Standards', 'product-region-standard')
 export class ProductRegionStandardController {
   constructor(private readonly service: ProductRegionStandardService) {}
 

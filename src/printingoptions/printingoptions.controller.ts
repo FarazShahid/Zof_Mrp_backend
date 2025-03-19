@@ -1,14 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Delete, Get, Param, Post, Put, HttpCode, HttpStatus } from '@nestjs/common';
 import { PrintingoptionsService } from './printingoptions.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreatePrintingOptionDto, UpdatePrintingOptionDto } from './dto/printing-option.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
-import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 
-@ApiTags('Printing Options')
-@Controller('printingoptions')
-@UseGuards(JwtAuthGuard)
+@ControllerAuthProtector('Printing Options', 'printingoptions')
 export class PrintingoptionsController {
   constructor(private readonly printingOptionsService: PrintingoptionsService) { }
 

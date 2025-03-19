@@ -1,5 +1,4 @@
 import { 
-  Controller, 
   Get, 
   Post, 
   Put, 
@@ -11,18 +10,14 @@ import {
   HttpStatus,
   Logger,
   BadRequestException,
-  UseGuards
 } from '@nestjs/common';
 import { FabricTypeService } from './fabrictype.service';
 import { CreateFabricTypeDto } from './_/create-fabrictype.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 
-@ApiTags('Fabric Types')
-@Controller('fabrictype')
-@UseGuards(JwtAuthGuard)
+@ControllerAuthProtector('Fabric Types', 'fabrictype')
 export class FabricTypeController {
   private readonly logger = new Logger(FabricTypeController.name);
 

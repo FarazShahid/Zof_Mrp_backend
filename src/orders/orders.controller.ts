@@ -1,12 +1,10 @@
-import { 
-  Controller, 
+import {
   Get, 
   Post, 
   Param, 
   Body, 
   Put, 
   Delete, 
-  UseGuards, 
   Req, 
   ParseIntPipe, 
   HttpStatus, 
@@ -16,15 +14,12 @@ import {
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-orders.dto';
 import { UpdateOrderDto } from './dto/update-orders.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PaginationDto } from './dto/pagination.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
-import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 
-@ApiTags('Orders')
-@Controller('orders')
-@UseGuards(JwtAuthGuard)
+@ControllerAuthProtector('Orders', 'orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 

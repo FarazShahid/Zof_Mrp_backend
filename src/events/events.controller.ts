@@ -1,19 +1,15 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus } from '@nestjs/common';
 import { EventService } from './events.service';
-import { UserService } from 'src/users/user.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
-import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
-@ApiTags('Events')
-@Controller('events')
-@UseGuards(JwtAuthGuard)
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+
+@ControllerAuthProtector('Events', 'events')
 export class EventController {
   constructor(
     private readonly eventService: EventService,
-    private readonly userService: UserService,
   ) { }
 
   @Post()

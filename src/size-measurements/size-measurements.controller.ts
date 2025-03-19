@@ -1,14 +1,12 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { SizeMeasurementsService } from './size-measurements.service';
 import { CreateSizeMeasurementDto } from './dto/create-size-measurement.dto';
 import { UpdateSizeMeasurementDto } from './dto/update-size-measurement.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
-import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
-@ApiTags('Size Measurements')
-@Controller('size-measurements')
-@UseGuards(JwtAuthGuard)
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+
+@ControllerAuthProtector('Size Measurements', 'size-measurements')
 export class SizeMeasurementsController {
   constructor(private readonly sizeMeasurementsService: SizeMeasurementsService) {}
 

@@ -1,15 +1,12 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, ParseIntPipe, HttpCode, HttpStatus } from '@nestjs/common';
+import { Get, Post, Body, Param, Put, Delete, ParseIntPipe, HttpCode, HttpStatus } from '@nestjs/common';
 import { SleeveTypeService } from './sleeve-type.service';
 import { CreateSleeveTypeDto } from "./dto/create-sleeve-type.dto/create-sleeve-type.dto";
 import { UpdateSleeveTypeDto } from './dto/update-sleeve-type.dto/update-sleeve-type.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
-import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 
-@ApiTags('Sleeve Types')
-@Controller('sleeve-type')
-@UseGuards(JwtAuthGuard)
+@ControllerAuthProtector('Sleeve Types', 'sleeve-type')
 export class SleeveTypeController {
   constructor(private readonly sleeveService: SleeveTypeService) { }
 
