@@ -1,4 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
 import { ApiResponse, ApiOperation } from '@nestjs/swagger';
 
 export function CommonApiResponses(summary: string) {
@@ -14,3 +15,17 @@ export function CommonApiResponses(summary: string) {
     ApiResponse({ status: 500, description: 'Internal server error.' }),
   );
 }
+
+export const CommonApiProperty = (
+  description: string = '',
+  example?: string | number | boolean,
+  isRequired: boolean = true
+) => {
+  return ApiProperty({
+    description,
+    example,
+    required: isRequired,
+  });
+};
+
+export const CommonApiResponseModal = (typeData: any) => (ApiResponse({type: typeData}))
