@@ -89,12 +89,12 @@ export class ProductsController {
     }
   }
 
-  @Get('size-measurements/:id')
+  @Get('size-options/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get available size measurements by product id')
-  async getProductSizeMeasurements(@Param('id') id: string) {
+  async getProductSizeOptions(@Param('id') id: string) {
     try {
-      return await this.productsService.getAvailableSizeMeasurementsByProductId(+id);
+      return await this.productsService.getAvailableSizeOptionsByProductId(+id);
     } catch (error) {
       throw error;
     }

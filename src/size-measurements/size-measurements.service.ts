@@ -9,11 +9,19 @@ import { UpdateSizeMeasurementDto } from './dto/update-size-measurement.dto';
 export class SizeMeasurementsService {
   constructor(
     @InjectRepository(SizeMeasurement)
-    private readonly sizeMeasurementRepository: Repository<SizeMeasurement>,
+    private sizeMeasurementRepository: Repository<SizeMeasurement>,
   ) {}
 
   async create(createSizeMeasurementDto: CreateSizeMeasurementDto, createdBy: string): Promise<SizeMeasurement> {
     try {
+      // Get size option name from sizeoptions table
+      const sizeOption = await this.sizeMeasurementRepository
+        .createQueryBuilder('sm')
+        .select('so.OptionSizeOptions as SizeOptionName')
+        .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.OptionSizeOptions')
+        .where('so.OptionSizeOptions = :sizeOptionId', { sizeOptionId: createSizeMeasurementDto.SizeOptionId })
+        .getRawOne();
+
       const newSizeMeasurement = this.sizeMeasurementRepository.create({
         ...createSizeMeasurementDto,
         CreatedBy: createdBy,
@@ -29,11 +37,12 @@ export class SizeMeasurementsService {
 
   async findAll(): Promise<SizeMeasurement[]> {
     try {
-      return await this.sizeMeasurementRepository.find({
-        order: {
-          CreatedOn: 'DESC',
-        },
-      });
+      return await this.sizeMeasurementRepository
+        .createQueryBuilder('sm')
+        .select('sm.*, so.OptionSizeOptions as SizeOptionName')
+        .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
+        .orderBy('sm.CreatedOn', 'DESC')
+        .getRawMany();
     } catch (error) {
       console.error('Error fetching size measurements:', error);
       throw new BadRequestException('Error fetching size measurements');
@@ -42,9 +51,12 @@ export class SizeMeasurementsService {
 
   async findOne(id: number): Promise<SizeMeasurement> {
     try {
-      const sizeMeasurement = await this.sizeMeasurementRepository.findOne({
-        where: { Id: id },
-      });
+      const sizeMeasurement = await this.sizeMeasurementRepository
+        .createQueryBuilder('sm')
+        .select('sm.*, so.OptionSizeOptions as SizeOptionName')
+        .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
+        .where('sm.Id = :id', { id })
+        .getRawOne();
 
       if (!sizeMeasurement) {
         throw new NotFoundException(`Size measurement with ID ${id} not found`);
@@ -62,16 +74,24 @@ export class SizeMeasurementsService {
 
   async update(id: number, updateSizeMeasurementDto: UpdateSizeMeasurementDto, updatedBy: string): Promise<SizeMeasurement> {
     try {
-      const sizeMeasurement = await this.findOne(id);
+      let sizeOptionName = null;
+      if (updateSizeMeasurementDto.SizeOptionId) {
+        const sizeOption = await this.sizeMeasurementRepository
+          .createQueryBuilder('sm')
+          .select('so.OptionSizeOptions as SizeOptionName')
+          .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
+          .where('so.Id = :sizeOptionId', { sizeOptionId: updateSizeMeasurementDto.SizeOptionId })
+          .getRawOne();
+        sizeOptionName = sizeOption?.SizeOptionName || null;
+      }
 
-      const updatedSizeMeasurement = await this.sizeMeasurementRepository.save({
-        ...sizeMeasurement,
+      const sizeMeasurement = await this.findOne(id);
+      const updatedSizeMeasurement = this.sizeMeasurementRepository.merge(sizeMeasurement, {
         ...updateSizeMeasurementDto,
         UpdatedBy: updatedBy,
-        UpdatedOn: new Date(),
       });
 
-      return updatedSizeMeasurement;
+      return await this.sizeMeasurementRepository.save(updatedSizeMeasurement);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -83,14 +103,16 @@ export class SizeMeasurementsService {
 
   async remove(id: number): Promise<void> {
     try {
-      const sizeMeasurement = await this.findOne(id);
-      await this.sizeMeasurementRepository.remove(sizeMeasurement);
+      const result = await this.sizeMeasurementRepository.delete(id);
+      if (result.affected === 0) {
+        throw new NotFoundException(`Size measurement with ID ${id} not found`);
+      }
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      console.error('Error removing size measurement:', error);
-      throw new BadRequestException('Error removing size measurement');
+      console.error('Error deleting size measurement:', error);
+      throw new BadRequestException('Error deleting size measurement');
     }
   }
 } 

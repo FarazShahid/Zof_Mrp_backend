@@ -5,6 +5,9 @@ export class SizeMeasurement {
   @PrimaryGeneratedColumn()
   Id: number;
 
+  @Column({ type: 'decimal', nullable: false, default: 1})
+  SizeOptionId: number;
+
   @Column({ length: 255, nullable: true })
   Measurement1: string;
 
