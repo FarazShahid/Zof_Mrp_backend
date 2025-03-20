@@ -4,7 +4,7 @@ import { CreateOrderStatusDto, UpdateOrderStatusDto } from './dto/order-status.d
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
-
+import { ApiBody } from '@nestjs/swagger';
 @ControllerAuthProtector('Order Statuses', 'orderstatuses')
 export class OrderStatusController {
   constructor(private readonly orderStatusService: OrderstatusService) { }
@@ -32,6 +32,7 @@ export class OrderStatusController {
   }
 
   @Post()
+  @ApiBody({ type: CreateOrderStatusDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new order status')
   create(@Body() createOrderStatusDto: CreateOrderStatusDto, @CurrentUser() currentUser: any) {
@@ -43,6 +44,7 @@ export class OrderStatusController {
   }
 
   @Put(':id')
+  @ApiBody({ type: CreateOrderStatusDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update an order status by id')
   update(@Param('id') id: string, @Body() updateOrderStatusDto: UpdateOrderStatusDto, @CurrentUser() currentUser: any) {

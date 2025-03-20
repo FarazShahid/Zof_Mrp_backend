@@ -5,12 +5,13 @@ import { UpdateColorOptionDto } from './_/update-color-option.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
-
+import { ApiBody } from '@nestjs/swagger';
 @ControllerAuthProtector('Color Options', 'coloroption')
 export class ColorOptionController {
   constructor(private readonly colorOptionService: ColorOptionService) {}
 
   @Post()
+  @ApiBody({ type: CreateColorOptionDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new color option')
   create(@Body() createColorOptionDto: CreateColorOptionDto, @CurrentUser() currentUser: any) {
@@ -44,6 +45,7 @@ export class ColorOptionController {
   }
 
   @Put(':id')
+  @ApiBody({ type: CreateColorOptionDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a color option by id')
   update(@Param('id') id: number, @Body() updateColorOptionDto: UpdateColorOptionDto, @CurrentUser() currentUser: any) {

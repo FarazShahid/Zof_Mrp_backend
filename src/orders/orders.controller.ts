@@ -18,12 +18,13 @@ import { PaginationDto } from './dto/pagination.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
-
+import { ApiBody } from '@nestjs/swagger';
 @ControllerAuthProtector('Orders', 'orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
+  @ApiBody({ type: CreateOrderDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new order')
   async create(@Body() createOrderDto: CreateOrderDto, @CurrentUser() currentUser: any): Promise<any> {
@@ -59,7 +60,8 @@ export class OrdersController {
     }
   }
 
-  @Put(':id')
+  @Put(':id') 
+  @ApiBody({ type: CreateOrderDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update an order by id')
   async update(

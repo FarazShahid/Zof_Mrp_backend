@@ -5,7 +5,7 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
-
+import { ApiBody } from '@nestjs/swagger';
 @ControllerAuthProtector('Events', 'events')
 export class EventController {
   constructor(
@@ -13,6 +13,7 @@ export class EventController {
   ) { }
 
   @Post()
+  @ApiBody({ type: CreateEventDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new event')
   async create(@Body() createEventDto: CreateEventDto, @CurrentUser() user: any): Promise<any> {
@@ -49,6 +50,7 @@ export class EventController {
   }
 
   @Put(':id')
+  @ApiBody({ type: CreateEventDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update an event by id')
   async update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto, @CurrentUser() user: any): Promise<any> {

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Video Downloader</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        input { width: 80%; padding: 10px; margin: 10px; }
+        button { padding: 10px 20px; cursor: pointer; }
+        #videoPreview { margin-top: 20px; display: none; }
+    </style>
+</head>
+<body>
+    <h2>Facebook Video Downloader</h2>
+    <input type="text" id="videoUrl" placeholder="Enter Facebook Video URL" />
+    <button onclick="fetchVideo()">Download</button>
+    
+    <div id="videoPreview">
+        <h3>Video Preview</h3>
+        <video id="videoElement" controls width="80%"></video>
+        <br>
+        <a id="downloadLink" download>Download Video</a>
+    </div>
+
+    <script>
+        async function fetchVideo() {
+            let url = document.getElementById('videoUrl').value;
+            if (!url) {
+                alert("Please enter a Facebook video URL");
+                return;
+            }
+            
+            try {
+                let response = await fetch(`https://api.example.com/facebook?url=${encodeURIComponent(url)}`);
+                let data = await response.json();
+                
+                if (data.success) {
+                    let videoElement = document.getElementById('videoElement');
+                    let downloadLink = document.getElementById('downloadLink');
+                    
+                    videoElement.src = data.video_url;
+                    downloadLink.href = data.video_url;
+                    downloadLink.innerText = "Download Video";
+                    
+                    document.getElementById('videoPreview').style.display = 'block';
+                } else {
+                    alert("Failed to fetch video. Please check the URL.");
+                }
+            } catch (error) {
+                alert("Error fetching video. Try again later.");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -5,12 +5,13 @@ import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
-
+import { ApiBody } from '@nestjs/swagger';
 @ControllerAuthProtector('Product Categories', 'product-category')
 export class ProductCategoryController {
   constructor(private readonly categoryService: ProductCategoryService) {}
 
   @Post()
+  @ApiBody({ type: CreateProductCategoryDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new product category')
   create(@Body() createDto: CreateProductCategoryDto, @CurrentUser() currentUser: any) {
@@ -44,6 +45,7 @@ export class ProductCategoryController {
   }
 
   @Put(':id')
+  @ApiBody({ type: CreateProductCategoryDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a product category by id')
   update(@Param('id') id: number, @Body() updateDto: UpdateProductCategoryDto, @CurrentUser() currentUser: any) {

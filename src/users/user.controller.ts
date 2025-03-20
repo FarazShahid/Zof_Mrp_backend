@@ -6,6 +6,7 @@ import { User } from './entities/user.entity';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+import { ApiBody } from '@nestjs/swagger';
 
 @ControllerAuthProtector('Users', 'users')
 export class UserController {
@@ -14,6 +15,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
+  @ApiBody({ type: CreateUserDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new user')
   async create(@Body() createUserDto: CreateUserDto, @CurrentUser() currentUser: any): Promise<User> {
@@ -62,6 +64,7 @@ export class UserController {
   }
 
   @Put(':id')
+  @ApiBody({ type: UpdateUserDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a user by id')
   async update(

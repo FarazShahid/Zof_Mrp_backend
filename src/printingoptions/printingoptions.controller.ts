@@ -4,7 +4,7 @@ import { CreatePrintingOptionDto, UpdatePrintingOptionDto } from './dto/printing
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
-
+import { ApiBody } from '@nestjs/swagger';
 @ControllerAuthProtector('Printing Options', 'printingoptions')
 export class PrintingoptionsController {
   constructor(private readonly printingOptionsService: PrintingoptionsService) { }
@@ -21,6 +21,7 @@ export class PrintingoptionsController {
   }
 
   @Post()
+  @ApiBody({ type: CreatePrintingOptionDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new printing option')
   create(@Body() createPrintingOptionDto: CreatePrintingOptionDto, @CurrentUser() currentUser: any) {
@@ -43,6 +44,7 @@ export class PrintingoptionsController {
   }
 
   @Put(':id')
+  @ApiBody({ type: CreatePrintingOptionDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a printing option by id')
   update(@Param('id') id: string, @Body() updatePrintingOption: UpdatePrintingOptionDto, @CurrentUser() currentUser: any) {

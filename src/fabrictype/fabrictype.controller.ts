@@ -16,6 +16,7 @@ import { CreateFabricTypeDto } from './_/create-fabrictype.dto';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+import { ApiBody } from '@nestjs/swagger';
 
 @ControllerAuthProtector('Fabric Types', 'fabrictype')
 export class FabricTypeController {
@@ -24,6 +25,7 @@ export class FabricTypeController {
   constructor(private readonly fabricTypeService: FabricTypeService) {}
 
   @Post()
+  @ApiBody({ type: CreateFabricTypeDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new fabric type')
   async create(
@@ -71,6 +73,7 @@ export class FabricTypeController {
   }
 
   @Put(':id')
+  @ApiBody({ type: CreateFabricTypeDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a fabric type by id')
   async update(

@@ -5,12 +5,14 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+import { ApiBody } from '@nestjs/swagger';
 
 @ControllerAuthProtector('Products', 'products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
+  @ApiBody({ type: CreateProductDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new product')
   create(@Body() createProductDto: CreateProductDto, @CurrentUser() user: any) {
@@ -44,6 +46,7 @@ export class ProductsController {
   }
 
   @Put(':id')
+  @ApiBody({ type: CreateProductDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a product by id')
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto, @CurrentUser() user: any) {
