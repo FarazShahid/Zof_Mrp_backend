@@ -210,7 +210,7 @@ export class OrdersService {
         'order.OrderStatusId = status.Id',
       )
       .select([
-        'order.Id',
+        'order.Id AS OrderId',
         'order.Description',
         'order.OrderEventId',
         'order.ClientId',
@@ -233,7 +233,7 @@ export class OrdersService {
     }
   
     return orders.map((order) => ({
-      Id: order.Id,
+      Id: order.OrderId,
       OrderName: order.OrderName,
       OrderNumber: order.OrderNumber,
       ExternalOrderId: order.ExternalOrderId,
@@ -425,31 +425,38 @@ export class OrdersService {
     
       // Get order items with related data using query builder
       const orderItemsData = await this.orderItemRepository
-        .createQueryBuilder('orderItem')
-        .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
-        .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
-        .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
-        .leftJoin('orderitemdetails', 'orderItemDetail', 'orderItem.Id = orderItemDetail.OrderItemId')
-        .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderItemDetail.ColorOptionId = availablecoloroptions.Id')
-        .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId  = colorOption.Id')
-        .select([
-          'orderItem.Id AS Id',
-          'orderItem.ProductId AS ProductId',
-          'product.Name AS ProductName',
-          'orderItem.Description AS Description',
-          'orderItem.OrderItemPriority AS OrderItemPriority',
-          'orderItem.ImageId AS ImageId',
-          'orderItem.FileId AS FileId',
-          'orderItem.VideoId AS VideoId',
-          'printingOption.Id AS PrintingOptionId',
-          'printingOption.Description AS PrintingOptionDescription',
-          'printingoptions.Type AS PrintingOptionName',
-          'orderItemDetail.Id AS OrderItemDetailId',
-          'orderItemDetail.ColorOptionId AS ColorOptionId',
-          'colorOption.Name AS ColorOptionName',
-          'orderItemDetail.Quantity AS Quantity',
-          'orderItemDetail.Priority AS Priority'
-        ])
+      .createQueryBuilder('orderItem')
+      .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
+      .leftJoin('productcategory', 'productCategory', 'product.ProductCategoryId = productCategory.Id')
+      .leftJoin('fabrictype', 'fabricType', 'product.FabricTypeId = fabricType.Id')
+      .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
+      .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
+      .leftJoin('orderitemdetails', 'orderItemDetail', 'orderItem.Id = orderItemDetail.OrderItemId')
+      .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderItemDetail.ColorOptionId = availablecoloroptions.Id')
+      .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId = colorOption.Id')
+      .select([
+        'orderItem.Id AS Id',
+        'orderItem.ProductId AS ProductId',
+        'product.ProductCategoryId AS ProductCategoryId',
+        'productCategory.Type AS ProductCategoryName',
+        'product.FabricTypeId AS FabricTypeId',
+        'fabricType.Type AS ProductFabricType',
+        'fabricType.Name AS ProductFabricName',
+        'fabricType.GSM AS ProductFabricGSM',
+        'orderItem.Description AS Description',
+        'orderItem.OrderItemPriority AS OrderItemPriority',
+        'orderItem.ImageId AS ImageId',
+        'orderItem.FileId AS FileId',
+        'orderItem.VideoId AS VideoId',
+        'printingOption.Id AS PrintingOptionId',
+        'printingOption.Description AS PrintingOptionDescription',
+        'printingoptions.Type AS PrintingOptionName',
+        'orderItemDetail.Id AS OrderItemDetailId',
+        'orderItemDetail.ColorOptionId AS ColorOptionId',
+        'colorOption.Name AS ColorOptionName',
+        'orderItemDetail.Quantity AS Quantity',
+        'orderItemDetail.Priority AS Priority'
+      ])
         .where('orderItem.OrderId = :orderId', { orderId: id })
         .getRawMany();
     
@@ -463,7 +470,11 @@ export class OrdersService {
           const newItem = {
             Id: item.Id,
             ProductId: item.ProductId,
-            ProductName: item.ProductName || 'Unknown Product',
+            ProductCategoryId: item.ProductCategoryId,
+            ProductCategoryName: item.ProductCategoryName,
+            ProductFabricType: item.ProductFabricType,
+            ProductFabricName: item.ProductFabricName,
+            ProductFabricGSM: item.ProductFabricGSM,
             Description: item.Description,
             OrderNumber: orderData.OrderNumber,
             OrderName: orderData.OrderName,
@@ -497,7 +508,6 @@ export class OrdersService {
             ColorOptionId: item.ColorOptionId,
             ColorOptionName: item.ColorOptionName || 'Unknown Color',
             Quantity: item.Quantity,
-            Priority: item.Priority
           });
         }
       }
