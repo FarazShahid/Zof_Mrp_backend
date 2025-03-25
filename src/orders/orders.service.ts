@@ -508,6 +508,7 @@ export class OrdersService {
             ColorOptionId: item.ColorOptionId,
             ColorOptionName: item.ColorOptionName || 'Unknown Color',
             Quantity: item.Quantity,
+            Priority: item.Priority
           });
         }
       }

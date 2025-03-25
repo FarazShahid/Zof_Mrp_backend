@@ -43,7 +43,6 @@ export class PrintingOptionDto {
 
   @IsString()
   @IsOptional()
-  @IsNotEmpty()
   @MaxLength(500)
   Description?: string;
 }
