@@ -49,7 +49,6 @@ export class PrintingOptionDto {
   @CommonApiProperty('Printing Option Description', 'Printing Option Description')
   @IsString()
   @IsOptional()
-  @IsNotEmpty()
   @MaxLength(500)
   Description?: string;
 }
