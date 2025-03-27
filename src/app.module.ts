@@ -17,6 +17,7 @@ import { ColorOptionModule } from './coloroption/coloroption.module';
 import { ProductregionstandardModule } from './productregionstandard/productregionstandard.module';
 import { SizeMeasurementsModule } from './size-measurements/size-measurements.module';
 import { InventoryCategoryModule } from './inventory-categories/inventory-categories.module';
+import { InventorySubCategoryModule } from './inventory-sub-categories/inventory-sub-categories.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -37,6 +38,7 @@ import { InventoryCategoryModule } from './inventory-categories/inventory-catego
     EventsModule,
     FabricTypeModule,
     InventoryCategoryModule,
+    InventorySubCategoryModule,
     OrderModule,
     OrderstatusModule,
     PrintingoptionsModule,
