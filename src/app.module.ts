@@ -18,6 +18,7 @@ import { ProductregionstandardModule } from './productregionstandard/productregi
 import { SizeMeasurementsModule } from './size-measurements/size-measurements.module';
 import { InventoryCategoryModule } from './inventory-categories/inventory-categories.module';
 import { InventorySubCategoryModule } from './inventory-sub-categories/inventory-sub-categories.module';
+import { InventorySupplierModule } from './inventory-suppliers/inventory-suppliers.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -39,6 +40,7 @@ import { InventorySubCategoryModule } from './inventory-sub-categories/inventory
     FabricTypeModule,
     InventoryCategoryModule,
     InventorySubCategoryModule,
+    InventorySupplierModule,
     OrderModule,
     OrderstatusModule,
     PrintingoptionsModule,
