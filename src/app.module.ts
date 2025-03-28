@@ -19,6 +19,7 @@ import { SizeMeasurementsModule } from './size-measurements/size-measurements.mo
 import { InventoryCategoryModule } from './inventory-categories/inventory-categories.module';
 import { InventorySubCategoryModule } from './inventory-sub-categories/inventory-sub-categories.module';
 import { InventorySupplierModule } from './inventory-suppliers/inventory-suppliers.module';
+import { InventoryItemsModule } from './inventory-items/inventory-items.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -41,6 +42,7 @@ import { InventorySupplierModule } from './inventory-suppliers/inventory-supplie
     InventoryCategoryModule,
     InventorySubCategoryModule,
     InventorySupplierModule,
+    InventoryItemsModule,
     OrderModule,
     OrderstatusModule,
     PrintingoptionsModule,
