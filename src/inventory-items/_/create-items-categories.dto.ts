@@ -13,11 +13,6 @@ export class CreateInventoryItemDto {
   @IsNotEmpty()
   SubCategoryId: number;
 
-  @CommonApiProperty('Quantity', '2')
-  @IsNumber()
-  @IsNotEmpty()
-  Quantity: number;
-
   @CommonApiProperty('Unit of Measure', '12fg')
   @IsString()
   @IsNotEmpty()

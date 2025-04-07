@@ -24,7 +24,6 @@ export class inventoryItemService {
     data: {
       Name: string;
       SubCategoryId: number;
-      Quantity: number;
       UnitOfMeasure: string;
       SupplierId: number;
       ReorderLevel?: number;
@@ -81,7 +80,6 @@ export class inventoryItemService {
       ItemCode: savedItem.ItemCode,
       SubCategoryId: savedItem.SubCategoryId,
       SubCategoryName: subCategory.Name || null,
-      Quantity: savedItem.Quantity,
       UnitOfMeasure: savedItem.UnitOfMeasure,
       SupplierId: savedItem.SupplierId,
       SupplierName: supplier.Name || null,
@@ -117,7 +115,6 @@ export class inventoryItemService {
       ItemCode: item.ItemCode,
       SubCategoryId: item.SubCategoryId,
       SubCategoryName: subCategoryMap.get(item.SubCategoryId) || null,
-      Quantity: item.Quantity,
       UnitOfMeasure: item.UnitOfMeasure,
       SupplierId: item.SupplierId,
       SupplierName: suppliersMap.get(item.SupplierId) || null,
@@ -157,7 +154,6 @@ export class inventoryItemService {
       ItemCode: inventoryItem.ItemCode,
       SubCategoryId: inventoryItem.SubCategoryId,
       SubCategoryName: subCategory.Name || null,
-      Quantity: inventoryItem.Quantity,
       UnitOfMeasure: inventoryItem.UnitOfMeasure,
       SupplierId: inventoryItem.SupplierId,
       SupplierName: supplier.Name || null,

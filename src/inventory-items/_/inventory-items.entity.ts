@@ -21,9 +21,6 @@ export class InventoryItems {
   @Column()
   SubCategoryId: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
-  Quantity: number;
-
   @Column({ length: 10 })
   UnitOfMeasure: string;
 

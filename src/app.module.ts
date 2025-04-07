@@ -20,6 +20,7 @@ import { InventoryCategoryModule } from './inventory-categories/inventory-catego
 import { InventorySubCategoryModule } from './inventory-sub-categories/inventory-sub-categories.module';
 import { InventorySupplierModule } from './inventory-suppliers/inventory-suppliers.module';
 import { InventoryItemsModule } from './inventory-items/inventory-items.module';
+import { InventoryTransectionsModule } from './inventory-transections/inventory-transections.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -43,6 +44,7 @@ import { InventoryItemsModule } from './inventory-items/inventory-items.module';
     InventorySubCategoryModule,
     InventorySupplierModule,
     InventoryItemsModule,
+    InventoryTransectionsModule,
     OrderModule,
     OrderstatusModule,
     PrintingoptionsModule,
