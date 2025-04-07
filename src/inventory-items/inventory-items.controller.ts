@@ -25,7 +25,7 @@ export class InventoryItemController {
   @Post()
   @ApiBody({ type: CreateInventoryItemDto })
   @HttpCode(HttpStatus.CREATED)
-  @CommonApiResponses('Create a new Inventory Category')
+  @CommonApiResponses('Create a new Inventory Item')
   async create(
     @Body() CreateInventoryItemDto: CreateInventoryItemDto,
     @CurrentUser() user: any
@@ -42,7 +42,7 @@ export class InventoryItemController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @CommonApiResponses('Get all Inventory Categories')
+  @CommonApiResponses('Get all Inventory Items')
   async findAll() {
     try {
       return await this.inventoryItemService.findAll();
@@ -53,7 +53,7 @@ export class InventoryItemController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  @CommonApiResponses('Get a Inventory Categories by id')
+  @CommonApiResponses('Get a Inventory Item by id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     try {
       return await this.inventoryItemService.findOne(id);
@@ -65,7 +65,7 @@ export class InventoryItemController {
   @Put(':id')
   @ApiBody({ type: CreateInventoryItemDto })
   @HttpCode(HttpStatus.OK)
-  @CommonApiResponses('Update a Inventory Category by id')
+  @CommonApiResponses('Update a Inventory Item by id')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateData: any,
@@ -84,7 +84,7 @@ export class InventoryItemController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @CommonApiResponses('Delete a Inventory Category by id')
+  @CommonApiResponses('Delete a Inventory Item by id')
   async delete(@Param('id', ParseIntPipe) id: number) {
     try {
       return await this.inventoryItemService.delete(id);
