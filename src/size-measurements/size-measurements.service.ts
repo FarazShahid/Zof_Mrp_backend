@@ -39,8 +39,13 @@ export class SizeMeasurementsService {
     try {
       return await this.sizeMeasurementRepository
         .createQueryBuilder('sm')
-        .select('sm.*, so.OptionSizeOptions as SizeOptionName')
+        .select([
+          'sm.*', 
+          'so.OptionSizeOptions as SizeOptionName', 
+          'cl.Name as ClientName'
+        ])
         .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
+        .leftJoin('client', 'cl', 'sm.ClientId = cl.Id')
         .orderBy('sm.CreatedOn', 'DESC')
         .getRawMany();
     } catch (error) {
@@ -53,15 +58,20 @@ export class SizeMeasurementsService {
     try {
       const sizeMeasurement = await this.sizeMeasurementRepository
         .createQueryBuilder('sm')
-        .select('sm.*, so.OptionSizeOptions as SizeOptionName')
+        .select([
+          'sm.*', 
+          'so.OptionSizeOptions as SizeOptionName', 
+          'cl.Name as ClientName'
+        ])
         .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
+        .leftJoin('client', 'cl', 'sm.ClientId = cl.Id')
         .where('sm.Id = :id', { id })
         .getRawOne();
-
+  
       if (!sizeMeasurement) {
         throw new NotFoundException(`Size measurement with ID ${id} not found`);
       }
-
+  
       return sizeMeasurement;
     } catch (error) {
       if (error instanceof NotFoundException) {

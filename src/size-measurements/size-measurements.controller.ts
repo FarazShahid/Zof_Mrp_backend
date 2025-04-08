@@ -5,6 +5,7 @@ import { UpdateSizeMeasurementDto } from './dto/update-size-measurement.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+import { ApiBody } from '@nestjs/swagger';
 
 @ControllerAuthProtector('Size Measurements', 'size-measurements')
 export class SizeMeasurementsController {
@@ -12,6 +13,7 @@ export class SizeMeasurementsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @ApiBody({ type: CreateSizeMeasurementDto })
   @CommonApiResponses('Create a new size measurement')
   create(@Body() createSizeMeasurementDto: CreateSizeMeasurementDto, @CurrentUser() user: any) {
     try {

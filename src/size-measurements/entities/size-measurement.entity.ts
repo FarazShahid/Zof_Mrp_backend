@@ -8,6 +8,9 @@ export class SizeMeasurement {
   @Column({ type: 'decimal', nullable: false, default: 1})
   SizeOptionId: number;
 
+  @Column({ type: 'decimal', nullable: true, default: null})
+  ClientId: number;
+
   @Column({ length: 255, nullable: true })
   Measurement1: string;
 
