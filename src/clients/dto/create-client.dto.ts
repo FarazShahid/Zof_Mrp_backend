@@ -16,9 +16,6 @@ export class CreateClientDto {
   Email: string;
 
   @CommonApiProperty('Client Phone Number', '+123456789')
-  @IsPhoneNumber(undefined, {
-    message: 'Phone number must be a valid phone number with country code (e.g., +1234567890)'
-  })
   @IsNotEmpty()
   @MaxLength(255)
   Phone: string;
