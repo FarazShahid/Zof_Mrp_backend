@@ -1,17 +1,18 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { SizeMeasurementsService } from './size-measurements.service';
 import { CreateSizeMeasurementDto } from './dto/create-size-measurement.dto';
 import { UpdateSizeMeasurementDto } from './dto/update-size-measurement.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 
-@Controller('size-measurements')
-@UseGuards(JwtAuthGuard)
+@ControllerAuthProtector('Size Measurements', 'size-measurements')
 export class SizeMeasurementsController {
   constructor(private readonly sizeMeasurementsService: SizeMeasurementsService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @CommonApiResponses('Create a new size measurement')
   create(@Body() createSizeMeasurementDto: CreateSizeMeasurementDto, @CurrentUser() user: any) {
     try {
       return this.sizeMeasurementsService.create(createSizeMeasurementDto, user.email);
@@ -22,6 +23,7 @@ export class SizeMeasurementsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get all size measurements')
   findAll() {
     try {
       return this.sizeMeasurementsService.findAll();
@@ -32,6 +34,7 @@ export class SizeMeasurementsController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get a size measurement by id')
   findOne(@Param('id') id: string) {
     try {
       return this.sizeMeasurementsService.findOne(+id);
@@ -42,6 +45,7 @@ export class SizeMeasurementsController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Update a size measurement by id')
   update(
     @Param('id') id: string,
     @Body() updateSizeMeasurementDto: UpdateSizeMeasurementDto,
@@ -56,6 +60,7 @@ export class SizeMeasurementsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @CommonApiResponses('Delete a size measurement by id')
   remove(@Param('id') id: string) {
     try {
       return this.sizeMeasurementsService.remove(+id);

@@ -1,16 +1,17 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Delete, Get, Param, Post, Put, HttpCode, HttpStatus } from '@nestjs/common';
 import { OrderstatusService } from './orderstatus.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateOrderStatusDto, UpdateOrderStatusDto } from './dto/order-status.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
-
-@Controller('orderstatuses')
-@UseGuards(JwtAuthGuard)
+import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+import { ApiBody } from '@nestjs/swagger';
+@ControllerAuthProtector('Order Statuses', 'orderstatuses')
 export class OrderStatusController {
   constructor(private readonly orderStatusService: OrderstatusService) { }
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get all order statuses')
   async findAll() {
     try {
       return this.orderStatusService.getAllOrderStatuses();
@@ -21,6 +22,7 @@ export class OrderStatusController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get an order status by id')
   async findOne(@Param('id') id: number) {
     try {
       return this.orderStatusService.getOrderStatusById(id);
@@ -30,7 +32,9 @@ export class OrderStatusController {
   }
 
   @Post()
+  @ApiBody({ type: CreateOrderStatusDto })
   @HttpCode(HttpStatus.CREATED)
+  @CommonApiResponses('Create a new order status')
   create(@Body() createOrderStatusDto: CreateOrderStatusDto, @CurrentUser() currentUser: any) {
     try {
       return this.orderStatusService.create(createOrderStatusDto, currentUser.email);
@@ -40,7 +44,9 @@ export class OrderStatusController {
   }
 
   @Put(':id')
+  @ApiBody({ type: CreateOrderStatusDto })
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Update an order status by id')
   update(@Param('id') id: string, @Body() updateOrderStatusDto: UpdateOrderStatusDto, @CurrentUser() currentUser: any) {
     try {
       return this.orderStatusService.update(+id, updateOrderStatusDto, currentUser.email);
@@ -51,6 +57,7 @@ export class OrderStatusController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @CommonApiResponses('Delete an order status by id')
   async remove(@Param('id') id: number): Promise<void> {
     try {
       return this.orderStatusService.remove(id);

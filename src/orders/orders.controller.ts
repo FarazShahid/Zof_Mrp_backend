@@ -1,12 +1,10 @@
-import { 
-  Controller, 
+import {
   Get, 
   Post, 
   Param, 
   Body, 
   Put, 
   Delete, 
-  UseGuards, 
   Req, 
   ParseIntPipe, 
   HttpStatus, 
@@ -16,16 +14,19 @@ import {
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-orders.dto';
 import { UpdateOrderDto } from './dto/update-orders.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PaginationDto } from './dto/pagination.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
-@Controller('orders')
-@UseGuards(JwtAuthGuard)
+import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+import { ApiBody } from '@nestjs/swagger';
+@ControllerAuthProtector('Orders', 'orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
+  @ApiBody({ type: CreateOrderDto })
   @HttpCode(HttpStatus.CREATED)
+  @CommonApiResponses('Create a new order')
   async create(@Body() createOrderDto: CreateOrderDto, @CurrentUser() currentUser: any): Promise<any> {
     try {
       return this.ordersService.createOrder(createOrderDto, currentUser.email);
@@ -36,6 +37,8 @@ export class OrdersController {
   }
 
   @Get()
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get all orders')
   async findAll(@Query() paginationDto: PaginationDto): Promise<any> {
     try {
       return this.ordersService.getAllOrders(paginationDto);
@@ -46,6 +49,8 @@ export class OrdersController {
   }
 
   @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get an order by id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<any> {
     try {
       return this.ordersService.getOrdersByClientId(id);
@@ -55,7 +60,10 @@ export class OrdersController {
     }
   }
 
-  @Put(':id')
+  @Put(':id') 
+  @ApiBody({ type: CreateOrderDto })
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Update an order by id')
   async update(
     @Param('id', ParseIntPipe) id: number, 
     @Body() updateOrderDto: UpdateOrderDto, 
@@ -72,6 +80,7 @@ export class OrdersController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @CommonApiResponses('Delete an order by id')
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     try {
       return this.ordersService.deleteOrder(id);
@@ -82,6 +91,8 @@ export class OrdersController {
   }
 
   @Get('items/:id')
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get order items by order id')
   async getOrderItems(@Param('id', ParseIntPipe) orderId: number): Promise<any> {
     try {
       return this.ordersService.getOrderItemsByOrderId(orderId);
@@ -92,6 +103,8 @@ export class OrdersController {
   }
 
   @Get('get-edit/:id')
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get edit order by id')
   async getOrdersEdit(@Param('id', ParseIntPipe) orderId: number): Promise<any> {
     try {
       return this.ordersService.getEditOrder(orderId);

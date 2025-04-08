@@ -1,14 +1,15 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Logger,  HttpCode, 
+import { Get, Post, Body, Param, Delete, Logger,  HttpCode, 
   HttpStatus, BadRequestException,
   Put, } from '@nestjs/common';
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ApiBody } from '@nestjs/swagger';
+import { CommonApiResponses, CommonApiResponseModal } from 'src/common/decorators/common-api-response.decorator';
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 
-@Controller('clients')
-@UseGuards(JwtAuthGuard)
+@ControllerAuthProtector('Clients', 'clients')
 export class ClientsController {
   private readonly logger = new Logger(ClientsController.name);
 
@@ -16,6 +17,9 @@ export class ClientsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @ApiBody({ type: CreateClientDto })
+  @CommonApiResponseModal(CreateClientDto)
+  @CommonApiResponses('Create a new client')
   create(@Body() createClientDto: CreateClientDto, @CurrentUser() user: any) {
     this.logger.log(`Creating client: ${JSON.stringify(createClientDto)}, User: ${JSON.stringify(user)}`);
     try {
@@ -28,6 +32,8 @@ export class ClientsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponseModal([CreateClientDto])
+  @CommonApiResponses('Get all clients')
   findAll() {
     this.logger.log('Getting all clients');
     try {
@@ -40,6 +46,7 @@ export class ClientsController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get a client by id')
   findOne(@Param('id') id: string) {
     this.logger.log(`Getting client with id: ${id}`);
     try {
@@ -52,6 +59,8 @@ export class ClientsController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
+  @ApiBody({ type: CreateClientDto })
+  @CommonApiResponses('Update a client by id')
   update(
     @Param('id') id: string, 
     @Body() updateClientDto: UpdateClientDto,
@@ -68,6 +77,7 @@ export class ClientsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @CommonApiResponses('Delete a client by id')
   remove(@Param('id') id: string) {
     this.logger.log(`Deleting client with id: ${id}`);
     try {
