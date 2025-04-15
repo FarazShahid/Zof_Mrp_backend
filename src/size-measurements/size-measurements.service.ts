@@ -125,4 +125,25 @@ export class SizeMeasurementsService {
       throw new BadRequestException('Error deleting size measurement');
     }
   }
+
+  async findAllByClientId(clientId: number): Promise<SizeMeasurement[]> {
+    try {
+      return await this.sizeMeasurementRepository
+        .createQueryBuilder('sm')
+        .select([
+          'sm.*',
+          'so.OptionSizeOptions as SizeOptionName',
+          'cl.Name as ClientName'
+        ])
+        .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
+        .leftJoin('client', 'cl', 'sm.ClientId = cl.Id')
+        .where('sm.ClientId = :clientId', { clientId }) // Filter by clientId
+        .orderBy('sm.CreatedOn', 'DESC')
+        .getRawMany();
+    } catch (error) {
+      console.error('Error fetching size measurements:', error);
+      throw new BadRequestException('Error fetching size measurements');
+    }
+  }
+  
 } 

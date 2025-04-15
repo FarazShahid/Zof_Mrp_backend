@@ -70,4 +70,15 @@ export class SizeMeasurementsController {
       throw error;
     }
   }
+
+  @Get('by-client/:id')
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get All measurement by client id')
+  async findAllByClientId(@Param('id') id: string) {
+    try {
+      return await this.sizeMeasurementsService.findAllByClientId(+id);
+    } catch (error) {
+      throw error;
+    }
+  }
 } 
