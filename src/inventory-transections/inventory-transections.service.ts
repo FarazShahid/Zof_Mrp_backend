@@ -100,7 +100,8 @@ export class inventoryTransectionService {
         };
     }
 
-    async update(Id: number, data: any) {
+    async update(Id: number, data: any, updatedBy: string) {
+        console.log(data);
         try {
             const existingTransaction = await this.inventoryTransactionsRepository.findOneBy({ Id });
 
@@ -151,9 +152,11 @@ export class inventoryTransectionService {
 
             // Step 4: Update transaction
             await this.inventoryTransactionsRepository.update(Id, {
-                ...data,
-                UpdatedOn: new Date(),
-            });
+                Quantity: data.Quantity,
+                TransactionType: data.TransactionType,
+                UpdatedBy: updatedBy,
+                UpdatedOn: new Date()
+              });
 
             return await this.findOne(Id);
 

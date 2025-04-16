@@ -9,6 +9,7 @@ import {
     HttpCode,
     HttpStatus,
     BadRequestException,
+    Logger,
 } from '@nestjs/common';
 import { inventoryTransectionService } from './inventory-transections.service';
 import { CreateInventoryTransectionsDto } from './_/inventory-transections.dto';
@@ -72,11 +73,7 @@ export class InventoryTransectionController {
         @CurrentUser() user: any
     ) {
         try {
-            const data = {
-                ...updateData,
-                updatedBy: user.email
-            };
-            return await this.inventoryTransectionService.update(id, data);
+            return await this.inventoryTransectionService.update(id, updateData, user.email);
         } catch (error) {
             throw error;
         }
