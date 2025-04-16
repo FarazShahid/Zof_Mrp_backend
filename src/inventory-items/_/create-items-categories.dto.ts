@@ -28,8 +28,4 @@ export class CreateInventoryItemDto {
   @IsNumber()
   @IsOptional()
   ReorderLevel?: number;
-
-  @CommonApiProperty('Stock', '1')
-  @IsNumber()
-  Stock: number;
 }

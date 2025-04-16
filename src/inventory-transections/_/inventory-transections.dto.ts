@@ -15,6 +15,6 @@ export class CreateInventoryTransectionsDto {
     @CommonApiProperty('Transection Type Name', 'In')
     @IsString()
     @IsNotEmpty()
-    @MaxLength(10)
+    @MaxLength(20)
     TransactionType: string;
 }

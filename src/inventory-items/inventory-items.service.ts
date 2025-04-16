@@ -27,7 +27,6 @@ export class inventoryItemService {
       UnitOfMeasure: string;
       SupplierId: number;
       ReorderLevel?: number;
-      Stock: number;
     },
     createdBy: string
   ) {
@@ -68,6 +67,7 @@ export class inventoryItemService {
     const inventoryItem = this.inventoryItemsRepository.create({
       ...data,
       ItemCode: itemCode,
+      Stock: 0,
       CreatedBy: createdBy,
       UpdatedBy: createdBy,
     });
@@ -173,7 +173,7 @@ export class inventoryItemService {
         throw new NotFoundException(`Inventory Item with ID ${Id} not found`);
       }
 
-      const { Name, updatedBy } = data;
+      const { Name, ReorderLevel,  updatedBy } = data;
 
       const updateData: any = {};
 
@@ -181,6 +181,7 @@ export class inventoryItemService {
 
       updateData.UpdatedBy = updatedBy;
       updateData.UpdatedOn = new Date();
+      updateData.ReorderLevel = ReorderLevel;
 
       await this.inventoryItemsRepository.update(Id, updateData);
 
