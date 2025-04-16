@@ -49,6 +49,7 @@ export class inventoryItemService {
     const lastItem = await this.inventoryItemsRepository.find({
       order: { Id: 'DESC' },
       take: 1,
+      withDeleted: true
     });
     const lastId = lastItem.length > 0 ? lastItem[0].Id : 0;
     const newId = lastId + 1001;
