@@ -10,7 +10,6 @@ import { DataSource } from 'typeorm';
 import { PaginationDto } from './dto/pagination.dto';
 import { Client } from '../clients/entities/client.entity';
 import { ClientEvent } from '../events/entities/clientevent.entity';
-import { OrderStatus } from '../orderstatus/entities/orderstatus.entity';
 import { Product } from '../products/entities/product.entity';
 import { PrintingOptions } from '../printingoptions/entities/printingoptions.entity';
 
@@ -29,8 +28,6 @@ export class OrdersService {
     private clientRepository: Repository<Client>,
     @InjectRepository(ClientEvent)
     private eventRepository: Repository<ClientEvent>,
-    @InjectRepository(OrderStatus)
-    private statusRepository: Repository<OrderStatus>,
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
     @InjectRepository(PrintingOptions)
@@ -78,7 +75,6 @@ export class OrdersService {
       Deadline,
       OrderPriority,
       ExternalOrderId,
-      OrderName,
       CreatedBy: createdBy,
       UpdatedBy: createdBy
     });
@@ -359,7 +355,12 @@ export class OrdersService {
 
     const updatedOrder = await this.orderRepository.save({
       ...order,
-      ...updateData,
+      ClientId: updateData.ClientId,
+      OrderEventId: updateData.OrderEventId,
+      Description: updateData.Description,
+      Deadline: updateData.Deadline,
+      OrderPriority: updateData.OrderPriority,
+      ExternalOrderId: updateData.ExternalOrderId,
       UpdatedBy: updatedBy,
       UpdatedOn: new Date(),
     });

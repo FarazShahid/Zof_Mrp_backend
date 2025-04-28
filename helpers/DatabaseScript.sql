@@ -478,6 +478,35 @@ END
 $$
 DELIMITER ;
 
+
+DELIMITER $$
+
+CREATE TRIGGER `GenerateOrderName` 
+BEFORE INSERT ON `orders`
+FOR EACH ROW
+BEGIN
+    DECLARE prefix VARCHAR(2);
+    DECLARE unique_string VARCHAR(6);
+
+    -- Get first two uppercase characters of the client's name
+    SELECT UPPER(SUBSTRING(Name, 1, 2)) INTO prefix
+    FROM client
+    WHERE Id = NEW.ClientId;
+
+    -- Generate a random unique string: 2 random letters + 4 random digits
+    SET unique_string = CONCAT(
+        CHAR(FLOOR(65 + (RAND() * 26))), -- Random uppercase letter
+        CHAR(FLOOR(65 + (RAND() * 26))), -- Random uppercase letter
+        FLOOR(1000 + (RAND() * 9000))    -- Random 4-digit number
+    );
+
+    -- Set the OrderName as ClientInitials-UniqueString
+    SET NEW.OrderName = CONCAT(prefix, '-', unique_string);
+END $$
+
+DELIMITER ;
+
+
 -- --------------------------------------------------------
 
 --
