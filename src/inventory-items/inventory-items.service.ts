@@ -185,7 +185,7 @@ export class inventoryItemService {
       ItemCode: inventoryItem.ItemCode,
       SubCategoryId: inventoryItem.SubCategoryId,
       SubCategoryName: subCategory.Name || null,
-      UnitOfMeasure: inventoryItem.UnitOfMeasureId,
+      UnitOfMeasureId: inventoryItem.UnitOfMeasureId,
       UnitOfMeasureName: UnitOfMeasures.Name,
       SupplierId: inventoryItem.SupplierId,
       SupplierName: supplier.Name || null,
