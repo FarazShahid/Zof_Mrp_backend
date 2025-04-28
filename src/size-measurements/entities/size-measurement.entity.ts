@@ -11,6 +11,9 @@ export class SizeMeasurement {
   @Column({ type: 'decimal', nullable: true, default: null})
   ClientId: number;
 
+  @Column({ type: 'decimal', nullable: true, default: null})
+  CutOptionId: number;
+
   @Column({ length: 255, nullable: true })
   Measurement1: string;
 

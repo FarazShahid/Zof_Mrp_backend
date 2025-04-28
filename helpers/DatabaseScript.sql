@@ -1156,6 +1156,7 @@ INSERT INTO `productregionstandard` (`Id`, `Name`, `CreatedOn`, `CreatedBy`, `Up
 CREATE TABLE `sizemeasurements` (
   `Id` int(11) NOT NULL,
   `ClientId` int(11) DEFAULT NULL,
+  `CutOptionId` int(11) DEFAULT NULL,
   `SizeOptionId` int(11) NOT NULL DEFAULT 1,
   `Measurement1` varchar(255) DEFAULT NULL,
   `FrontLengthHPS` decimal(5,2) DEFAULT NULL,

@@ -1,15 +1,18 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { SizeMeasurement } from './entities/size-measurement.entity';
 import { CreateSizeMeasurementDto } from './dto/create-size-measurement.dto';
 import { UpdateSizeMeasurementDto } from './dto/update-size-measurement.dto';
+import { ProductCutOption } from 'src/productcutoptions/entity/productcutoptions.entity';
 
 @Injectable()
 export class SizeMeasurementsService {
   constructor(
     @InjectRepository(SizeMeasurement)
     private sizeMeasurementRepository: Repository<SizeMeasurement>,
+    @InjectRepository(ProductCutOption)
+    private productCutOptionRepository: Repository<ProductCutOption>,
   ) {}
 
   async create(createSizeMeasurementDto: CreateSizeMeasurementDto, createdBy: string): Promise<SizeMeasurement> {
@@ -21,6 +24,18 @@ export class SizeMeasurementsService {
         .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.OptionSizeOptions')
         .where('so.OptionSizeOptions = :sizeOptionId', { sizeOptionId: createSizeMeasurementDto.SizeOptionId })
         .getRawOne();
+
+        if(createSizeMeasurementDto.CutOptionId){
+          const CutOption = await this.productCutOptionRepository.findOne({
+            where: {
+              Id: createSizeMeasurementDto.CutOptionId
+            }, withDeleted: false
+          })
+
+          if(!CutOption){
+            throw new NotFoundException(`Unit Of Measures with id ${createSizeMeasurementDto.CutOptionId} not found`);
+          }
+        }
 
       const newSizeMeasurement = this.sizeMeasurementRepository.create({
         ...createSizeMeasurementDto,
@@ -35,33 +50,59 @@ export class SizeMeasurementsService {
     }
   }
 
-  async findAll(): Promise<SizeMeasurement[]> {
+  async findAll(cutOptionId?: number): Promise<SizeMeasurement[]> {
     try {
-      return await this.sizeMeasurementRepository
+      const queryBuilder = this.sizeMeasurementRepository
         .createQueryBuilder('sm')
         .select([
-          'sm.*', 
-          'so.OptionSizeOptions as SizeOptionName', 
-          'cl.Name as ClientName'
+          'sm.*',
+          'so.OptionSizeOptions AS SizeOptionName',
+          'cl.Name AS ClientName'
         ])
         .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
         .leftJoin('client', 'cl', 'sm.ClientId = cl.Id')
-        .orderBy('sm.CreatedOn', 'DESC')
-        .getRawMany();
+        .orderBy('sm.CreatedOn', 'DESC');
+  
+      if (cutOptionId) {
+        queryBuilder.andWhere('sm.CutOptionId = :cutOptionId', { cutOptionId });
+      }
+  
+      const items = await queryBuilder.getRawMany();
+  
+      const cutOptionIds = items
+        .filter(e => e.CutOptionId != null)
+        .map(e => e.CutOptionId);
+  
+      let cutOptions = [];
+      if (cutOptionIds.length > 0) {
+        cutOptions = await this.productCutOptionRepository.find({
+          where: { Id: In(cutOptionIds) },
+          withDeleted: true
+        });
+      }
+  
+      const cutOptionsMap = new Map(cutOptions.map(co => [co.Id, co]));
+  
+      return items.map(e => ({
+        ...e,
+        cutOptionName: cutOptionsMap.get(e.CutOptionId)?.OptionProductCutOptions || null
+      }));
+  
     } catch (error) {
-      console.error('Error fetching size measurements:', error);
+      console.error('Actual error fetching size measurements:', error);
       throw new BadRequestException('Error fetching size measurements');
     }
-  }
-
+  }  
+  
   async findOne(id: number): Promise<SizeMeasurement> {
     try {
+      // Step 1: Fetch size measurement with client and size option names
       const sizeMeasurement = await this.sizeMeasurementRepository
         .createQueryBuilder('sm')
         .select([
           'sm.*', 
-          'so.OptionSizeOptions as SizeOptionName', 
-          'cl.Name as ClientName'
+          'so.OptionSizeOptions AS SizeOptionName', 
+          'cl.Name AS ClientName'
         ])
         .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
         .leftJoin('client', 'cl', 'sm.ClientId = cl.Id')
@@ -72,7 +113,23 @@ export class SizeMeasurementsService {
         throw new NotFoundException(`Size measurement with ID ${id} not found`);
       }
   
-      return sizeMeasurement;
+      // Step 2: Fetch related CutOption if CutOptionId exists
+      let cutOptionName = null;
+      if (sizeMeasurement.CutOptionId != null) {
+        const cutOption = await this.productCutOptionRepository.findOne({
+          where: { Id: sizeMeasurement.CutOptionId },
+          withDeleted: true
+        });
+  
+        cutOptionName = cutOption?.OptionProductCutOptions || null;
+      }
+  
+      // Step 3: Return the result, adding cutOptionName
+      return {
+        ...sizeMeasurement,
+        cutOptionName
+      };
+  
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -80,36 +137,58 @@ export class SizeMeasurementsService {
       console.error('Error fetching size measurement:', error);
       throw new BadRequestException('Error fetching size measurement');
     }
-  }
+  }  
 
-  async update(id: number, updateSizeMeasurementDto: UpdateSizeMeasurementDto, updatedBy: string): Promise<SizeMeasurement> {
-    try {
-      let sizeOptionName = null;
-      if (updateSizeMeasurementDto.SizeOptionId) {
-        const sizeOption = await this.sizeMeasurementRepository
-          .createQueryBuilder('sm')
-          .select('so.OptionSizeOptions as SizeOptionName')
-          .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
-          .where('so.Id = :sizeOptionId', { sizeOptionId: updateSizeMeasurementDto.SizeOptionId })
-          .getRawOne();
-        sizeOptionName = sizeOption?.SizeOptionName || null;
-      }
+async update(id: number, updateSizeMeasurementDto: UpdateSizeMeasurementDto, updatedBy: string): Promise<any> {
+  try {
+    let sizeOptionName = null;
+    let cutOptionName = null;
 
-      const sizeMeasurement = await this.findOne(id);
-      const updatedSizeMeasurement = this.sizeMeasurementRepository.merge(sizeMeasurement, {
-        ...updateSizeMeasurementDto,
-        UpdatedBy: updatedBy,
-      });
-
-      return await this.sizeMeasurementRepository.save(updatedSizeMeasurement);
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      console.error('Error updating size measurement:', error);
-      throw new BadRequestException('Error updating size measurement');
+    if (updateSizeMeasurementDto.SizeOptionId) {
+      const sizeOption = await this.sizeMeasurementRepository
+        .createQueryBuilder('sm')
+        .select('so.OptionSizeOptions as SizeOptionName')
+        .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
+        .where('so.Id = :sizeOptionId', { sizeOptionId: updateSizeMeasurementDto.SizeOptionId })
+        .getRawOne();
+      sizeOptionName = sizeOption?.SizeOptionName || null;
     }
+
+    if (updateSizeMeasurementDto.CutOptionId) {
+      const CutOption = await this.productCutOptionRepository.findOne({
+        where: {
+          Id: updateSizeMeasurementDto.CutOptionId
+        }, withDeleted: false
+      })
+
+      if(!CutOption){
+        throw new NotFoundException(`Unit Of Measures with id ${updateSizeMeasurementDto.CutOptionId} not found`);
+      }
+      cutOptionName = CutOption?.OptionProductCutOptions || null;
+    }
+
+    const sizeMeasurement = await this.findOne(id);
+
+    const updatedSizeMeasurement = this.sizeMeasurementRepository.merge(sizeMeasurement, {
+      ...updateSizeMeasurementDto,
+      UpdatedBy: updatedBy
+    });
+
+    const savedResponse = await this.sizeMeasurementRepository.save(updatedSizeMeasurement);
+
+    return {
+      ...savedResponse,
+      cutOptionName: cutOptionName
+    };
+  } catch (error) {
+    if (error instanceof NotFoundException) {
+      throw error;
+    }
+    console.error('Error updating size measurement:', error);
+    throw new BadRequestException('Error updating size measurement');
   }
+}
+  
 
   async remove(id: number): Promise<void> {
     try {
@@ -128,18 +207,38 @@ export class SizeMeasurementsService {
 
   async findAllByClientId(clientId: number): Promise<SizeMeasurement[]> {
     try {
-      return await this.sizeMeasurementRepository
+      const items = await this.sizeMeasurementRepository
         .createQueryBuilder('sm')
         .select([
           'sm.*',
-          'so.OptionSizeOptions as SizeOptionName',
-          'cl.Name as ClientName'
+          'so.OptionSizeOptions AS SizeOptionName',
+          'cl.Name AS ClientName'
         ])
         .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
         .leftJoin('client', 'cl', 'sm.ClientId = cl.Id')
-        .where('sm.ClientId = :clientId', { clientId }) // Filter by clientId
+        .where('sm.ClientId = :clientId', { clientId })
         .orderBy('sm.CreatedOn', 'DESC')
         .getRawMany();
+  
+      const cutOptionIds = items
+        .filter(e => e.CutOptionId != null)
+        .map(e => e.CutOptionId);
+  
+      let cutOptions = [];
+      if (cutOptionIds.length > 0) {
+        cutOptions = await this.productCutOptionRepository.find({
+          where: { Id: In(cutOptionIds) },
+          withDeleted: true
+        });
+      }
+  
+      const cutOptionsMap = new Map(cutOptions.map(co => [co.Id, co]));
+  
+      return items.map(e => ({
+        ...e,
+        cutOptionName: cutOptionsMap.get(e.CutOptionId)?.OptionProductCutOptions || null
+      }));
+  
     } catch (error) {
       console.error('Error fetching size measurements:', error);
       throw new BadRequestException('Error fetching size measurements');

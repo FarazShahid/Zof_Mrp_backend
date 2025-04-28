@@ -1,4 +1,4 @@
-import { Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { SizeMeasurementsService } from './size-measurements.service';
 import { CreateSizeMeasurementDto } from './dto/create-size-measurement.dto';
 import { UpdateSizeMeasurementDto } from './dto/update-size-measurement.dto';
@@ -6,6 +6,7 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
+import { ApiQuery } from '@nestjs/swagger';
 
 @ControllerAuthProtector('Size Measurements', 'size-measurements')
 export class SizeMeasurementsController {
@@ -26,9 +27,10 @@ export class SizeMeasurementsController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all size measurements')
-  findAll() {
+  @ApiQuery({ name: 'CutOptionId', required: false, description: 'Filter by Cut Option' })
+  findAll(@Query('CutOptionId') CutOptionId?: number) { 
     try {
-      return this.sizeMeasurementsService.findAll();
+      return this.sizeMeasurementsService.findAll(CutOptionId); 
     } catch (error) {
       throw error;
     }

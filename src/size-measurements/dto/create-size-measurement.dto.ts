@@ -6,6 +6,10 @@ export class CreateSizeMeasurementDto {
   @IsOptional()
   ClientId?: number;
 
+  @CommonApiProperty('Cut Option Id', '1')
+  @IsOptional()
+  CutOptionId?: number;
+
   @CommonApiProperty('Size Option Id', '1')
   @IsNumber()
   @IsNotEmpty()
