@@ -5,6 +5,7 @@ import { InventoryItems } from './_/inventory-items.entity';
 import { InventorySubCategories } from 'src/inventory-sub-categories/_/inventory-sub-categories.entity';
 import { InventorySuppliers } from 'src/inventory-suppliers/_/inventory-suppliers.entity';
 import { InventoryCategories } from 'src/inventory-categories/_/inventory-categories.entity';
+import { UnitOfMeasures } from 'src/inventory-unit-measures/_/inventory-unit-measures.entity';
 
 @Injectable()
 export class inventoryItemService {
@@ -18,13 +19,15 @@ export class inventoryItemService {
     private readonly inventorySuppliersRepository: Repository<InventorySuppliers>,
     @InjectRepository(InventoryCategories)
     private readonly inventoryCategoriesRepository: Repository<InventoryCategories>,
+    @InjectRepository(UnitOfMeasures)
+    private readonly inventoryUnitOfMeasuresRepository: Repository<UnitOfMeasures>,
   ) { }
 
   async create(
     data: {
       Name: string;
       SubCategoryId: number;
-      UnitOfMeasure: string;
+      UnitOfMeasureId: number;
       SupplierId: number;
       ReorderLevel?: number;
     },
@@ -44,6 +47,14 @@ export class inventoryItemService {
     });
     if (!supplier) {
       throw new NotFoundException(`Supplier with id ${data.SupplierId} not found`);
+    }
+
+    const UnitOfMeasures = await this.inventoryUnitOfMeasuresRepository.findOne({
+      where: { Id: data.UnitOfMeasureId },
+      withDeleted: false,
+    });
+    if (!UnitOfMeasures) {
+      throw new NotFoundException(`Unit Of Measures with id ${data.UnitOfMeasureId} not found`);
     }
 
     const lastItem = await this.inventoryItemsRepository.find({
@@ -81,7 +92,9 @@ export class inventoryItemService {
       ItemCode: savedItem.ItemCode,
       SubCategoryId: savedItem.SubCategoryId,
       SubCategoryName: subCategory.Name || null,
-      UnitOfMeasure: savedItem.UnitOfMeasure,
+      UnitOfMeasureId: savedItem.UnitOfMeasureId,
+      UnitOfMeasureName: UnitOfMeasures.Name,
+      UnitOfMeasureShortForm: UnitOfMeasures.ShortForm,
       SupplierId: savedItem.SupplierId,
       SupplierName: supplier.Name || null,
       ReorderLevel: savedItem.ReorderLevel,
@@ -98,6 +111,7 @@ export class inventoryItemService {
     const items = await this.inventoryItemsRepository.find();
     const subCategoryIds = items.map(it => it.SubCategoryId);
     const suppliersIds = items.map(it => it.SupplierId);
+    const unitOfMeasureIds = items.map(it => it.UnitOfMeasureId);
     const subCategories = await this.inventorySubCategoriesRepository.find({
       where: { Id: In(subCategoryIds) },
       withDeleted: true,
@@ -107,8 +121,14 @@ export class inventoryItemService {
       withDeleted: true,
     });
 
+    const unitOfMeasures = await this.inventoryUnitOfMeasuresRepository.find({
+      where: { Id: In(unitOfMeasureIds) },
+      withDeleted: true,
+    });
+
     const subCategoryMap = new Map(subCategories.map(cat => [cat.Id, cat.Name]));
     const suppliersMap = new Map(suppliers.map(sup => [sup.Id, sup.Name]));
+    const unitOfMeasuresMap = new Map(unitOfMeasures.map(um => [um.Id, um]));
 
     return items.map(item => ({
       Id: item.Id,
@@ -116,7 +136,9 @@ export class inventoryItemService {
       ItemCode: item.ItemCode,
       SubCategoryId: item.SubCategoryId,
       SubCategoryName: subCategoryMap.get(item.SubCategoryId) || null,
-      UnitOfMeasure: item.UnitOfMeasure,
+      UnitOfMeasureId: item.UnitOfMeasureId,
+      UnitOfMeasureName: unitOfMeasuresMap.get(item.UnitOfMeasureId).Name || null,
+      UnitOfMeasureShortForm: unitOfMeasuresMap.get(item.UnitOfMeasureId).ShortForm || null,
       SupplierId: item.SupplierId,
       SupplierName: suppliersMap.get(item.SupplierId) || null,
       ReorderLevel: item.ReorderLevel,
@@ -149,13 +171,22 @@ export class inventoryItemService {
     if (!supplier) {
       throw new NotFoundException(`Supplier with id ${inventoryItem.SupplierId} not found`);
     }
+
+    const UnitOfMeasures = await this.inventoryUnitOfMeasuresRepository.findOne({
+      where: { Id: inventoryItem.UnitOfMeasureId },
+      withDeleted: true,
+    });
+    if (!UnitOfMeasures) {
+      throw new NotFoundException(`Unit Of Measures with id ${inventoryItem.UnitOfMeasureId} not found`);
+    }
     return {
       Id: inventoryItem.Id,
       Name: inventoryItem.Name,
       ItemCode: inventoryItem.ItemCode,
       SubCategoryId: inventoryItem.SubCategoryId,
       SubCategoryName: subCategory.Name || null,
-      UnitOfMeasure: inventoryItem.UnitOfMeasure,
+      UnitOfMeasure: inventoryItem.UnitOfMeasureId,
+      UnitOfMeasureName: UnitOfMeasures.Name,
       SupplierId: inventoryItem.SupplierId,
       SupplierName: supplier.Name || null,
       ReorderLevel: inventoryItem.ReorderLevel,

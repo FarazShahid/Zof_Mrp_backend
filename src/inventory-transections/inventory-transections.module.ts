@@ -4,8 +4,9 @@ import { InventoryTransectionController } from './inventory-transections.control
 import { inventoryTransectionService } from './inventory-transections.service';
 import { InventoryTransactions } from './_/inventory-transections.entity';
 import { InventoryItems } from 'src/inventory-items/_/inventory-items.entity';
+import { UnitOfMeasures } from 'src/inventory-unit-measures/_/inventory-unit-measures.entity';
 @Module({
-  imports: [TypeOrmModule.forFeature([InventoryTransactions, InventoryItems])],
+  imports: [TypeOrmModule.forFeature([InventoryTransactions, InventoryItems, UnitOfMeasures])],
   controllers: [InventoryTransectionController],
   providers: [inventoryTransectionService],
 })

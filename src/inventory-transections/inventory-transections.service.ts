@@ -4,6 +4,7 @@ import { In, Repository } from 'typeorm';
 import { InventoryTransactions } from './_/inventory-transections.entity';
 import { CreateInventoryTransectionsDto } from './_/inventory-transections.dto';
 import { InventoryItems } from 'src/inventory-items/_/inventory-items.entity';
+import { UnitOfMeasures } from 'src/inventory-unit-measures/_/inventory-unit-measures.entity';
 @Injectable()
 export class inventoryTransectionService {
     constructor(
@@ -11,6 +12,8 @@ export class inventoryTransectionService {
         private readonly inventoryTransactionsRepository: Repository<InventoryTransactions>,
         @InjectRepository(InventoryItems)
         private readonly inventoryItemsRepository: Repository<InventoryItems>,
+        @InjectRepository(UnitOfMeasures)
+        private readonly inventoryUnitOfMeasuresRepository: Repository<UnitOfMeasures>,
     ) { }
 
     async create(
@@ -52,6 +55,17 @@ export class inventoryTransectionService {
 
         const itemMap = new Map(items.map(item => [item.Id, item]));
 
+        const unitOfMeasureIds = items.map(it => it.UnitOfMeasureId);
+       
+    
+        const unitOfMeasures = await this.inventoryUnitOfMeasuresRepository.find({
+          where: { Id: In(unitOfMeasureIds) },
+          withDeleted: true,
+        });
+    
+     
+        const unitOfMeasuresMap = new Map(unitOfMeasures.map(um => [um.Id, um]));
+
         return transactions.map(tx => {
             const item = itemMap.get(tx.InventoryItemId);
 
@@ -60,7 +74,9 @@ export class inventoryTransectionService {
                 InventoryItemId: tx.InventoryItemId,
                 ItemName: item?.Name || null,
                 ItemCode: item?.ItemCode || null,
-                UnitOfMeasure: item?.UnitOfMeasure || null,
+                UnitOfMeasureId: item?.UnitOfMeasureId || null,
+                UnitOfMeasureName: unitOfMeasuresMap.get(item.UnitOfMeasureId).Name || null,
+                UnitOfMeasureShortForm: unitOfMeasuresMap.get(item.UnitOfMeasureId).ShortForm || null,
                 Quantity: tx.Quantity,
                 TransactionType: tx.TransactionType,
                 TransactionDate: tx.TransactionDate,
@@ -84,12 +100,26 @@ export class inventoryTransectionService {
             withDeleted: true,
         });
 
+        if (!item) {
+            throw new NotFoundException(`Transection with id ${item.UnitOfMeasureId} not found`);
+          }
+
+        const UnitOfMeasures = await this.inventoryUnitOfMeasuresRepository.findOne({
+            where: { Id: item.UnitOfMeasureId },
+            withDeleted: true,
+          });
+          if (!UnitOfMeasures) {
+            throw new NotFoundException(`Unit Of Measures with id ${item.UnitOfMeasureId} not found`);
+          }
+
         return {
             Id: transaction.Id,
             InventoryItemId: transaction.InventoryItemId,
             ItemName: item?.Name || null,
             ItemCode: item?.ItemCode || null,
-            UnitOfMeasure: item?.UnitOfMeasure || null,
+            UnitOfMeasureId: item?.UnitOfMeasureId || null,
+            UnitOfMeasureName: UnitOfMeasures?.Name || null,
+            UnitOfMeasureShortForm: UnitOfMeasures?.ShortForm || null,
             Quantity: transaction.Quantity,
             TransactionType: transaction.TransactionType,
             TransactionDate: transaction.TransactionDate,

@@ -21,6 +21,7 @@ import { InventorySubCategoryModule } from './inventory-sub-categories/inventory
 import { InventorySupplierModule } from './inventory-suppliers/inventory-suppliers.module';
 import { InventoryItemsModule } from './inventory-items/inventory-items.module';
 import { InventoryTransectionsModule } from './inventory-transections/inventory-transections.module';
+import { InventoryUnitOfMeasuresModule } from './inventory-unit-measures/inventory-unit-measures.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -43,6 +44,7 @@ import { InventoryTransectionsModule } from './inventory-transections/inventory-
     InventoryCategoryModule,
     InventorySubCategoryModule,
     InventorySupplierModule,
+    InventoryUnitOfMeasuresModule,
     InventoryItemsModule,
     InventoryTransectionsModule,
     OrderModule,

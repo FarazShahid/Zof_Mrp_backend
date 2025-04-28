@@ -21,8 +21,8 @@ export class InventoryItems {
   @Column()
   SubCategoryId: number;
 
-  @Column({ length: 10 })
-  UnitOfMeasure: string;
+  @Column()
+  UnitOfMeasureId: number;
 
   @Column()
   SupplierId: number;

@@ -50,6 +50,7 @@ export class InventorySupplierService {
     return fetchedSuppliers.map(e => ({
       Id: e.Id,
       Name: e.Name,
+      Email: e.Email,
       Phone: e.Phone,
       Country: e.Country,
       State: e.State,
@@ -70,6 +71,7 @@ export class InventorySupplierService {
     return {
       Id: inventorySupplier.Id,
       Name: inventorySupplier.Name,
+      Email: inventorySupplier.Email,
       Phone: inventorySupplier.Phone,
       Country: inventorySupplier.Country,
       State: inventorySupplier.State,
@@ -89,11 +91,26 @@ export class InventorySupplierService {
         throw new NotFoundException(`Inventory Supplier with ID ${Id} not found`);
       }
 
-      const { Name, updatedBy } = data;
+      const { 
+        Name, 
+        updatedBy, 
+        CompleteAddress = null, 
+        City = null, 
+        State = null, 
+        Country = null, 
+        Phone = null, 
+        Email = null 
+      } = data;      
 
       const updateData: any = {};
 
       if (Name !== undefined) updateData.Name = Name;
+      if (CompleteAddress !== undefined) updateData.CompleteAddress = CompleteAddress;
+      if (City !== undefined) updateData.City = City;
+      if (State !== undefined) updateData.State = State;
+      if (Country !== undefined) updateData.Country = Country;
+      if (Phone !== undefined) updateData.Phone = Phone;
+      if (Email !== undefined) updateData.Email = Email;
 
       updateData.UpdatedBy = updatedBy;
       updateData.UpdatedOn = new Date();
@@ -104,6 +121,7 @@ export class InventorySupplierService {
       return {
         Id: updatedInventorySupplier.Id,
         Name: updatedInventorySupplier.Name,
+        Email: updatedInventorySupplier.Email,
         Phone: updatedInventorySupplier.Phone,
         Country: updatedInventorySupplier.Country,
         State: updatedInventorySupplier.State,

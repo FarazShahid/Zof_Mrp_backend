@@ -13,11 +13,10 @@ export class CreateInventoryItemDto {
   @IsNotEmpty()
   SubCategoryId: number;
 
-  @CommonApiProperty('Unit of Measure', '12fg')
-  @IsString()
+  @CommonApiProperty('Unit of Measure', 1)
+  @IsNumber()
   @IsNotEmpty()
-  @MaxLength(10)
-  UnitOfMeasure: string;
+  UnitOfMeasureId: number;
 
   @CommonApiProperty('Supplier ID', '1')
   @IsNumber()
