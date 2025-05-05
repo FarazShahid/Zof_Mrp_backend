@@ -98,6 +98,7 @@ CREATE TABLE `clientevent` (
   `Id` int(11) NOT NULL,
   `EventName` varchar(255) NOT NULL,
   `Description` varchar(255) NOT NULL,
+  `ClientId` int(11) DEFAULT NULL,
   `CreatedBy` varchar(255) NOT NULL,
   `CreatedOn` datetime NOT NULL DEFAULT current_timestamp(),
   `UpdatedBy` varchar(255) NOT NULL,

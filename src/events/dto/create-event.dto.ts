@@ -13,4 +13,8 @@ export class CreateEventDto {
   @IsOptional()
   @MaxLength(255)
   Description: string;
+
+  @CommonApiProperty('Default Client Id', 1)
+  @IsOptional()
+  ClientId: number | null;
 } 

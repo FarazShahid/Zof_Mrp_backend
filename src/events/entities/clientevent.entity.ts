@@ -11,6 +11,9 @@ export class ClientEvent {
   @Column()
   Description: string;
 
+  @Column({default: null})
+  ClientId: number | null;
+
   @Column()
   CreatedBy: string;
 
