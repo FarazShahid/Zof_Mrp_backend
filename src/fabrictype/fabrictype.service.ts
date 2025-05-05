@@ -1,74 +1,94 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { FabricType } from './_/fabrictype.entity';
-
+import { ProductCategory } from 'src/product-category/entities/product-category.entity';
 @Injectable()
 export class FabricTypeService {
-  private readonly logger = new Logger(FabricTypeService.name);
-
   constructor(
     @InjectRepository(FabricType)
     private readonly fabricTypeRepository: Repository<FabricType>,
+    @InjectRepository(ProductCategory)
+    private readonly productCategoryRepository: Repository<ProductCategory>,
   ) {}
 
-  async create(data: { type: string; name: string; gsm: number; createdBy: string }) {
-    this.logger.log(`Creating new fabric type: ${JSON.stringify(data)}`);
+  async create(data: { type: string; name: string; gsm: number; CategoryId: number; createdBy: string }) {
     const fabric = this.fabricTypeRepository.create({
       ...data,
+      CategoryId: data.CategoryId ?? null,
       createdOn: new Date(),
     });
     return this.fabricTypeRepository.save(fabric);
   }
 
   async findAll() {
-    this.logger.log('Finding all fabric types');
-    return this.fabricTypeRepository.find();
+    const response = await this.fabricTypeRepository.find();
+    const CategoryIds = response.filter(e => e.CategoryId).map(e => e.CategoryId);
+    const categories = await this.productCategoryRepository.find({
+          where: { id: In(CategoryIds) },
+          withDeleted: true,
+        });
+    const categoryMap = new Map(categories.map(cat => [cat.id, cat.type]));
+    return response.map(e=>({
+      id: e.id,
+      name: e.name,
+      type: e.type,
+      gsm: e.gsm,
+      categoryid: e.CategoryId,
+      categoryName: categoryMap.get(e.CategoryId) ?? "N/A",
+      createdOn: e.createdOn,
+      createdBy: e.createdBy,
+      updatedOn: e.updatedOn,
+      updatedBy: e.updatedBy
+    }));
   }
 
   async findOne(id: number) {
-    this.logger.log(`Finding fabric type with id: ${id}`);
     const fabricType = await this.fabricTypeRepository.findOne({ where: { id } });
     if (!fabricType) {
       throw new NotFoundException(`Fabric type with ID ${id} not found`);
     }
-    return fabricType;
+    const category = await this.productCategoryRepository.findOne({
+      where: { id: fabricType.CategoryId },
+      withDeleted: true,
+    });
+
+    return {
+      id: fabricType.id,
+      name: fabricType.name,
+      type: fabricType.type,
+      gsm: fabricType.gsm,
+      categoryid: fabricType.CategoryId,
+      categoryName: category?.type ?? "N/A",
+      createdOn: fabricType.createdOn,
+      createdBy: fabricType.createdBy,
+      updatedOn: fabricType.updatedOn,
+      updatedBy: fabricType.updatedBy
+    };
   }
 
-  async update(id: number, data: any) {
-    this.logger.log(`Updating fabric type with id: ${id}, data: ${JSON.stringify(data)}`);
-    
+  async update(id: number, data: any) {    
     try {
-      // First check if the fabric type exists
       const fabricType = await this.fabricTypeRepository.findOne({ where: { id } });
       if (!fabricType) {
         throw new NotFoundException(`Fabric type with ID ${id} not found`);
       }
 
-      // Extract only the fields we want to update
-      const { type, name, gsm, updatedBy } = data;
-      
-      // Create update data object
+      const { type, name, gsm, updatedBy, CategoryId } = data;
       const updateData: any = {};
       
-      // Only include fields that are provided
       if (type !== undefined) updateData.type = type;
       if (name !== undefined) updateData.name = name;
       if (gsm !== undefined) updateData.gsm = gsm;
+      if (CategoryId !== undefined) updateData.CategoryId = CategoryId;
       
-      // Always set updatedBy and updatedOn
       updateData.updatedBy = updatedBy;
       updateData.updatedOn = new Date();
 
-      this.logger.log(`Updating with data: ${JSON.stringify(updateData)}`);
-
-      // Update the fabric type
       await this.fabricTypeRepository.update(id, updateData);
       
-      // Return the updated fabric type
       return this.fabricTypeRepository.findOne({ where: { id } });
     } catch (error) {
-      this.logger.error(`Error updating fabric type: ${error.message}`, error.stack);
       if (error instanceof NotFoundException) {
         throw error;
       }
@@ -77,7 +97,6 @@ export class FabricTypeService {
   }
 
   async delete(id: number) {
-    this.logger.log(`Deleting fabric type with id: ${id}`);
     const result = await this.fabricTypeRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Fabric type with ID ${id} not found`);

@@ -232,6 +232,7 @@ CREATE TABLE `fabrictype` (
   `Type` varchar(255) NOT NULL,
   `Name` varchar(255) NOT NULL,
   `GSM` int(11) NOT NULL,
+  `CategoryId` int(11) DEFAULT NULL,
   `CreatedOn` datetime DEFAULT current_timestamp(),
   `CreatedBy` varchar(100) DEFAULT NULL,
   `UpdatedOn` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),

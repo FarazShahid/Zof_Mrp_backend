@@ -1,4 +1,4 @@
-import { IsString, IsInt, IsNotEmpty, MaxLength } from 'class-validator';
+import { IsString, IsInt, IsNotEmpty, MaxLength, IsOptional } from 'class-validator';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 
 export class CreateFabricTypeDto {
@@ -18,4 +18,8 @@ export class CreateFabricTypeDto {
   @IsInt()
   @IsNotEmpty()
   gsm: number;
+
+  @CommonApiProperty('Optional Category Id', 1)
+  @IsOptional()
+  CategoryId: number;
 }
