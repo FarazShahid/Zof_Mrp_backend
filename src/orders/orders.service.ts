@@ -395,37 +395,37 @@ export class OrdersService {
   
 
   async getEditOrder(id: number): Promise<any> {
-    try {
-      // Get order with related data using query builder
-      const orderData = await this.orderRepository
-        .createQueryBuilder('order')
-        .leftJoin('client', 'client', 'order.ClientId = client.Id')
-        .leftJoin('clientevent', 'event', 'order.OrderEventId = event.Id')
-        .leftJoin('orderstatus', 'status', 'order.OrderStatusId = status.Id')
-        .select([
-          'order.Id AS Id',
-          'order.ClientId AS ClientId',
-          'client.Name AS ClientName',
-          'order.OrderEventId AS OrderEventId',
-          'event.EventName AS EventName',
-          'order.Description AS Description',
-          'order.OrderStatusId AS OrderStatusId',
-          'status.StatusName AS StatusName',
-          'order.Deadline AS Deadline',
-          'order.OrderPriority AS OrderPriority',
-          'order.OrderNumber AS OrderNumber',
-          'order.OrderName AS OrderName',
-          'order.ExternalOrderId AS ExternalOrderId'
-        ])
-        .where('order.Id = :id', { id })
-        .getRawOne();
-    
-      if (!orderData) {
-          throw new NotFoundException([`Order with ID ${id} not found`]);
-      }
-    
-      // Get order items with related data using query builder
-      const orderItemsData = await this.orderItemRepository
+  try {
+    // Fetch order header information
+    const orderData = await this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoin('client', 'client', 'order.ClientId = client.Id')
+      .leftJoin('clientevent', 'event', 'order.OrderEventId = event.Id')
+      .leftJoin('orderstatus', 'status', 'order.OrderStatusId = status.Id')
+      .select([
+        'order.Id AS Id',
+        'order.ClientId AS ClientId',
+        'client.Name AS ClientName',
+        'order.OrderEventId AS OrderEventId',
+        'event.EventName AS EventName',
+        'order.Description AS Description',
+        'order.OrderStatusId AS OrderStatusId',
+        'status.StatusName AS StatusName',
+        'order.Deadline AS Deadline',
+        'order.OrderPriority AS OrderPriority',
+        'order.OrderNumber AS OrderNumber',
+        'order.OrderName AS OrderName',
+        'order.ExternalOrderId AS ExternalOrderId'
+      ])
+      .where('order.Id = :id', { id })
+      .getRawOne();
+
+    if (!orderData) {
+      throw new NotFoundException([`Order with ID ${id} not found`]);
+    }
+
+    // Fetch order items with related data
+    const orderItemsData = await this.orderItemRepository
       .createQueryBuilder('orderItem')
       .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
       .leftJoin('productcategory', 'productCategory', 'product.ProductCategoryId = productCategory.Id')
@@ -435,6 +435,9 @@ export class OrdersService {
       .leftJoin('orderitemdetails', 'orderItemDetail', 'orderItem.Id = orderItemDetail.OrderItemId')
       .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderItemDetail.ColorOptionId = availablecoloroptions.Id')
       .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId = colorOption.Id')
+      .leftJoin('document', 'imageDoc', 'orderItem.ImageId = imageDoc.Id')
+      .leftJoin('document', 'fileDoc', 'orderItem.FileId = fileDoc.Id')
+      .leftJoin('document', 'videoDoc', 'orderItem.VideoId = videoDoc.Id')
       .select([
         'orderItem.Id AS Id',
         'orderItem.ProductId AS ProductId',
@@ -447,8 +450,11 @@ export class OrdersService {
         'orderItem.Description AS Description',
         'orderItem.OrderItemPriority AS OrderItemPriority',
         'orderItem.ImageId AS ImageId',
+        'imageDoc.CloudPath AS ImagePath',
         'orderItem.FileId AS FileId',
+        'fileDoc.CloudPath AS FilePath',
         'orderItem.VideoId AS VideoId',
+        'videoDoc.CloudPath AS VideoPath',
         'printingOption.Id AS PrintingOptionId',
         'printingOption.Description AS PrintingOptionDescription',
         'printingoptions.Type AS PrintingOptionName',
@@ -458,89 +464,92 @@ export class OrdersService {
         'orderItemDetail.Quantity AS Quantity',
         'orderItemDetail.Priority AS Priority'
       ])
-        .where('orderItem.OrderId = :orderId', { orderId: id })
-        .getRawMany();
-    
-      // Process order items to group printing options and color options
-      const processedItems = [];
-      const itemMap = new Map();
-    
-      for (const item of orderItemsData) {
-        if (!itemMap.has(item.Id)) {
-          // Create new item entry
-          const newItem = {
-            Id: item.Id,
-            ProductId: item.ProductId,
-            ProductCategoryId: item.ProductCategoryId,
-            ProductCategoryName: item.ProductCategoryName,
-            ProductFabricType: item.ProductFabricType,
-            ProductFabricName: item.ProductFabricName,
-            ProductFabricGSM: item.ProductFabricGSM,
-            Description: item.Description,
-            OrderNumber: orderData.OrderNumber,
-            OrderName: orderData.OrderName,
-            ExternalOrderId: orderData.ExternalOrderId,
-            OrderItemPriority: item.OrderItemPriority,
-            ImageId: item.ImageId,
-            FileId: item.FileId,
-            VideoId: item.VideoId,
-            printingOptions: [],
-            orderItemDetails: []
-          };
-          
-          itemMap.set(item.Id, newItem);
-          processedItems.push(newItem);
-        }
-        
-        const currentItem = itemMap.get(item.Id);
-        
-        // Add printing option if it exists and is not already added
-        if (item.PrintingOptionId && !currentItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
-          currentItem.printingOptions.push({
-            PrintingOptionId: item.PrintingOptionId,
-            PrintingOptionName: item.PrintingOptionName,
-            Description: item.PrintingOptionDescription
-          });
-        }
-        
-        // Add color option if it exists and is not already added
-        if (item.ColorOptionId && !currentItem.orderItemDetails.some(od => od.ColorOptionId === item.ColorOptionId)) {
-          currentItem.orderItemDetails.push({
-            ColorOptionId: item.ColorOptionId,
-            ColorOptionName: item.ColorOptionName || 'Unknown Color',
-            Quantity: item.Quantity,
-            Priority: item.Priority
-          });
-        }
+      .where('orderItem.OrderId = :orderId', { orderId: id })
+      .getRawMany();
+
+    // Group items
+    const processedItems = [];
+    const itemMap = new Map();
+
+    for (const item of orderItemsData) {
+      if (!itemMap.has(item.Id)) {
+        const newItem = {
+          Id: item.Id,
+          ProductId: item.ProductId,
+          ProductCategoryId: item.ProductCategoryId,
+          ProductCategoryName: item.ProductCategoryName,
+          ProductFabricType: item.ProductFabricType,
+          ProductFabricName: item.ProductFabricName,
+          ProductFabricGSM: item.ProductFabricGSM,
+          Description: item.Description,
+          OrderNumber: orderData.OrderNumber,
+          OrderName: orderData.OrderName,
+          ExternalOrderId: orderData.ExternalOrderId,
+          OrderItemPriority: item.OrderItemPriority,
+          ImageId: item.ImageId,
+          ImagePath: item.ImagePath,
+          FileId: item.FileId,
+          FilePath: item.FilePath,
+          VideoId: item.VideoId,
+          VideoPath: item.VideoPath,
+          printingOptions: [],
+          orderItemDetails: []
+        };
+
+        itemMap.set(item.Id, newItem);
+        processedItems.push(newItem);
       }
-    
-      // Return formatted order with related data
-      return {
-        Id: orderData.Id,
-        ClientId: orderData.ClientId,
-        ClientName: orderData.ClientName || 'Unknown Client',
-        OrderEventId: orderData.OrderEventId,
-        EventName: orderData.EventName || 'Unknown Event',
-        OrderPriority: orderData.OrderPriority,
-        Description: orderData.Description,
-        OrderNumber: orderData.OrderNumber,
-        OrderName: orderData.OrderName,
-        ExternalOrderId: orderData.ExternalOrderId,
-        OrderStatusId: orderData.OrderStatusId,
-        StatusName: orderData.StatusName || 'Unknown Status',
-        Deadline: orderData.Deadline,
-        items: processedItems
-      };
-    } catch (error) {
-      console.error('Error in getEditOrder:', error);
-      throw error;
+
+      const currentItem = itemMap.get(item.Id);
+
+      if (item.PrintingOptionId && !currentItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
+        currentItem.printingOptions.push({
+          PrintingOptionId: item.PrintingOptionId,
+          PrintingOptionName: item.PrintingOptionName,
+          Description: item.PrintingOptionDescription
+        });
+      }
+
+      if (item.ColorOptionId && !currentItem.orderItemDetails.some(od => od.ColorOptionId === item.ColorOptionId)) {
+        currentItem.orderItemDetails.push({
+          ColorOptionId: item.ColorOptionId,
+          ColorOptionName: item.ColorOptionName || 'Unknown Color',
+          Quantity: item.Quantity,
+          Priority: item.Priority
+        });
+      }
     }
+
+    // Final return
+    return {
+      Id: orderData.Id,
+      ClientId: orderData.ClientId,
+      ClientName: orderData.ClientName || 'Unknown Client',
+      OrderEventId: orderData.OrderEventId,
+      EventName: orderData.EventName || 'Unknown Event',
+      OrderPriority: orderData.OrderPriority,
+      Description: orderData.Description,
+      OrderNumber: orderData.OrderNumber,
+      OrderName: orderData.OrderName,
+      ExternalOrderId: orderData.ExternalOrderId,
+      OrderStatusId: orderData.OrderStatusId,
+      StatusName: orderData.StatusName || 'Unknown Status',
+      Deadline: orderData.Deadline,
+      items: processedItems
+    };
+  } catch (error) {
+    console.error('Error in getEditOrder:', error);
+    throw error;
   }
+}
 
   async getOrderItemsByOrderId(orderId: number): Promise<any> {
     const orderItems = await this.orderItemRepository
       .createQueryBuilder('orderItem')
       .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
+      .leftJoin('document', 'imageDoc', 'orderItem.ImageId = imageDoc.Id')
+      .leftJoin('document', 'fileDoc', 'orderItem.FileId = fileDoc.Id')
+      .leftJoin('document', 'videoDoc', 'orderItem.VideoId = videoDoc.Id')
       .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
       .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
       .leftJoin('orderitemdetails', 'orderitemdetails', 'orderItem.Id = orderitemdetails.OrderItemId')
@@ -557,7 +566,7 @@ export class OrdersService {
         'orderItem.CreatedOn AS CreatedOn',
         'orderItem.UpdatedOn AS UpdatedOn',
         'orderItem.OrderItemPriority AS OrderItemPriority',
-        'product.Name AS ProductName',
+        // 'product.Name AS ProductName',
         'printingOption.Id AS PrintingOptionId',
         'printingOption.PrintingOptionId AS PrintingOptionId',
         'printingOption.Description AS PrintingOptionDescription',
@@ -565,7 +574,10 @@ export class OrdersService {
         'orderitemdetails.ColorOptionId AS ColorOptionId',
         'colorOption.Name AS ColorName',
         'orderitemdetails.Quantity AS OrderItemDetailQuanity',
-        'orderitemdetails.Priority AS OrderItemDetailPriority'
+        'orderitemdetails.Priority AS OrderItemDetailPriority',
+        'videoDoc.CloudPath AS VideoPath',
+        'imageDoc.CloudPath AS ImagePath',
+        'fileDoc.CloudPath AS FilePath',
       ])
       .where('orderItem.OrderId = :orderId', { orderId })
       .getRawMany();
@@ -599,12 +611,15 @@ export class OrdersService {
           Id: item.Id,
           OrderId: item.OrderId,
           ProductId: item.ProductId,
-          ProductName: item.ProductName || "",
+          // ProductName: item.ProductName || "",
           Description: item.Description,
           OrderItemPriority: item.OrderItemPriority || 0,
           ImageId: item.ImageId,
+          ImagePath: item.ImagePath,
           FileId: item.FileId,
+          FilePath: item.FilePath,
           VideoId: item.VideoId,
+          VideoPath: item.VideoPath,
           CreatedOn: item.CreatedOn,
           UpdatedOn: item.UpdatedOn,
           printingOptions: item.PrintingOptionId
