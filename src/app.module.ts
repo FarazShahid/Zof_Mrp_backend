@@ -42,7 +42,7 @@ import { MediaHandlersModule } from './media-handlers/media-handlers.module';
         entities: [],
         // Make Sync False for Prod
         synchronize: configService.get('false'),
-        logging: configService.get('NODE_ENV') === 'development',
+        logging: false,
         autoLoadEntities: true,
         keepConnectionAlive: true,
         extra: {
