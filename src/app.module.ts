@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule } from './clients/clients.module';
 import { ProductsModule } from './products/products.module';
 import { AuthModule } from './auth/auth.module';
@@ -22,21 +23,35 @@ import { InventorySupplierModule } from './inventory-suppliers/inventory-supplie
 import { InventoryItemsModule } from './inventory-items/inventory-items.module';
 import { InventoryTransectionsModule } from './inventory-transections/inventory-transections.module';
 import { InventoryUnitOfMeasuresModule } from './inventory-unit-measures/inventory-unit-measures.module';
+import { MediaHandlersModule } from './media-handlers/media-handlers.module';
+
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '3306', 10),
-      username: process.env.DB_USERNAME || 'root',
-      password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_DATABASE || 'zof_mrp',
-      autoLoadEntities: true,
-      entities: [],
-      // Make Sync False for Prod
-      synchronize: false
+    ConfigModule.forRoot({
+      isGlobal: true,
     }),
-    AuthModule,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql',
+        host: configService.get('DB_HOST'),
+        port: configService.get('DB_PORT'),
+        username: configService.get('DB_USERNAME'),
+        password: configService.get('DB_PASSWORD') === '""' ? '' : configService.get('DB_PASSWORD'),
+        database: configService.get('DB_DATABASE'),
+        entities: [],
+        // Make Sync False for Prod
+        synchronize: configService.get('false'),
+        logging: configService.get('NODE_ENV') === 'development',
+        autoLoadEntities: true,
+        keepConnectionAlive: true,
+        extra: {
+          connectionLimit: 10
+        }
+      }),
+      inject: [ConfigService],
+    }),
+   AuthModule,
     ClientsModule,
     ColorOptionModule,
     EventsModule,
@@ -57,8 +72,9 @@ import { InventoryUnitOfMeasuresModule } from './inventory-unit-measures/invento
     SizeMeasurementsModule,
     SizeoptionsModule,
     SleeveTypeModule,
-    UserModule
+    UserModule,
+    MediaHandlersModule
   ],
   controllers: []
 })
-export class AppModule { }
+export class AppModule {}
