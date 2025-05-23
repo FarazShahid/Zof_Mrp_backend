@@ -12,6 +12,7 @@ import { Client } from '../clients/entities/client.entity';
 import { ClientEvent } from '../events/entities/clientevent.entity';
 import { Product } from '../products/entities/product.entity';
 import { PrintingOptions } from '../printingoptions/entities/printingoptions.entity';
+import { OrderStatus } from 'src/orderstatus/entities/orderstatus.entity';
 
 @Injectable()
 export class OrdersService {
@@ -32,6 +33,8 @@ export class OrdersService {
     private productRepository: Repository<Product>,
     @InjectRepository(PrintingOptions)
     private printingOptionRepository: Repository<PrintingOptions>,
+     @InjectRepository(OrderStatus)
+    private orderStatusRepository: Repository<OrderStatus>,
     private dataSource: DataSource,
   ) {}
 
@@ -649,4 +652,26 @@ export class OrdersService {
   
     return formattedItems;
   }
+
+  async updateOrderStatus(id: number, status: number): Promise<Order> {
+    const order = await this.orderRepository.findOne({ where: { Id: id } });
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${id} not found`);
+    }
+
+    const OrderStatus = await this.orderStatusRepository.findOne({
+      where: {
+        Id: status
+      }
+    })
+
+    if (!OrderStatus) {
+      throw new NotFoundException(`Order Staus ID ${status} not found`);
+    }
+
+    order.OrderStatusId = status;
+    
+    return await this.orderRepository.save(order);
+  }
+
 }
