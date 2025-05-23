@@ -113,4 +113,20 @@ export class OrdersController {
       throw error;
     }
   }
+
+  @Post('change-status:id/:statusId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @CommonApiResponses('Update order status by id using DELETE route')
+  async updateStatusViaDelete(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('statusId', ParseIntPipe) statusId: number
+  ): Promise<void> {
+    try {
+      await this.ordersService.updateOrderStatus(id, statusId);
+    } catch (error) {
+      console.error('Error updating order status via DELETE route:', error);
+      throw error;
+    }
+  }
+
 }
