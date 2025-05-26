@@ -7,7 +7,6 @@ import { OrderItemsPrintingOption } from './entities/order-item-printiing.option
 import { CreateOrderDto } from './dto/create-orders.dto';
 import { OrderItemDetails } from './entities/order-item-details';
 import { DataSource } from 'typeorm';
-import { PaginationDto } from './dto/pagination.dto';
 import { Client } from '../clients/entities/client.entity';
 import { ClientEvent } from '../events/entities/clientevent.entity';
 import { Product } from '../products/entities/product.entity';
@@ -41,30 +40,34 @@ export class OrdersService {
   async createOrder(createOrderDto: CreateOrderDto, createdBy: any): Promise<Order> {
     const { ClientId, OrderEventId, Description, Deadline, OrderPriority, ExternalOrderId, OrderName, OrderNumber, items } = createOrderDto;
 
-    // Validate client exists
     const client = await this.clientRepository.findOne({ where: { Id: ClientId } });
     if (!client) {
       throw new NotFoundException(`Client with ID ${ClientId} not found`);
     }
 
-    // Validate event exists
     const event = await this.eventRepository.findOne({ where: { Id: OrderEventId } });
     if (!event) {
       throw new NotFoundException(`Event with ID ${OrderEventId} not found`);
     }
 
-    // Validate all products exist
     const productIds = items.map(item => item.ProductId);
     const products = await this.productRepository.find({ where: { Id: In(productIds) } });
     if (products.length !== productIds.length) {
       throw new NotFoundException('One or more products not found');
     }
 
-    // Validate all printing options exist
-    const printingOptionIds = items.flatMap(item => 
-      item.printingOptions ? item.printingOptions.map(option => option.PrintingOptionId) : []
-    );
+    const printingOptionIds = [
+      ...new Set(
+        items.flatMap(item =>
+          item.printingOptions
+            ? item.printingOptions.map(option => option.PrintingOptionId)
+            : []
+        )
+      )
+    ];
+
     if (printingOptionIds.length > 0) {
+        console.log(printingOptionIds);
       const printingOptions = await this.printingOptionRepository.find({ where: { Id: In(printingOptionIds) } });
       if (printingOptions.length !== printingOptionIds.length) {
         throw new NotFoundException('One or more printing options not found');
@@ -129,7 +132,7 @@ export class OrdersService {
     return savedOrder;
   }  
 
-  async getAllOrders(paginationDto?: PaginationDto): Promise<any> {
+  async getAllOrders(): Promise<any> {
     try {
      
       const result = await this.orderRepository
@@ -256,7 +259,6 @@ export class OrdersService {
 
     const { items, ...updateData } = updateOrderDto;
 
-    // Validate client exists if provided
     if (updateData.ClientId) {
       const client = await this.clientRepository.findOne({ where: { Id: updateData.ClientId } });
       if (!client) {
@@ -264,7 +266,6 @@ export class OrdersService {
       }
     }
 
-    // Validate event exists if provided
     if (updateData.OrderEventId) {
       const event = await this.eventRepository.findOne({ where: { Id: updateData.OrderEventId } });
       if (!event) {
@@ -273,17 +274,22 @@ export class OrdersService {
     }
 
     if (Array.isArray(items) && items.length > 0) {
-      // Validate all products exist
       const productIds = items.map(item => item.ProductId);
       const products = await this.productRepository.find({ where: { Id: In(productIds) } });
       if (products.length !== productIds.length) {
         throw new NotFoundException('One or more products not found');
       }
 
-      // Validate all printing options exist
-      const printingOptionIds = items.flatMap(item => 
-        item.printingOptions ? item.printingOptions.map(option => option.PrintingOptionId) : []
-      );
+      const printingOptionIds = [
+        ...new Set(
+          items.flatMap(item =>
+            item.printingOptions
+              ? item.printingOptions.map(option => option.PrintingOptionId)
+              : []
+          )
+        )
+      ];
+
       if (printingOptionIds.length > 0) {
         const printingOptions = await this.printingOptionRepository.find({ where: { Id: In(printingOptionIds) } });
         if (printingOptions.length !== printingOptionIds.length) {
@@ -399,7 +405,6 @@ export class OrdersService {
 
   async getEditOrder(id: number): Promise<any> {
   try {
-    // Fetch order header information
     const orderData = await this.orderRepository
       .createQueryBuilder('order')
       .leftJoin('client', 'client', 'order.ClientId = client.Id')
@@ -427,7 +432,6 @@ export class OrdersService {
       throw new NotFoundException([`Order with ID ${id} not found`]);
     }
 
-    // Fetch order items with related data
     const orderItemsData = await this.orderItemRepository
       .createQueryBuilder('orderItem')
       .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
@@ -470,7 +474,6 @@ export class OrdersService {
       .where('orderItem.OrderId = :orderId', { orderId: id })
       .getRawMany();
 
-    // Group items
     const processedItems = [];
     const itemMap = new Map();
 
@@ -523,7 +526,6 @@ export class OrdersService {
       }
     }
 
-    // Final return
     return {
       Id: orderData.Id,
       ClientId: orderData.ClientId,

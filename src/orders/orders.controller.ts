@@ -8,13 +8,11 @@ import {
   Req, 
   ParseIntPipe, 
   HttpStatus, 
-  HttpCode,
-  Query
+  HttpCode
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-orders.dto';
 import { UpdateOrderDto } from './dto/update-orders.dto';
-import { PaginationDto } from './dto/pagination.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
@@ -39,9 +37,9 @@ export class OrdersController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all orders')
-  async findAll(@Query() paginationDto: PaginationDto): Promise<any> {
+  async findAll(): Promise<any> {
     try {
-      return this.ordersService.getAllOrders(paginationDto);
+      return this.ordersService.getAllOrders();
     } catch (error) {
       console.error('Error fetching orders:', error);
       throw error;
@@ -50,7 +48,7 @@ export class OrdersController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  @CommonApiResponses('Get an order by id')
+  @CommonApiResponses('Get an order by client id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<any> {
     try {
       return this.ordersService.getOrdersByClientId(id);
