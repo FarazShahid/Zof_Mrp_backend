@@ -16,29 +16,16 @@ export class ProductcutoptionsService {
     return cutOptions;
   }
 
-  async create(createProductCutOptionDto: CreateProductCutOptionDto): Promise<ProductCutOption> {
-    try {
-      const requiredFields = ['OptionProductCutOptions', 'CreatedBy', 'UpdatedBy'];
-      for (const field of requiredFields) {
-        if (!createProductCutOptionDto[field]) {
-          throw new BadRequestException(`${field} is required`);
-        }
-      }
-
+  async create(createProductCutOptionDto: CreateProductCutOptionDto, createdBy: string): Promise<ProductCutOption> {
       const newCutOption = this.productCutOptionRepository.create({
         ...createProductCutOptionDto,
-        CreatedOn: new Date(),
-        UpdatedOn: new Date(),
+        CreatedBy: createdBy,
+        UpdatedBy: createdBy,
       });
-
       return await this.productCutOptionRepository.save(newCutOption);
-    } catch (error) {
-      console.error('Error creating Product Cut Option:', error);
-      throw new BadRequestException(error.message || 'Error creating Product Cut Option');
-    }
   }
 
-  async update(updateProductCutOptionDto: UpdateProductCutOptionDto): Promise<{ message: string }> {
+  async update(updateProductCutOptionDto: UpdateProductCutOptionDto, updatedBy: string): Promise<any> {
     const { Id } = updateProductCutOptionDto;
 
     if (!Id) {
@@ -51,12 +38,14 @@ export class ProductcutoptionsService {
       throw new NotFoundException(`Product Cut Option with ID ${Id} not found`);
     }
 
-    await this.productCutOptionRepository.update(Id, {
+    const updatedCutOption = await this.productCutOptionRepository.save({
       ...updateProductCutOptionDto,
+      Id: Id,
       UpdatedOn: new Date(),
+      UpdatedBy: updatedBy
     });
 
-    return { message: `Product Cut Option with ID ${Id} has been updated successfully` };
+    return updatedCutOption;
   }
 
   async remove(id: number): Promise<{ message: string }> {

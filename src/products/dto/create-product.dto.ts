@@ -1,54 +1,84 @@
-import { IsNotEmpty, ValidateNested, IsArray } from 'class-validator';
+import { IsNotEmpty, ValidateNested, IsArray, IsNumber, IsInt, Min, IsString, MaxLength, IsOptional, ArrayMinSize } from 'class-validator';
+import { Type } from 'class-transformer';
+import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
+import { ApiProperty } from '@nestjs/swagger';
 
 class ProductColorDto {
+  @CommonApiProperty('Product Color Id', '1')
   Id: number;
 
-  @IsNotEmpty({ message: 'ColorName is required' })
+  @CommonApiProperty('Color Id', '1')
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
   colorId: number;
 
-  @IsNotEmpty({ message: 'ImageId is required' })
+  @CommonApiProperty('Image Id', '1')
+  @IsNotEmpty()
   ImageId: string;
 }
 
 export class ProductDetailDto {
+  @CommonApiProperty('Product Detail Id', '1')
   Id: number;
 
-  @IsNotEmpty({ message: 'ProductCutOptionId is required' })
+  @CommonApiProperty('Product Cut Option Id', '1')
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
   ProductCutOptionId: number;
 
-  @IsNotEmpty({ message: 'ProductSizeMeasurementId is required' })
+  @CommonApiProperty('Product Size Measurement Id', '1')
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
   ProductSizeMeasurementId: number;
 
-  @IsNotEmpty({ message: 'ProductRegionId is required' })
-  ProductRegionId: number;
-
-  @IsNotEmpty({ message: 'SleeveTypeId is required' })
+  @CommonApiProperty('Sleeve Type Id', '1')
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
   SleeveTypeId: number;
 }
 
 export class CreateProductDto {
-  @IsNotEmpty({ message: 'ProductCategoryId is required' })
+  @CommonApiProperty('Product Category Id', '1')
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
   ProductCategoryId: number;
 
-  @IsNotEmpty({ message: 'FabricTypeId is required' })
+  @CommonApiProperty('Fabric Type Id', '1')
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
   FabricTypeId: number;
 
-  @IsNotEmpty({ message: 'Name is required' })
-  Name: string;
-
-  @IsNotEmpty({ message: 'CreatedBy is required' })
-  CreatedBy: string;
-
-  @IsNotEmpty({ message: 'UpdatedBy is required' })
-  UpdatedBy: string;
-
+  @CommonApiProperty('Description', 'Description goes here')
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
   Description?: string;
 
-  @IsArray({ message: 'productColors must be an array' })
+  @ApiProperty({ type: [ProductColorDto] })
+  @IsArray()
   @ValidateNested({ each: true })
+  @Type(() => ProductColorDto)
+  @IsNotEmpty()
+  @ArrayMinSize(1, { message: 'At least one Product Color is required' })
   productColors: ProductColorDto[];
 
-  @IsArray({ message: 'productDetails must be an array' })
+  @ApiProperty({ type: [ProductDetailDto] })
+  @IsArray()
   @ValidateNested({ each: true })
+  @Type(() => ProductDetailDto)
+  @IsNotEmpty()
+  @ArrayMinSize(1, { message: 'At least one Product Detail Option is required' })
   productDetails: ProductDetailDto[];
 }

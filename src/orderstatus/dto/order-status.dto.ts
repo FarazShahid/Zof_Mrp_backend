@@ -1,23 +1,19 @@
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
+import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 
 export class CreateOrderStatusDto {
-    @IsNotEmpty({ message: 'Order Status Name is required' })
+    @CommonApiProperty('Order Status Name', 'Test Order Status')
+    @IsNotEmpty()
+    @IsString()
+    @MaxLength(255)
     Name: string;
 
-    @IsString({ message: 'Description should be string' })
-    @MaxLength(500)
+    @CommonApiProperty('Order Status Description', 'lorem ipsum dolor sit amet')
+    @IsString()
+    @MaxLength(255)
     Description: string;
-
-    @IsNotEmpty({ message: 'Created By is required' })
-    CreatedBy: string;
 }
 
 export class UpdateOrderStatusDto extends PartialType(CreateOrderStatusDto) {
-    Id: number | (() => string);
-
-    @IsString({ message: 'Updated by should be string' })
-    @IsNotEmpty({ message: 'Updated by is required' })
-    @MaxLength(100)
-    UpdatedBy: string;
 }

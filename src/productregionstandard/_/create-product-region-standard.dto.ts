@@ -1,5 +1,8 @@
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+
 export class CreateProductRegionStandardDto {
-    Name: string;
-    CreatedBy?: string;
-  }
-  
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  Name: string;
+}

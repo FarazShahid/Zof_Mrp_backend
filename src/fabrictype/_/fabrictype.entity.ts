@@ -14,6 +14,9 @@ export class FabricType {
   @Column()
   gsm: number;
 
+  @Column({default: null})
+  CategoryId: number;
+
   @CreateDateColumn({ type: 'timestamp' })
   createdOn: Date;
 

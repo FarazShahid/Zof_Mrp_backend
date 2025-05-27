@@ -15,24 +15,17 @@ export class ProductsService {
     private dataSource: DataSource
   ) { }
 
-  async create(createProductDto: CreateProductDto): Promise<Product> {
+  async create(createProductDto: CreateProductDto, createdBy: string): Promise<Product> {
     try {
-      const requiredFields = ['ProductCategoryId', 'FabricTypeId', 'Name', 'CreatedBy', 'UpdatedBy'];
-      for (const field of requiredFields) {
-        if (!createProductDto[field]) {
-          throw new BadRequestException(`${field} is required`);
-        }
-      }
   
       const newProduct = this.productRepository.create({
         ...createProductDto,
-        CreatedOn: new Date(),
-        UpdatedOn: new Date(),
+        CreatedBy: createdBy,
+        UpdatedBy: createdBy,
       });
   
       const savedProduct = await this.productRepository.save(newProduct);
   
-      // If either productColors or productDetails exist, run them in a transaction
       if (
         (createProductDto.productColors && createProductDto.productColors.length > 0) ||
         (createProductDto.productDetails && createProductDto.productDetails.length > 0)
@@ -42,41 +35,35 @@ export class ProductsService {
         await queryRunner.startTransaction();
   
         try {
-          // Insert product colors if provided
+          
           if (createProductDto.productColors && createProductDto.productColors.length > 0) {
             for (const color of createProductDto.productColors) {
               await queryRunner.query(
-                `INSERT INTO availablecoloroptions (colorId, ProductId, ImageId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO availablecoloroptions (colorId, ProductId, ImageId, CreatedBy, UpdatedBy) 
+                 VALUES (?, ?, ?, ?, ?)`,
                 [
                   color.colorId,
                   savedProduct.Id,
                   color.ImageId,
-                  new Date(),
-                  createProductDto.CreatedBy,
-                  new Date(),
-                  createProductDto.UpdatedBy,
+                  createdBy,
+                  createdBy,
                 ]
               );
             }
           }
   
-          // Insert product details if provided
           if (createProductDto.productDetails && createProductDto.productDetails.length > 0) {
             for (const detail of createProductDto.productDetails) {
               await queryRunner.query(
                 `INSERT INTO productdetails 
-                (ProductId, ProductCutOptionId, ProductSizeMeasurementId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, ProductRegionId, SleeveTypeId) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                (ProductId, ProductCutOptionId, ProductSizeMeasurementId, CreatedBy, UpdatedBy, SleeveTypeId) 
+                VALUES (?, ?, ?, ?, ?, ?)`,
                 [
                   savedProduct.Id,
                   detail.ProductCutOptionId,
                   detail.ProductSizeMeasurementId,
-                  new Date(),
-                  createProductDto.CreatedBy,
-                  new Date(),
-                  createProductDto.UpdatedBy,
-                  detail.ProductRegionId,
+                  createdBy,
+                  createdBy,
                   detail.SleeveTypeId,
                 ]
               );
@@ -113,7 +100,6 @@ export class ProductsService {
           'fabric.Type AS FabricType',
           'fabric.Name AS FabricName',
           'fabric.GSM AS GSM',
-          'product.Name AS Name',
           'product.Description AS Description',
           'product.CreatedOn AS CreatedOn',
           'product.UpdatedOn AS UpdatedOn',
@@ -126,16 +112,15 @@ export class ProductsService {
         Id: product.Id,
         ProductCategoryId: product.ProductCategoryId,
         ProductCategoryName: product.ProductCategoryName,
-        FabricTypeId: product.FabricTypeId,
-        FabricType: product.FabricType,
-        FabricName: product.FabricName,
-        GSM: product.GSM,
-        Name: product.Name,
-        Description: product.Description,
-        CreatedBy: product.CreatedBy,
-        UpdatedBy: product.UpdatedBy,
-        CreatedOn: product.CreatedOn,
-        UpdatedOn: product.UpdatedOn
+        FabricTypeId: product.FabricTypeId || "",
+        FabricType: product.FabricType || "",
+        FabricName: product.FabricName || "",
+        GSM: product.GSM || "",
+        Description: product.Description || "",
+        CreatedBy: product.CreatedBy || "",
+        UpdatedBy: product.UpdatedBy || "",
+        CreatedOn: product.CreatedOn || "",
+        UpdatedOn: product.UpdatedOn || ""
       }));
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -166,23 +151,18 @@ export class ProductsService {
     };
   }  
 
-  async update(id: number, updateProductDto: UpdateProductDto): Promise<{ message: string }> {
+  async update(id: number, updateProductDto: UpdateProductDto, updatedBy: string): Promise<any> {
     const product = await this.productRepository.findOne({ where: { Id: id } });
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
   
-    const requiredFields = ['ProductCategoryId', 'FabricTypeId', 'Name', 'UpdatedBy'];
-    for (const field of requiredFields) {
-      if (updateProductDto[field] === undefined || updateProductDto[field] === '') {
-        throw new BadRequestException(`${field} is required`);
-      }
-    }
-  
     const { productColors, productDetails, ...productData } = updateProductDto;
   
-    await this.productRepository.update(id, {
+    const updatedProduct = await this.productRepository.save({
       ...productData,
+      Id: id,
+      UpdatedBy: updatedBy,
       UpdatedOn: new Date(),
     });
   
@@ -216,7 +196,7 @@ export class ProductsService {
                   color.colorId,
                   color.ImageId,
                   new Date(),
-                  updateProductDto.UpdatedBy,
+                  updatedBy,
                   color.Id,
                 ]
               );
@@ -230,9 +210,9 @@ export class ProductsService {
                   color.colorId,
                   color.ImageId,
                   new Date(),
-                  updateProductDto.UpdatedBy,
+                  updatedBy,
                   new Date(),
-                  updateProductDto.UpdatedBy,
+                  updatedBy,
                 ]
               );
             }
@@ -255,14 +235,13 @@ export class ProductsService {
             if (detail.Id) {
               await queryRunner.query(
                 `UPDATE productdetails 
-                 SET ProductCutOptionId = ?, ProductSizeMeasurementId = ?, UpdatedOn = ?, UpdatedBy = ?, ProductRegionId = ?, SleeveTypeId = ? 
+                 SET ProductCutOptionId = ?, ProductSizeMeasurementId = ?, UpdatedOn = ?, UpdatedBy = ?, SleeveTypeId = ? 
                  WHERE Id = ?`,
                 [
                   detail.ProductCutOptionId,
                   detail.ProductSizeMeasurementId,
                   new Date(),
-                  updateProductDto.UpdatedBy,
-                  detail.ProductRegionId,
+                  updatedBy,
                   detail.SleeveTypeId,
                   detail.Id,
                 ]
@@ -270,17 +249,16 @@ export class ProductsService {
             } else {
               await queryRunner.query(
                 `INSERT INTO productdetails 
-                  (ProductId, ProductCutOptionId, ProductSizeMeasurementId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, ProductRegionId, SleeveTypeId) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                  (ProductId, ProductCutOptionId, ProductSizeMeasurementId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, SleeveTypeId) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                   id,
                   detail.ProductCutOptionId,
                   detail.ProductSizeMeasurementId,
                   new Date(),
-                  updateProductDto.UpdatedBy,
+                  updatedBy,
                   new Date(),
-                  updateProductDto.UpdatedBy,
-                  detail.ProductRegionId,
+                  updatedBy,
                   detail.SleeveTypeId,
                 ]
               );
@@ -297,7 +275,7 @@ export class ProductsService {
       }
     }
   
-    return { message: `Product with ID ${id} has been updated successfully` };
+    return updatedProduct;
   }
 
   async remove(id: number): Promise<{ message: string }> {
@@ -337,7 +315,8 @@ export class ProductsService {
         .leftJoin('coloroption', 'color', 'color.Id = colors.colorId') 
         .select([
           'colors.Id AS Id',
-          'color.Name AS ColorName', 
+          'color.Name AS ColorName',
+          'color.HexCode AS HexCode',
           'colors.ImageId AS ImageId',
         ])
         .where('product.Id = :productId', { productId })
@@ -351,11 +330,79 @@ export class ProductsService {
       return availableColors.map((color) => ({
         Id: color.Id,
         ColorName: color.ColorName,
+        HexCode: color.HexCode,
         ImageId: color.ImageId,
       }));
     } catch (error) {
       console.error("Error fetching available colors:", error);
       return [];
+    }
+  }
+
+  async getAvailableCutOptionsByProductId(productId: number): Promise<any[]> {
+    try {
+      const cutOptions = await this.productRepository
+        .createQueryBuilder('product')
+        .leftJoin('productdetails', 'details', 'details.ProductId = product.Id')
+        .leftJoin('productcutoptions', 'cutOption', 'cutOption.Id = details.ProductCutOptionId')
+        .select([
+          'cutOption.Id AS Id',
+          'cutOption.OptionProductCutOptions AS Name'
+        ])
+        .where('product.Id = :productId', { productId })
+        .andWhere('details.Id IS NOT NULL')
+        .getRawMany();
+
+      if (!cutOptions || cutOptions.length === 0) {
+        return [];
+      }
+
+      return cutOptions.map((option) => ({
+        Id: option.Id,
+        Name: option.Name
+      }));
+    } catch (error) {
+      console.error("Error fetching available cut options:", error);
+      throw new BadRequestException('Error fetching cut options for product');
+    }
+  }
+
+  async getAvailableSizeOptionsByProductId(productId: number): Promise<any[]> {
+    try {
+      const sizeoptions = await this.productRepository
+        .createQueryBuilder('product')
+        .leftJoin('productdetails', 'details', 'details.ProductId = product.Id')
+        .leftJoin('sizeoptions', 'sizeoptions', 'sizeoptions.Id = details.ProductSizeMeasurementId')
+        .select(['DISTINCT details.ProductSizeMeasurementId', 'sizeoptions.*'])
+        .where('product.Id = :productId', { productId })
+        .andWhere('details.ProductSizeMeasurementId IS NOT NULL')
+        .andWhere('sizeoptions.Id IS NOT NULL')
+        .getRawMany();
+      return sizeoptions.map(e=>({
+        Id: e.Id,
+        Name: e.OptionSizeOptions
+      }));
+    } catch (error) {
+      console.error("Error fetching available size measurements:", error);
+      throw new BadRequestException('Error fetching size measurements for product');
+    }
+  }
+  
+  async getAvailableSleeveTypesByProductId(productId: number): Promise<any[]> {
+    try {
+      const sleevetypes = await this.productRepository
+        .createQueryBuilder('product')
+        .leftJoin('productdetails', 'details', 'details.ProductId = product.Id')
+        .leftJoin('sleevetype', 'sleevetype', 'sleevetype.Id = details.SleeveTypeId ')
+        .select(['DISTINCT details.SleeveTypeId ', 'sleevetype.*'])
+        .where('product.Id = :productId', { productId })
+        .andWhere('details.SleeveTypeId  IS NOT NULL')
+        .andWhere('sleevetype.Id IS NOT NULL')
+        .getRawMany();
+      return sleevetypes;
+    } catch (error) {
+      console.error("Error fetching available Sleeve Types:", error);
+      throw new BadRequestException('Error fetching sleeve types for product');
     }
   }
 }

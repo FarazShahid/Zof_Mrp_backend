@@ -14,14 +14,14 @@ export class SleeveType {
   @JoinColumn({ name: 'productCategoryId' })
   productCategory: ProductCategory;
 
-  @CreateDateColumn()
-  createdOn: Date;
+  @CreateDateColumn({ type: 'timestamp' })
+  CreatedOn: Date;
 
   @Column()
-  createdBy: string;
+  CreatedBy: string;
 
-  @UpdateDateColumn()
-  updatedOn: Date;
+  @UpdateDateColumn({ type: 'timestamp' })
+  UpdatedOn: Date;
 
   @Column()
   updatedBy: string;

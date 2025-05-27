@@ -1,4 +1,4 @@
-import { IsString, IsInt, IsOptional, MaxLength, IsNotEmpty } from 'class-validator';
+import { IsString, IsInt, IsOptional, MaxLength, IsDate, IsNumber, IsNotEmpty } from 'class-validator';
 
 export class UpdateFabricTypeDto {
   @IsString()
@@ -15,8 +15,6 @@ export class UpdateFabricTypeDto {
   @IsOptional()
   gsm?: number;
 
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
-  updatedBy: string;
+  @IsOptional()
+  CategoryId: number;
 }

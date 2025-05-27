@@ -17,7 +17,7 @@ export class SizeoptionsService {
     return sizeOptions;
   }
 
-  async create(data: CreateSizeOptionDto): Promise<any> {
+  async create(data: CreateSizeOptionDto, createdBy: string): Promise<any> {
 
     const existingSizeOption = await this.sizeOptionRepository.findOne({ where: { OptionSizeOptions: data.OptionSizeOptions } });
     if (existingSizeOption) {
@@ -26,15 +26,15 @@ export class SizeoptionsService {
 
     const newSleeve = this.sizeOptionRepository.create({
       OptionSizeOptions: data.OptionSizeOptions,
-      CreatedBy: data.CreatedBy,
-      CreatedOn: new Date()
+      CreatedBy: createdBy,
+      UpdatedBy: createdBy
     });
     const savedSizeOption = await this.sizeOptionRepository.save(newSleeve);
     return savedSizeOption;
   }
 
-  async update(id: number, data: UpdateSizeOptionDto) {
-    await this.sizeOptionRepository.update(id, { ...data, UpdatedOn: new Date() });
+  async update(id: number, data: UpdateSizeOptionDto, updatedBy: string) {
+    await this.sizeOptionRepository.update(id, { ...data, UpdatedOn: new Date(), UpdatedBy: updatedBy });
     return this.sizeOptionRepository.findOne({ where: { Id: id } });
   }
 

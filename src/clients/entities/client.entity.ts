@@ -1,39 +1,44 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
 
-@Entity()
+@Entity('client')
 export class Client {
 
     @PrimaryGeneratedColumn()
     Id: number;
 
-    @Column()
+    @Column({ length: 255 })
     Name: string;
 
-    @Column()
+    @Column({ length: 255 })
     Email: string;
 
-    @Column()
+    @Column({ length: 255 })
     Phone: string;
 
-    @Column()
+    @Column({ length: 255 })
     Country: string;
 
-    @Column()
+    @Column({ length: 255 })
     State: string;
 
-    @Column()
+    @Column({ length: 255 })
     City: string;
 
-    @Column()
+    @Column({ length: 255 })
     CompleteAddress: string;
 
     @Column()
-    ClientStatusId: string;
+    ClientStatusId: number;
 
-    @Column()
+    @CreateDateColumn({ type: 'timestamp' })
     CreatedOn: string;
 
-    @Column()
+    @Column({ length: 255, nullable: true })
     CreatedBy: string;
+    
+    @UpdateDateColumn({ type: 'timestamp' })
+    UpdatedOn: string;
 
+    @Column({ length: 100, nullable: true })
+    UpdatedBy: string;
 }

@@ -1,20 +1,15 @@
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
+import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 
 export class CreatePrintingOptionDto {
-    @IsNotEmpty({ message: 'Printing Option Name is required' })
+    @CommonApiProperty('Printing Option Name', 'Seblimation')  
+    @IsNotEmpty()
+    @IsString()
+    @MaxLength(255)
     Name: string;
-
-    @IsNotEmpty({ message: 'CreatedBy is required' })
-    createdBy: string;
 }
 
 export class UpdatePrintingOptionDto extends PartialType(CreatePrintingOptionDto) {
 
-    Id: number | (() => string);
-
-    @IsString({ message: 'Updated by should be string' })
-    @IsNotEmpty({ message: 'Updated by is required' })
-    @MaxLength(100)
-    UpdatedBy: string;
 }

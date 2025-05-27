@@ -1,38 +1,69 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Delete, Get, Param, Post, Put, HttpCode, HttpStatus } from '@nestjs/common';
 import { SizeoptionsService } from './sizeoptions.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateSizeOptionDto } from './dto/create-sizeoptions.dto';
 import { SizeOption } from './entities/sizeoptions.entity';
 import { UpdateSizeOptionDto } from './dto/update-sizeoptions.dto';
+import { CurrentUser } from 'src/auth/current-user.decorator';
+import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
+import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 
-@Controller('sizeoptions')
-@UseGuards(JwtAuthGuard)
+@ControllerAuthProtector('Size Options', 'sizeoptions')
 export class SizeoptionsController {
   constructor(private readonly sizeoptionsService: SizeoptionsService) { }
 
   @Post()
-  async create(@Body() CreateSizeOptionDto: CreateSizeOptionDto): Promise<SizeOption> {
-    return this.sizeoptionsService.create(CreateSizeOptionDto);
+  @HttpCode(HttpStatus.CREATED)
+  @CommonApiResponses('Create a new size option')
+  async create(@Body() CreateSizeOptionDto: CreateSizeOptionDto, @CurrentUser() currentUser: any): Promise<SizeOption> {
+    try {
+      return this.sizeoptionsService.create(CreateSizeOptionDto, currentUser.email);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get()
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get all size options')
   async findAll() {
-    return this.sizeoptionsService.getAllSizeOptions();
+    try {
+      return this.sizeoptionsService.getAllSizeOptions();
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @CommonApiResponses('Delete a size option by id')
   async remove(@Param('id') id: number): Promise<void> {
-    return this.sizeoptionsService.remove(id);
+    try {
+      return this.sizeoptionsService.remove(id);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.sizeoptionsService.findOne(id);
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get a size option by id')
+  async findOne(@Param('id') id: number) {
+    try {
+      return this.sizeoptionsService.findOne(id);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Put(':id')
-  update(@Param('id') id: number, @Body() updateSizeOptionDto: UpdateSizeOptionDto) {
-    return this.sizeoptionsService.update(id, updateSizeOptionDto);
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Update a size option by id')
+  async update(@Param('id') id: number, @Body() updateSizeOptionDto: UpdateSizeOptionDto, @CurrentUser() currentUser: any) {
+    try {
+      return this.sizeoptionsService.update(id, updateSizeOptionDto, currentUser.email);
+    } catch (error) {
+      throw error;
+    }
   }
 
 }

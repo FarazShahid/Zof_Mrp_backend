@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, UpdateDateColumn, CreateDateColumn } from 'typeorm';
 
 @Entity('productcutoptions')
 export class ProductCutOption {
@@ -8,13 +8,13 @@ export class ProductCutOption {
   @Column()
   OptionProductCutOptions: string;
 
-  @Column()
+  @CreateDateColumn({ type: 'timestamp' })
   CreatedOn: Date;
 
   @Column()
   CreatedBy: string;
 
-  @Column()
+  @UpdateDateColumn({ type: 'timestamp' })
   UpdatedOn: Date;
 
   @Column()
