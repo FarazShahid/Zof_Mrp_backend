@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('sizeoptions')
 export class SizeOption {
@@ -8,13 +8,13 @@ export class SizeOption {
   @Column()
   OptionSizeOptions : string;
 
-  @Column()
+  @CreateDateColumn({ type: 'timestamp' })
   CreatedOn: Date;
 
   @Column()
   CreatedBy: string;
 
-  @Column()
+  @UpdateDateColumn({ type: 'timestamp' })
   UpdatedOn: Date;
 
   @Column()

@@ -23,7 +23,9 @@ export class PrintingoptionsService {
     }
     const newPrintingOption = this.printingOptionsRepository.create({
       Type: data.Name,
-      CreatedBy: createdBy
+      CreatedOn: new Date(),
+      CreatedBy: createdBy,
+      UpdatedBy: createdBy
     });
     const savedPrintingOption = await this.printingOptionsRepository.save(newPrintingOption);
     return {

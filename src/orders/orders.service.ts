@@ -80,6 +80,7 @@ export class OrdersService {
       Description,
       Deadline,
       OrderPriority,
+      OrderNumber,
       ExternalOrderId,
       CreatedBy: createdBy,
       UpdatedBy: createdBy
