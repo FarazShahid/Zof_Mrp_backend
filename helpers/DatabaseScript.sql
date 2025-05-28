@@ -581,15 +581,15 @@ CREATE TABLE `orders` (
   `OrderEventId` int(11) NOT NULL,
   `OrderStatusId` int(11) NOT NULL DEFAULT 1,
   `OrderPriority` int(11) DEFAULT NULL,
-  `OrderName` varchar(255) NOT NULL,
-  `ExternalOrderId` varchar(255) NOT NULL,
+  `OrderName` varchar(255) DEFAULT NULL,
+  `ExternalOrderId` varchar(255) DEFAULT NULL,
   `Description` varchar(255) DEFAULT NULL,
   `Deadline` timestamp NOT NULL DEFAULT current_timestamp(),
   `CreatedOn` timestamp NOT NULL DEFAULT current_timestamp(),
   `CreatedBy` varchar(255) NOT NULL,
   `UpdatedOn` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `UpdatedBy` varchar(255) NOT NULL,
-  `OrderNumber` varchar(255) NOT NULL
+  `OrderNumber` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -634,7 +634,7 @@ CREATE TRIGGER `GenerateOrderNumber` BEFORE INSERT ON `orders` FOR EACH ROW BEGI
 
     -- Extract the first two characters of the client's name as the prefix
     SELECT UPPER(SUBSTRING(Name, 1, 2)) INTO prefix
-    FROM Client
+    FROM client
     WHERE Id = NEW.ClientId;
 
     -- Generate a random 6-character alphanumeric string
