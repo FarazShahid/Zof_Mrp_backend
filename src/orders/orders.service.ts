@@ -75,12 +75,11 @@ export class OrdersService {
     }
 
     const newOrder = this.orderRepository.create({
-      ClientId,
+      ClientId: 1,
       OrderEventId,
       Description,
       Deadline,
       OrderPriority,
-      OrderNumber,
       ExternalOrderId,
       CreatedBy: createdBy,
       UpdatedBy: createdBy
