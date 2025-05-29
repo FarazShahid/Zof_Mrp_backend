@@ -548,9 +548,9 @@ CREATE TABLE `orderitemsprintingoptions` (
   `PrintingOptionId` int(11) NOT NULL,
   `Description` varchar(255) DEFAULT NULL,
   `CreatedOn` datetime NOT NULL DEFAULT current_timestamp(),
-  `CreatedBy` varchar(100) NOT NULL,
+  `CreatedBy` varchar(100) DEFAULT NULL,
   `UpdatedOn` datetime NOT NULL DEFAULT current_timestamp(),
-  `UpdatedBy` varchar(100) NOT NULL
+  `UpdatedBy` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -586,9 +586,9 @@ CREATE TABLE `orders` (
   `Description` varchar(255) DEFAULT NULL,
   `Deadline` timestamp NOT NULL DEFAULT current_timestamp(),
   `CreatedOn` timestamp NOT NULL DEFAULT current_timestamp(),
-  `CreatedBy` varchar(255) NOT NULL,
+  `CreatedBy` varchar(255) DEFAULT NULL,
   `UpdatedOn` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `UpdatedBy` varchar(255) NOT NULL,
+  `UpdatedBy` varchar(255) DEFAULT NULL,
   `OrderNumber` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -798,10 +798,10 @@ INSERT INTO `ordertype` (`Id`, `TypeName`, `Description`, `CreatedOn`, `CreatedB
 CREATE TABLE `printingoptions` (
   `Id` int(11) NOT NULL,
   `Type` varchar(255) NOT NULL,
-  `CreatedOn` datetime NOT NULL,
-  `UpdatedOn` datetime NOT NULL,
-  `CreatedBy` varchar(255) NOT NULL,
-  `UpdatedBy` varchar(255) NOT NULL
+  `CreatedOn` datetime DEFAULT current_timestamp(),
+  `UpdatedOn` datetime DEFAULT current_timestamp(),
+  `CreatedBy` varchar(255) DEFAULT NULL,
+  `UpdatedBy` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
