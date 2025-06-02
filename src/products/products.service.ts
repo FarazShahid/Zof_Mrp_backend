@@ -57,12 +57,11 @@ export class ProductsService {
             for (const detail of createProductDto.productDetails) {
               await queryRunner.query(
                 `INSERT INTO productdetails 
-                (ProductId, ProductCutOptionId, ProductSizeMeasurementId, CreatedBy, UpdatedBy, SleeveTypeId) 
-                VALUES (?, ?, ?, ?, ?, ?)`,
+                (ProductId, ProductCutOptionId, CreatedBy, UpdatedBy, SleeveTypeId) 
+                VALUES (?, ?, ?, ?, ?)`,
                 [
                   savedProduct.Id,
                   detail.ProductCutOptionId,
-                  detail.ProductSizeMeasurementId,
                   createdBy,
                   createdBy,
                   detail.SleeveTypeId,
@@ -250,11 +249,10 @@ async findOne(id: number): Promise<any> {
             if (detail.Id) {
               await queryRunner.query(
                 `UPDATE productdetails 
-               SET ProductCutOptionId = ?, ProductSizeMeasurementId = ?, UpdatedOn = ?, UpdatedBy = ?, SleeveTypeId = ? 
+               SET ProductCutOptionId = ?, UpdatedOn = ?, UpdatedBy = ?, SleeveTypeId = ? 
                WHERE Id = ?`,
                 [
                   detail.ProductCutOptionId,
-                  detail.ProductSizeMeasurementId,
                   new Date(),
                   updatedBy,
                   detail.SleeveTypeId,
@@ -264,12 +262,11 @@ async findOne(id: number): Promise<any> {
             } else {
               await queryRunner.query(
                 `INSERT INTO productdetails 
-                (ProductId, ProductCutOptionId, ProductSizeMeasurementId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, SleeveTypeId) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                (ProductId, ProductCutOptionId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, SleeveTypeId) 
+               VALUES (?, ?, ?, ?, ?, ?, ?)`,
                 [
                   id,
                   detail.ProductCutOptionId,
-                  detail.ProductSizeMeasurementId,
                   new Date(),
                   updatedBy,
                   new Date(),
@@ -444,27 +441,6 @@ async findOne(id: number): Promise<any> {
     } catch (error) {
       console.error("Error fetching available cut options:", error);
       throw new BadRequestException('Error fetching cut options for product');
-    }
-  }
-
-  async getAvailableSizeOptionsByProductId(productId: number): Promise<any[]> {
-    try {
-      const sizeoptions = await this.productRepository
-        .createQueryBuilder('product')
-        .leftJoin('productdetails', 'details', 'details.ProductId = product.Id')
-        .leftJoin('sizeoptions', 'sizeoptions', 'sizeoptions.Id = details.ProductSizeMeasurementId')
-        .select(['DISTINCT details.ProductSizeMeasurementId', 'sizeoptions.*'])
-        .where('product.Id = :productId', { productId })
-        .andWhere('details.ProductSizeMeasurementId IS NOT NULL')
-        .andWhere('sizeoptions.Id IS NOT NULL')
-        .getRawMany();
-      return sizeoptions.map(e => ({
-        Id: e.Id,
-        Name: e.OptionSizeOptions
-      }));
-    } catch (error) {
-      console.error("Error fetching available size measurements:", error);
-      throw new BadRequestException('Error fetching size measurements for product');
     }
   }
 

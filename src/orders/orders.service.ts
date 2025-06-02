@@ -111,6 +111,8 @@ export class OrdersService {
             ColorOptionId: option.ColorOptionId,
             Quantity: option.Quantity,
             Priority: option.Priority,
+            SizeOption: option.SizeOption,
+            MeasurementId: option.MeasurementId,
             CreatedBy: createdBy,
             UpdatedBy: createdBy,
           }));
@@ -347,6 +349,8 @@ export class OrdersService {
             ColorOptionId: option.ColorOptionId,
             Quantity: option.Quantity,
             Priority: option.Priority,
+            SizeOption: option.SizeOption,
+            MeasurementId: option.MeasurementId,
             CreatedBy: updatedBy,
             UpdatedBy: updatedBy,
             CreatedOn: new Date(),
@@ -403,8 +407,9 @@ export class OrdersService {
   }
   
 
-  async getEditOrder(id: number): Promise<any> {
+async getEditOrder(id: number): Promise<any> {
   try {
+    // Fetch order main data
     const orderData = await this.orderRepository
       .createQueryBuilder('order')
       .leftJoin('client', 'client', 'order.ClientId = client.Id')
@@ -432,6 +437,7 @@ export class OrdersService {
       throw new NotFoundException([`Order with ID ${id} not found`]);
     }
 
+    // Fetch order items with details, printing options, size option, and measurement name
     const orderItemsData = await this.orderItemRepository
       .createQueryBuilder('orderItem')
       .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
@@ -442,6 +448,11 @@ export class OrdersService {
       .leftJoin('orderitemdetails', 'orderItemDetail', 'orderItem.Id = orderItemDetail.OrderItemId')
       .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderItemDetail.ColorOptionId = availablecoloroptions.Id')
       .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId = colorOption.Id')
+      // SizeOption joins
+      .leftJoin('availblesizeoptions', 'availableSizeOption', 'orderItemDetail.SizeOption = availableSizeOption.Id')
+      .leftJoin('sizeoptions', 'sizeOption', 'availableSizeOption.SizeId = sizeOption.Id')
+      // Measurement join
+      .leftJoin('sizemeasurements', 'sizeMeasurement', 'orderItemDetail.MeasurementId = sizeMeasurement.Id')
       .leftJoin('document', 'imageDoc', 'orderItem.ImageId = imageDoc.Id')
       .leftJoin('document', 'fileDoc', 'orderItem.FileId = fileDoc.Id')
       .leftJoin('document', 'videoDoc', 'orderItem.VideoId = videoDoc.Id')
@@ -469,7 +480,11 @@ export class OrdersService {
         'orderItemDetail.ColorOptionId AS ColorOptionId',
         'colorOption.Name AS ColorOptionName',
         'orderItemDetail.Quantity AS Quantity',
-        'orderItemDetail.Priority AS Priority'
+        'orderItemDetail.Priority AS Priority',
+        'orderItemDetail.SizeOption AS SizeOptionId',
+        'orderItemDetail.MeasurementId AS MeasurementId',
+        'sizeOption.OptionSizeOptions AS SizeOptionName',
+        'sizeMeasurement.Measurement1 AS MeasurementName'  // added MeasurementName
       ])
       .where('orderItem.OrderId = :orderId', { orderId: id })
       .getRawMany();
@@ -521,7 +536,11 @@ export class OrdersService {
           ColorOptionId: item.ColorOptionId,
           ColorOptionName: item.ColorOptionName || 'Unknown Color',
           Quantity: item.Quantity,
-          Priority: item.Priority
+          Priority: item.Priority,
+          SizeOptionId: item.SizeOptionId,
+          SizeOptionName: item.SizeOptionName || 'Unknown Size',
+          MeasurementId: item.MeasurementId,
+          MeasurementName: item.MeasurementName || 'Unknown Measurement'  // include MeasurementName
         });
       }
     }
@@ -548,112 +567,129 @@ export class OrdersService {
   }
 }
 
-  async getOrderItemsByOrderId(orderId: number): Promise<any> {
-    const orderItems = await this.orderItemRepository
-      .createQueryBuilder('orderItem')
-      .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
-      .leftJoin('document', 'imageDoc', 'orderItem.ImageId = imageDoc.Id')
-      .leftJoin('document', 'fileDoc', 'orderItem.FileId = fileDoc.Id')
-      .leftJoin('document', 'videoDoc', 'orderItem.VideoId = videoDoc.Id')
-      .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
-      .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
-      .leftJoin('orderitemdetails', 'orderitemdetails', 'orderItem.Id = orderitemdetails.OrderItemId')
-      .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderitemdetails.ColorOptionId = availablecoloroptions.Id')
-      .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId = colorOption.Id')
-      .select([
-        'orderItem.Id AS Id',
-        'orderItem.OrderId AS OrderId',
-        'orderItem.ProductId AS ProductId',
-        'orderItem.Description AS Description',
-        'orderItem.ImageId AS ImageId',
-        'orderItem.FileId AS FileId',
-        'orderItem.VideoId AS VideoId',
-        'orderItem.CreatedOn AS CreatedOn',
-        'orderItem.UpdatedOn AS UpdatedOn',
-        'orderItem.OrderItemPriority AS OrderItemPriority',
-        // 'product.Name AS ProductName',
-        'printingOption.Id AS PrintingOptionId',
-        'printingOption.PrintingOptionId AS PrintingOptionId',
-        'printingOption.Description AS PrintingOptionDescription',
-        'printingoptions.Type AS PrintingOptionName',
-        'orderitemdetails.ColorOptionId AS ColorOptionId',
-        'colorOption.Name AS ColorName',
-        'orderitemdetails.Quantity AS OrderItemDetailQuanity',
-        'orderitemdetails.Priority AS OrderItemDetailPriority',
-        'videoDoc.CloudPath AS VideoPath',
-        'imageDoc.CloudPath AS ImagePath',
-        'fileDoc.CloudPath AS FilePath',
-      ])
-      .where('orderItem.OrderId = :orderId', { orderId })
-      .getRawMany();
-  
-    if (!orderItems || orderItems.length === 0) {
-      return [];
-    }
-  
-    const formattedItems = orderItems.reduce((acc, item) => {
-      const existingItem = acc.find(orderItem => orderItem.Id === item.Id);
-  
-      if (existingItem) {
-        if (item.PrintingOptionId && !existingItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
-          existingItem.printingOptions.push({
-            PrintingOptionId: item.PrintingOptionId,
-            PrintingOptionName: item.PrintingOptionName,
-            Description: item.PrintingOptionDescription,
-          });
-        }
-  
-        if (item.ColorOptionId && !existingItem.colors.some(c => c.ColorOptionId === item.ColorOptionId)) {
-          existingItem.colors.push({
-            ColorOptionId: item.ColorOptionId,
-            ColorName: item.ColorName,
-            Quantity: item.OrderItemDetailQuanity,
-            Priority: item.OrderItemDetailPriority,
-          });
-        }
-      } else {
-        acc.push({
-          Id: item.Id,
-          OrderId: item.OrderId,
-          ProductId: item.ProductId,
-          // ProductName: item.ProductName || "",
-          Description: item.Description,
-          OrderItemPriority: item.OrderItemPriority || 0,
-          ImageId: item.ImageId,
-          ImagePath: item.ImagePath,
-          FileId: item.FileId,
-          FilePath: item.FilePath,
-          VideoId: item.VideoId,
-          VideoPath: item.VideoPath,
-          CreatedOn: item.CreatedOn,
-          UpdatedOn: item.UpdatedOn,
-          printingOptions: item.PrintingOptionId
-            ? [
-                {
-                  PrintingOptionId: item.PrintingOptionId,
-                  PrintingOptionName: item.PrintingOptionName,
-                  Description: item.PrintingOptionDescription,
-                },
-              ]
-            : [],
-          colors: item.ColorOptionId
-            ? [
-                {
-                  ColorOptionId: item.ColorOptionId,
-                  ColorName: item.ColorName,
-                  Quantity: item.OrderItemDetailQuanity,
-                  Priority: item.OrderItemDetailPriority,
-                },
-              ]
-            : [],
+async getOrderItemsByOrderId(orderId: number): Promise<any> {
+  const orderItems = await this.orderItemRepository
+    .createQueryBuilder('orderItem')
+    .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
+    .leftJoin('document', 'imageDoc', 'orderItem.ImageId = imageDoc.Id')
+    .leftJoin('document', 'fileDoc', 'orderItem.FileId = fileDoc.Id')
+    .leftJoin('document', 'videoDoc', 'orderItem.VideoId = videoDoc.Id')
+    .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
+    .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
+    .leftJoin('orderitemdetails', 'orderitemdetails', 'orderItem.Id = orderitemdetails.OrderItemId')
+    .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderitemdetails.ColorOptionId = availablecoloroptions.Id')
+    .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId = colorOption.Id')
+    // New joins for size option name
+    .leftJoin('availblesizeoptions', 'availableSizeOption', 'orderitemdetails.SizeOption = availableSizeOption.Id')
+    .leftJoin('sizeoptions', 'sizeOption', 'availableSizeOption.SizeId = sizeOption.Id')
+    // New join for measurement name
+    .leftJoin('sizemeasurements', 'sizeMeasurement', 'orderitemdetails.MeasurementId = sizeMeasurement.Id')
+    .select([
+      'orderItem.Id AS Id',
+      'orderItem.OrderId AS OrderId',
+      'orderItem.ProductId AS ProductId',
+      'orderItem.Description AS Description',
+      'orderItem.ImageId AS ImageId',
+      'orderItem.FileId AS FileId',
+      'orderItem.VideoId AS VideoId',
+      'orderItem.CreatedOn AS CreatedOn',
+      'orderItem.UpdatedOn AS UpdatedOn',
+      'orderItem.OrderItemPriority AS OrderItemPriority',
+      // 'product.Name AS ProductName',
+      'printingOption.Id AS PrintingOptionId',
+      'printingOption.PrintingOptionId AS PrintingOptionId',
+      'printingOption.Description AS PrintingOptionDescription',
+      'printingoptions.Type AS PrintingOptionName',
+      'orderitemdetails.ColorOptionId AS ColorOptionId',
+      'colorOption.Name AS ColorName',
+      'orderitemdetails.Quantity AS OrderItemDetailQuanity',
+      'orderitemdetails.Priority AS OrderItemDetailPriority',
+      'orderitemdetails.SizeOption AS SizeOptionId',
+      'sizeOption.OptionSizeOptions AS SizeOptionName',
+      'orderitemdetails.MeasurementId AS MeasurementId',
+      'sizeMeasurement.Measurement1 AS MeasurementName',  // added MeasurementName
+      'videoDoc.CloudPath AS VideoPath',
+      'imageDoc.CloudPath AS ImagePath',
+      'fileDoc.CloudPath AS FilePath',
+    ])
+    .where('orderItem.OrderId = :orderId', { orderId })
+    .getRawMany();
+
+  if (!orderItems || orderItems.length === 0) {
+    return [];
+  }
+
+  const formattedItems = orderItems.reduce((acc, item) => {
+    const existingItem = acc.find(orderItem => orderItem.Id === item.Id);
+
+    if (existingItem) {
+      if (item.PrintingOptionId && !existingItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
+        existingItem.printingOptions.push({
+          PrintingOptionId: item.PrintingOptionId,
+          PrintingOptionName: item.PrintingOptionName,
+          Description: item.PrintingOptionDescription,
         });
       }
-  
-      return acc;
-    }, []);
-  
-    return formattedItems;
-  }
+
+      if (item.ColorOptionId && !existingItem.colors.some(c => c.ColorOptionId === item.ColorOptionId)) {
+        existingItem.colors.push({
+          ColorOptionId: item.ColorOptionId,
+          ColorName: item.ColorName,
+          Quantity: item.OrderItemDetailQuanity,
+          Priority: item.OrderItemDetailPriority,
+          SizeOptionId: item.SizeOptionId,
+          SizeOptionName: item.SizeOptionName || 'Unknown Size',
+          MeasurementId: item.MeasurementId,
+          MeasurementName: item.MeasurementName || 'Unknown Measurement',
+        });
+      }
+    } else {
+      acc.push({
+        Id: item.Id,
+        OrderId: item.OrderId,
+        ProductId: item.ProductId,
+        // ProductName: item.ProductName || "",
+        Description: item.Description,
+        OrderItemPriority: item.OrderItemPriority || 0,
+        ImageId: item.ImageId,
+        ImagePath: item.ImagePath,
+        FileId: item.FileId,
+        FilePath: item.FilePath,
+        VideoId: item.VideoId,
+        VideoPath: item.VideoPath,
+        CreatedOn: item.CreatedOn,
+        UpdatedOn: item.UpdatedOn,
+        printingOptions: item.PrintingOptionId
+          ? [
+              {
+                PrintingOptionId: item.PrintingOptionId,
+                PrintingOptionName: item.PrintingOptionName,
+                Description: item.PrintingOptionDescription,
+              },
+            ]
+          : [],
+        colors: item.ColorOptionId
+          ? [
+              {
+                ColorOptionId: item.ColorOptionId,
+                ColorName: item.ColorName,
+                Quantity: item.OrderItemDetailQuanity,
+                Priority: item.OrderItemDetailPriority,
+                SizeOptionId: item.SizeOptionId,
+                SizeOptionName: item.SizeOptionName || 'Unknown Size',
+                MeasurementId: item.MeasurementId,
+                MeasurementName: item.MeasurementName || 'Unknown Measurement',
+              },
+            ]
+          : [],
+      });
+    }
+
+    return acc;
+  }, []);
+
+  return formattedItems;
+}
 
   async updateOrderStatus(id: number, status: number): Promise<Order> {
     const order = await this.orderRepository.findOne({ where: { Id: id } });

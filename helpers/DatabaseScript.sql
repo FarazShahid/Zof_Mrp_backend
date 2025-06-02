@@ -1130,3 +1130,10 @@ CREATE TABLE `availblesizeoptions` (
   `ProductId` int(11) NOT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE productdetails
+DROP COLUMN ProductSizeMeasurementId;
+
+ALTER TABLE orderitemdetails
+ADD COLUMN SizeOption INT NOT NULL,
+ADD COLUMN MeasurementId INT NOT NULL;
