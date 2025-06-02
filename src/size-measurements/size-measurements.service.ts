@@ -50,49 +50,57 @@ export class SizeMeasurementsService {
     }
   }
 
-  async findAll(cutOptionId?: number): Promise<SizeMeasurement[]> {
-    try {
-      const queryBuilder = this.sizeMeasurementRepository
-        .createQueryBuilder('sm')
-        .select([
-          'sm.*',
-          'so.OptionSizeOptions AS SizeOptionName',
-          'cl.Name AS ClientName'
-        ])
-        .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
-        .leftJoin('client', 'cl', 'sm.ClientId = cl.Id')
-        .orderBy('sm.CreatedOn', 'DESC');
-  
-      if (cutOptionId) {
-        queryBuilder.andWhere('sm.CutOptionId = :cutOptionId', { cutOptionId });
-      }
-  
-      const items = await queryBuilder.getRawMany();
-  
-      const cutOptionIds = items
-        .filter(e => e.CutOptionId != null)
-        .map(e => e.CutOptionId);
-  
-      let cutOptions = [];
-      if (cutOptionIds.length > 0) {
-        cutOptions = await this.productCutOptionRepository.find({
-          where: { Id: In(cutOptionIds) },
-          withDeleted: true
-        });
-      }
-  
-      const cutOptionsMap = new Map(cutOptions.map(co => [co.Id, co]));
-  
-      return items.map(e => ({
-        ...e,
-        cutOptionName: cutOptionsMap.get(e.CutOptionId)?.OptionProductCutOptions || null
-      }));
-  
-    } catch (error) {
-      console.error('Actual error fetching size measurements:', error);
-      throw new BadRequestException('Error fetching size measurements');
+async findAll(cutOptionId?: number, clientId?: number, sizeOptionId?: number): Promise<SizeMeasurement[]> {
+  try {
+    const queryBuilder = this.sizeMeasurementRepository
+      .createQueryBuilder('sm')
+      .select([
+        'sm.*',
+        'so.OptionSizeOptions AS SizeOptionName',
+        'cl.Name AS ClientName'
+      ])
+      .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
+      .leftJoin('client', 'cl', 'sm.ClientId = cl.Id')
+      .orderBy('sm.CreatedOn', 'DESC');
+
+    if (cutOptionId) {
+      queryBuilder.andWhere('sm.CutOptionId = :cutOptionId', { cutOptionId });
     }
-  }  
+
+    if (clientId) {
+      queryBuilder.andWhere('sm.ClientId = :clientId', { clientId });
+    }
+
+    if (sizeOptionId) {
+      queryBuilder.andWhere('sm.SizeOptionId = :sizeOptionId', { sizeOptionId });
+    }
+
+    const items = await queryBuilder.getRawMany();
+
+    const cutOptionIds = items
+      .filter(e => e.CutOptionId != null)
+      .map(e => e.CutOptionId);
+
+    let cutOptions = [];
+    if (cutOptionIds.length > 0) {
+      cutOptions = await this.productCutOptionRepository.find({
+        where: { Id: In(cutOptionIds) },
+        withDeleted: true
+      });
+    }
+
+    const cutOptionsMap = new Map(cutOptions.map(co => [co.Id, co]));
+
+    return items.map(e => ({
+      ...e,
+      cutOptionName: cutOptionsMap.get(e.CutOptionId)?.OptionProductCutOptions || null
+    }));
+
+  } catch (error) {
+    console.error('Actual error fetching size measurements:', error);
+    throw new BadRequestException('Error fetching size measurements');
+  }
+} 
   
   async findOne(id: number): Promise<SizeMeasurement> {
     try {

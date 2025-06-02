@@ -25,16 +25,22 @@ export class SizeMeasurementsController {
   }
 
   @Get()
-  @HttpCode(HttpStatus.OK)
-  @CommonApiResponses('Get all size measurements')
-  @ApiQuery({ name: 'CutOptionId', required: false, description: 'Filter by Cut Option' })
-  findAll(@Query('CutOptionId') CutOptionId?: number) { 
-    try {
-      return this.sizeMeasurementsService.findAll(CutOptionId); 
-    } catch (error) {
-      throw error;
-    }
+@HttpCode(HttpStatus.OK)
+@CommonApiResponses('Get all size measurements')
+@ApiQuery({ name: 'CutOptionId', required: false, description: 'Filter by Cut Option' })
+@ApiQuery({ name: 'ClientId', required: false, description: 'Filter by Client Id' })
+@ApiQuery({ name: 'SizeOptionId', required: false, description: 'Filter by Size Option Id' })
+findAll(
+  @Query('CutOptionId') CutOptionId?: number,
+  @Query('ClientId') ClientId?: number,
+  @Query('SizeOptionId') SizeOptionId?: number,
+) {
+  try {
+    return this.sizeMeasurementsService.findAll(CutOptionId, SizeOptionId, ClientId);
+  } catch (error) {
+    throw error;
   }
+}
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)

@@ -90,17 +90,6 @@ export class ProductsController {
     }
   }
 
-  @Get('size-options/:id')
-  @HttpCode(HttpStatus.OK)
-  @CommonApiResponses('Get available size size options by product id')
-  async getProductSizeOptions(@Param('id') id: string) {
-    try {
-      return await this.productsService.getAvailableSizeOptionsByProductId(+id);
-    } catch (error) {
-      throw error;
-    }
-  }
-
   @Get('sleeve-types/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get available sleeve types by product id')

@@ -45,13 +45,6 @@ export class ProductDetailDto {
   @Min(1)
   ProductCutOptionId: number;
 
-  @CommonApiProperty('Product Size Measurement Id', 1)
-  @IsNumber()
-  @IsNotEmpty()
-  @IsInt()
-  @Min(1)
-  ProductSizeMeasurementId: number;
-
   @CommonApiProperty('Sleeve Type Id', 1)
   @IsNumber()
   @IsNotEmpty()
