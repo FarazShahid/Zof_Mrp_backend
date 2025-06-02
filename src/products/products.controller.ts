@@ -111,4 +111,15 @@ export class ProductsController {
       throw error;
     }
   }
+
+  @Get('available-sizes/:id')
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get available sleeve types by product id')
+  async getAvailableSizes(@Param('id') id: string) {
+    try {
+      return await this.productsService.getAvailableSizesByProductId(+id);
+    } catch (error) {
+      throw error;
+    }
+  }
 }
