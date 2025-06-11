@@ -1125,7 +1125,7 @@ COMMIT;
 -- Updated Script For Availble Sizes
 
 CREATE TABLE `availblesizeoptions` (
-  `Id` int(11) NOT NULL,
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
   `sizeId` int(11) NOT NULL,
   `ProductId` int(11) NOT NULL,
   PRIMARY KEY (`Id`)
