@@ -6,7 +6,10 @@ export class SizeOption {
   Id: number;
 
   @Column()
-  OptionSizeOptions : string;
+  OptionSizeOptions: string;
+
+  @Column()
+  ProductRegionId: number;
 
   @CreateDateColumn({ type: 'timestamp' })
   CreatedOn: Date;

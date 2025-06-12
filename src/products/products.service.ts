@@ -27,9 +27,9 @@ export class ProductsService {
       const savedProduct = await this.productRepository.save(newProduct);
 
       if (
-       (createProductDto.productColors && createProductDto.productColors.length > 0) ||
-  (createProductDto.productDetails && createProductDto.productDetails.length > 0) ||
-  (createProductDto.productSizes && createProductDto.productSizes.length > 0)
+        (createProductDto.productColors && createProductDto.productColors.length > 0) ||
+        (createProductDto.productDetails && createProductDto.productDetails.length > 0) ||
+        (createProductDto.productSizes && createProductDto.productSizes.length > 0)
       ) {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -70,7 +70,7 @@ export class ProductsService {
             }
           }
 
-          const tempListOfProduct = createProductDto.productSizes.map(e=> e.sizeId)
+          const tempListOfProduct = createProductDto.productSizes.map(e => e.sizeId)
 
           if (tempListOfProduct.length > 0) {
             for (const size of tempListOfProduct) {
@@ -111,6 +111,7 @@ export class ProductsService {
         .leftJoin('productcategory', 'category', 'category.Id = product.ProductCategoryId')
         .select([
           'product.Id AS Id',
+          'product.Name AS Name',
           'product.ProductCategoryId AS ProductCategoryId',
           'category.Type AS ProductCategoryName',
           'product.FabricTypeId AS FabricTypeId',
@@ -127,6 +128,7 @@ export class ProductsService {
 
       return products.map(product => ({
         Id: product.Id,
+        name:product.Name,
         ProductCategoryId: product.ProductCategoryId,
         ProductCategoryName: product.ProductCategoryName,
         FabricTypeId: product.FabricTypeId || "",
@@ -145,37 +147,37 @@ export class ProductsService {
     }
   }
 
-async findOne(id: number): Promise<any> {
-  const product = await this.productRepository.findOne({ where: { Id: id } });
-  if (!product) {
-    throw new NotFoundException(`Product with ID ${id} not found`);
-  }
+  async findOne(id: number): Promise<any> {
+    const product = await this.productRepository.findOne({ where: { Id: id } });
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
 
-  const productColors = await this.dataSource.query(
-    `SELECT * FROM availablecoloroptions WHERE ProductId = ?`,
-    [id]
-  );
+    const productColors = await this.dataSource.query(
+      `SELECT * FROM availablecoloroptions WHERE ProductId = ?`,
+      [id]
+    );
 
-  const productSizes = await this.dataSource.query(
-    `SELECT s.Id, s.ProductId, s.sizeId, so.OptionSizeOptions AS SizeName
+    const productSizes = await this.dataSource.query(
+      `SELECT s.Id, s.ProductId, s.sizeId, so.OptionSizeOptions AS SizeName
      FROM availblesizeoptions s
      INNER JOIN sizeoptions so ON s.sizeId = so.Id
      WHERE s.ProductId = ?`,
-    [id]
-  );
+      [id]
+    );
 
-  const productDetails = await this.dataSource.query(
-    `SELECT * FROM productdetails WHERE ProductId = ?`,
-    [id]
-  );
+    const productDetails = await this.dataSource.query(
+      `SELECT * FROM productdetails WHERE ProductId = ?`,
+      [id]
+    );
 
-  return {
-    ...product,
-    productColors,
-    productDetails,
-    productSizes,
-  };
-}
+    return {
+      ...product,
+      productColors,
+      productDetails,
+      productSizes,
+    };
+  }
 
   async update(id: number, updateProductDto: UpdateProductDto, updatedBy: string): Promise<any> {
     const product = await this.productRepository.findOne({ where: { Id: id } });
@@ -396,6 +398,7 @@ async findOne(id: number): Promise<any> {
         .leftJoin('sizeoptions', 'size', 'size.Id = sizes.sizeId')
         .select([
           'sizes.Id AS Id',
+          'sizes.sizeId AS SizeId',
           'size.OptionSizeOptions AS SizeName',
         ])
         .where('product.Id = :productId', { productId })
@@ -408,6 +411,7 @@ async findOne(id: number): Promise<any> {
 
       return availableSizes.map((size) => ({
         Id: size.Id,
+        SizeId: size.SizeId,
         SizeName: size.SizeName,
       }));
     } catch (error) {

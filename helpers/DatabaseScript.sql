@@ -1137,3 +1137,18 @@ DROP COLUMN ProductSizeMeasurementId;
 ALTER TABLE orderitemdetails
 ADD COLUMN SizeOption INT NOT NULL,
 ADD COLUMN MeasurementId INT NOT NULL;
+
+ALTER TABLE Product
+ADD COLUMN Name VARCHAR(255) DEFAULT NULL;
+
+-- Add the column
+ALTER TABLE SizeOptions
+ADD COLUMN ProductRegionId INT DEFAULT NULL;
+
+-- Add the foreign key constraint
+ALTER TABLE SizeOptions
+ADD CONSTRAINT fk_product_region
+FOREIGN KEY (ProductRegionId)
+REFERENCES ProductRegionStandard(Id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;

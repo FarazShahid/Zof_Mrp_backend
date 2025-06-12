@@ -13,7 +13,20 @@ export class SizeoptionsService {
   ) { }
 
   async getAllSizeOptions() {
-    const sizeOptions = await this.sizeOptionRepository.find();
+    const sizeOptions = await this.sizeOptionRepository
+      .createQueryBuilder('sizeoptions')
+      .leftJoin('ProductRegionStandard', 'region', 'region.Id = sizeoptions.ProductRegionId')
+      .select([
+        'sizeoptions.Id AS Id',
+        'sizeoptions.OptionSizeOptions AS OptionSizeOptions',
+        'sizeoptions.ProductRegionId AS ProductRegionId',
+        'region.Name AS ProductRegionName',
+        'sizeoptions.CreatedOn AS CreatedOn',
+        'sizeoptions.CreatedBy AS CreatedBy',
+        'sizeoptions.UpdatedOn AS UpdatedOn',
+        'sizeoptions.UpdatedBy AS UpdatedBy'
+      ])
+      .getRawMany();
     return sizeOptions;
   }
 
@@ -26,6 +39,7 @@ export class SizeoptionsService {
 
     const newSleeve = this.sizeOptionRepository.create({
       OptionSizeOptions: data.OptionSizeOptions,
+      ProductRegionId: data.ProductRegionId,
       CreatedBy: createdBy,
       UpdatedBy: createdBy
     });
@@ -34,12 +48,49 @@ export class SizeoptionsService {
   }
 
   async update(id: number, data: UpdateSizeOptionDto, updatedBy: string) {
-    await this.sizeOptionRepository.update(id, { ...data, UpdatedOn: new Date(), UpdatedBy: updatedBy });
-    return this.sizeOptionRepository.findOne({ where: { Id: id } });
+    await this.sizeOptionRepository.update(id, {
+      ...data,
+      UpdatedOn: new Date(),
+      UpdatedBy: updatedBy
+    });
+
+    // Fetch the updated row with ProductRegionName
+    const updated = await this.sizeOptionRepository
+      .createQueryBuilder('sizeoptions')
+      .leftJoin('ProductRegionStandard', 'region', 'region.Id = sizeoptions.ProductRegionId')
+      .select([
+        'sizeoptions.Id AS Id',
+        'sizeoptions.OptionSizeOptions AS OptionSizeOptions',
+        'sizeoptions.ProductRegionId AS ProductRegionId',
+        'region.Name AS ProductRegionName',
+        'sizeoptions.CreatedOn AS CreatedOn',
+        'sizeoptions.CreatedBy AS CreatedBy',
+        'sizeoptions.UpdatedOn AS UpdatedOn',
+        'sizeoptions.UpdatedBy AS UpdatedBy'
+      ])
+      .where('sizeoptions.Id = :id', { id })
+      .getRawOne();
+    return updated;
   }
 
   async findOne(id: number) {
-    return this.sizeOptionRepository.findOne({ where: { Id: id } });
+    const sizeOption = await this.sizeOptionRepository
+      .createQueryBuilder('sizeoptions')
+      .leftJoin('ProductRegionStandard', 'region', 'region.Id = sizeoptions.ProductRegionId')
+      .select([
+        'sizeoptions.Id AS Id',
+        'sizeoptions.OptionSizeOptions AS OptionSizeOptions',
+        'sizeoptions.ProductRegionId AS ProductRegionId',
+        'region.Name AS ProductRegionName',
+        'sizeoptions.CreatedOn AS CreatedOn',
+        'sizeoptions.CreatedBy AS CreatedBy',
+        'sizeoptions.UpdatedOn AS UpdatedOn',
+        'sizeoptions.UpdatedBy AS UpdatedBy'
+      ])
+      .where('sizeoptions.Id = :id', { id })
+      .getRawOne();
+
+    return sizeOption;
   }
 
   async remove(id: number): Promise<void> {
@@ -48,7 +99,6 @@ export class SizeoptionsService {
     if (!sizeOption) {
       throw new NotFoundException(`Size Option with ID ${id} not found`);
     }
-
     await this.sizeOptionRepository.delete(id);
   }
 

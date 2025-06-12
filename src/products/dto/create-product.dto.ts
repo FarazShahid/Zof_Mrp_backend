@@ -1,4 +1,4 @@
-import { IsNotEmpty, ValidateNested, IsArray, IsNumber, IsInt, Min, IsString, MaxLength, IsOptional, ArrayMinSize } from 'class-validator';
+import { IsNotEmpty, ValidateNested, IsArray, IsNumber, IsInt, Min, IsString, MaxLength, IsOptional, ArrayMinSize, MinLength } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 import { ApiProperty } from '@nestjs/swagger';
@@ -61,7 +61,13 @@ export class CreateProductDto {
   @Min(1)
   ProductCategoryId: number;
 
-  @CommonApiProperty('Fabric Type Id', 1)
+  @CommonApiProperty('Product name', 'T-Shirt', true)
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(3)
+  name: string;
+  
+  @CommonApiProperty('Fabric Type Id', 1) 
   @IsNumber()
   @IsNotEmpty()
   @IsInt()
@@ -90,7 +96,7 @@ export class CreateProductDto {
   @ArrayMinSize(1, { message: 'At least one Product Detail Option is required' })
   productDetails: ProductDetailDto[];
 
-   @ApiProperty({ type: [ProductSizesDto] })
+  @ApiProperty({ type: [ProductSizesDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ProductSizesDto)
