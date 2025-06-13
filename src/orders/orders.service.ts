@@ -449,8 +449,8 @@ export class OrdersService {
         .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderItemDetail.ColorOptionId = availablecoloroptions.Id')
         .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId = colorOption.Id')
         // SizeOption joins
-        .leftJoin('availblesizeoptions', 'availableSizeOption', 'orderItemDetail.SizeOption = availableSizeOption.Id')
-        .leftJoin('sizeoptions', 'sizeOption', 'availableSizeOption.SizeId = sizeOption.Id')
+        // .leftJoin('availblesizeoptions', 'availableSizeOption', 'orderItemDetail.SizeOption = availableSizeOption.Id')
+        .leftJoin('sizeoptions', 'sizeOption', 'orderItemDetail.SizeOption = sizeOption.Id')
         // Measurement join
         .leftJoin('sizemeasurements', 'sizeMeasurement', 'orderItemDetail.MeasurementId = sizeMeasurement.Id')
         .leftJoin('document', 'imageDoc', 'orderItem.ImageId = imageDoc.Id')
@@ -479,6 +479,7 @@ export class OrdersService {
           'orderItemDetail.Id AS OrderItemDetailId',
           'orderItemDetail.ColorOptionId AS ColorOptionId',
           'colorOption.Name AS ColorOptionName',
+          'colorOption.HexCode AS ColorHexCode',
           'orderItemDetail.Quantity AS Quantity',
           'orderItemDetail.Priority AS Priority',
           'orderItemDetail.SizeOption AS SizeOptionId',
@@ -537,6 +538,7 @@ export class OrdersService {
           currentItem.orderItemDetails.push({
             ColorOptionId: item.ColorOptionId,
             ColorOptionName: item.ColorOptionName || 'Unknown Color',
+            HexCode: item.ColorHexCode,
             Quantity: item.Quantity,
             Priority: item.Priority,
             SizeOptionId: item.SizeOptionId,
@@ -604,6 +606,7 @@ export class OrdersService {
         'printingoptions.Type AS PrintingOptionName',
         'orderitemdetails.ColorOptionId AS ColorOptionId',
         'colorOption.Name AS ColorName',
+        'colorOption.HexCode AS ColorHexCode',
         'orderitemdetails.Quantity AS OrderItemDetailQuanity',
         'orderitemdetails.Priority AS OrderItemDetailPriority',
         'orderitemdetails.SizeOption AS SizeOptionId',
@@ -620,10 +623,6 @@ export class OrdersService {
     if (!orderItems || orderItems.length === 0) {
       return [];
     }
-    console.log(orderItems.map(item => ({
-      SizeOptionId: item.SizeOptionId,
-      SizeOptionName: item.SizeOptionName
-    })));
 
     const formattedItems = orderItems.reduce((acc, item) => {
       const existingItem = acc.find(orderItem => orderItem.Id === item.Id);
@@ -641,6 +640,7 @@ export class OrdersService {
           existingItem.colors.push({
             ColorOptionId: item.ColorOptionId,
             ColorName: item.ColorName,
+            HexCode: item.ColorHexCode,
             Quantity: item.OrderItemDetailQuanity,
             Priority: item.OrderItemDetailPriority,
             SizeOptionId: item.SizeOptionId,
@@ -679,6 +679,7 @@ export class OrdersService {
               {
                 ColorOptionId: item.ColorOptionId,
                 ColorName: item.ColorName,
+                HexCode: item.ColorHexCode,
                 Quantity: item.OrderItemDetailQuanity,
                 Priority: item.OrderItemDetailPriority,
                 SizeOptionId: item.SizeOptionId,

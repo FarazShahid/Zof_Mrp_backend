@@ -128,7 +128,7 @@ export class ProductsService {
 
       return products.map(product => ({
         Id: product.Id,
-        name:product.Name,
+        Name:product.Name,
         ProductCategoryId: product.ProductCategoryId,
         ProductCategoryName: product.ProductCategoryName,
         FabricTypeId: product.FabricTypeId || "",

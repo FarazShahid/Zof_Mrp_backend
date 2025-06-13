@@ -1,4 +1,4 @@
-  import { IsString, IsNumber, IsOptional, Min, Max, IsNotEmpty  } from 'class-validator';
+import { IsString, IsNumber, IsOptional, Min, Max, IsNotEmpty, IsInt } from 'class-validator';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 
 export class CreateSizeMeasurementDto {
@@ -21,6 +21,14 @@ export class CreateSizeMeasurementDto {
   @IsOptional()
   Measurement1?: string;
 
+
+  @CommonApiProperty('Product Category Id', 1)
+  @IsNumber()
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  ProductCategoryId: number;
+  
   @CommonApiProperty('Front Length HPS', '1')
   @IsNumber()
   @IsOptional()

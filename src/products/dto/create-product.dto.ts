@@ -65,9 +65,9 @@ export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(3)
-  name: string;
-  
-  @CommonApiProperty('Fabric Type Id', 1) 
+  Name: string;
+
+  @CommonApiProperty('Fabric Type Id', 1)
   @IsNumber()
   @IsNotEmpty()
   @IsInt()
@@ -81,12 +81,11 @@ export class CreateProductDto {
   Description?: string;
 
   @ApiProperty({ type: [ProductColorDto] })
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ProductColorDto)
-  @IsNotEmpty()
-  @ArrayMinSize(1, { message: 'At least one Product Color is required' })
-  productColors: ProductColorDto[];
+  productColors?: ProductColorDto[];
 
   @ApiProperty({ type: [ProductDetailDto] })
   @IsArray()

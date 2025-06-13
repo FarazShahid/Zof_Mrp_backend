@@ -1152,3 +1152,15 @@ FOREIGN KEY (ProductRegionId)
 REFERENCES ProductRegionStandard(Id)
 ON DELETE CASCADE
 ON UPDATE CASCADE;
+
+
+-- Add nullable column 'ProductCategoryId' to the 'sizemeasurements' table
+ALTER TABLE sizemeasurements
+ADD COLUMN ProductCategoryId INT NULL DEFAULT NULL;
+
+-- Add foreign key constraint to link 'ProductCategoryId' with 'productcategory(Id)'
+ALTER TABLE sizemeasurements
+ADD CONSTRAINT fk_sizemeasurements_productcategory
+FOREIGN KEY (ProductCategoryId) REFERENCES productcategory(Id)
+ON DELETE SET NULL
+ON UPDATE CASCADE;
