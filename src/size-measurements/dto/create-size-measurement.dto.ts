@@ -28,7 +28,7 @@ export class CreateSizeMeasurementDto {
   @IsInt()
   @Min(1)
   ProductCategoryId: number;
-  
+
   @CommonApiProperty('Front Length HPS', '1')
   @IsNumber()
   @IsOptional()
@@ -175,4 +175,60 @@ export class CreateSizeMeasurementDto {
   @Min(0)
   @Max(999.99)
   BottomHem?: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  BackNeckDrop: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  FrontNeckDrop: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  ShoulderSeam: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  ShoulderSlope: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Hem: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Inseam: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Hip: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  FrontRise: number;
 } 

@@ -80,8 +80,34 @@ export class SizeMeasurement {
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   PlacketWidth: number;
 
+  //added these 9 columns from here
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  BackNeckDrop: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  FrontNeckDrop: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  ShoulderSeam: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  ShoulderSlope: number;
+
+  //bottom measurements
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Hem: number;
+
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   BottomHem: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Inseam: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Hip: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  FrontRise: number;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
