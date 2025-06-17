@@ -7,6 +7,9 @@ export class Product {
     Id: number;
 
     @Column()
+    Name: string;
+
+    @Column()
     ProductCategoryId: number;
 
     @Column()

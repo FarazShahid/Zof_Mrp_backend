@@ -14,6 +14,12 @@ export class OrderItemDetails extends BaseEntity {
   @Column()
   ColorOptionId: number;
 
+   @Column()
+  SizeOption: number;
+
+   @Column()
+  MeasurementId: number;
+
   @Column()
   Quantity: number;
 

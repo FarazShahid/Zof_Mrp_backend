@@ -10,7 +10,7 @@ import { ApiQuery } from '@nestjs/swagger';
 
 @ControllerAuthProtector('Size Measurements', 'size-measurements')
 export class SizeMeasurementsController {
-  constructor(private readonly sizeMeasurementsService: SizeMeasurementsService) {}
+  constructor(private readonly sizeMeasurementsService: SizeMeasurementsService) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -28,9 +28,17 @@ export class SizeMeasurementsController {
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all size measurements')
   @ApiQuery({ name: 'CutOptionId', required: false, description: 'Filter by Cut Option' })
-  findAll(@Query('CutOptionId') CutOptionId?: number) { 
+  @ApiQuery({ name: 'ClientId', required: false, description: 'Filter by Client Id' })
+  @ApiQuery({ name: 'SizeOptionId', required: false, description: 'Filter by Size Option Id' })
+  @ApiQuery({ name: 'ProductCategoryId', required: false, description: 'Filter by Product Category Id' })
+  findAll(
+    @Query('CutOptionId') CutOptionId?: number,
+    @Query('ClientId') ClientId?: number,
+    @Query('SizeOptionId') SizeOptionId?: number,
+    @Query('ProductCategoryId') ProductCategoryId?: number,
+  ) {
     try {
-      return this.sizeMeasurementsService.findAll(CutOptionId); 
+      return this.sizeMeasurementsService.findAll(CutOptionId, SizeOptionId, ClientId, ProductCategoryId);
     } catch (error) {
       throw error;
     }

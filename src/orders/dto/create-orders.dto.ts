@@ -23,6 +23,18 @@ export class OrderItemDetailDto {
   @Min(1)
   ColorOptionId: number;
 
+  @CommonApiProperty('SizeOption', '1')
+  @IsNumber()
+  @IsInt()
+  @Min(1)
+  SizeOption: number;
+
+  @CommonApiProperty('MeasurementId', 1)
+  @IsNumber()
+  @IsInt()
+  @Min(1)
+  MeasurementId: number;
+
   @CommonApiProperty('Quantity', '1')
   @IsNumber()
   @IsInt()

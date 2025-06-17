@@ -1,4 +1,4 @@
-  import { IsString, IsNumber, IsOptional, Min, Max, IsNotEmpty  } from 'class-validator';
+import { IsString, IsNumber, IsOptional, Min, Max, IsNotEmpty, IsInt } from 'class-validator';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 
 export class CreateSizeMeasurementDto {
@@ -20,6 +20,14 @@ export class CreateSizeMeasurementDto {
   @IsString()
   @IsOptional()
   Measurement1?: string;
+
+
+  @CommonApiProperty('Product Category Id', 1)
+  @IsNumber()
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  ProductCategoryId: number;
 
   @CommonApiProperty('Front Length HPS', '1')
   @IsNumber()
@@ -167,4 +175,60 @@ export class CreateSizeMeasurementDto {
   @Min(0)
   @Max(999.99)
   BottomHem?: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  BackNeckDrop: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  FrontNeckDrop: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  ShoulderSeam: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  ShoulderSlope: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Hem: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Inseam: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Hip: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  FrontRise: number;
 } 

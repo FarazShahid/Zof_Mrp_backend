@@ -1,43 +1,51 @@
-import { IsNotEmpty, ValidateNested, IsArray, IsNumber, IsInt, Min, IsString, MaxLength, IsOptional, ArrayMinSize } from 'class-validator';
+import { IsNotEmpty, ValidateNested, IsArray, IsNumber, IsInt, Min, IsString, MaxLength, IsOptional, ArrayMinSize, MinLength } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 import { ApiProperty } from '@nestjs/swagger';
 
 class ProductColorDto {
-  @CommonApiProperty('Product Color Id', '1')
+  @CommonApiProperty('Product Color Id', 1)
+  @IsOptional()
   Id: number;
 
-  @CommonApiProperty('Color Id', '1')
+  @CommonApiProperty('Color Id', 1)
   @IsNumber()
   @IsNotEmpty()
   @IsInt()
   @Min(1)
   colorId: number;
 
-  @CommonApiProperty('Image Id', '1')
-  @IsNotEmpty()
+  @CommonApiProperty('Image Id', 1)
+  @IsOptional()
   ImageId: string;
 }
 
-export class ProductDetailDto {
-  @CommonApiProperty('Product Detail Id', '1')
+class ProductSizesDto {
+  @CommonApiProperty('Product Size Id', '1')
+  @IsOptional()
   Id: number;
 
-  @CommonApiProperty('Product Cut Option Id', '1')
+  @CommonApiProperty('Size Id', '1')
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
+  sizeId: number;
+}
+
+export class ProductDetailDto {
+  @CommonApiProperty('Product Detail Id', 1)
+  @IsOptional()
+  Id: number;
+
+  @CommonApiProperty('Product Cut Option Id', 1)
   @IsNumber()
   @IsNotEmpty()
   @IsInt()
   @Min(1)
   ProductCutOptionId: number;
 
-  @CommonApiProperty('Product Size Measurement Id', '1')
-  @IsNumber()
-  @IsNotEmpty()
-  @IsInt()
-  @Min(1)
-  ProductSizeMeasurementId: number;
-
-  @CommonApiProperty('Sleeve Type Id', '1')
+  @CommonApiProperty('Sleeve Type Id', 1)
   @IsNumber()
   @IsNotEmpty()
   @IsInt()
@@ -46,14 +54,20 @@ export class ProductDetailDto {
 }
 
 export class CreateProductDto {
-  @CommonApiProperty('Product Category Id', '1')
+  @CommonApiProperty('Product Category Id', 1)
   @IsNumber()
   @IsNotEmpty()
   @IsInt()
   @Min(1)
   ProductCategoryId: number;
 
-  @CommonApiProperty('Fabric Type Id', '1')
+  @CommonApiProperty('Product name', 'T-Shirt', true)
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(3)
+  Name: string;
+
+  @CommonApiProperty('Fabric Type Id', 1)
   @IsNumber()
   @IsNotEmpty()
   @IsInt()
@@ -67,12 +81,11 @@ export class CreateProductDto {
   Description?: string;
 
   @ApiProperty({ type: [ProductColorDto] })
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ProductColorDto)
-  @IsNotEmpty()
-  @ArrayMinSize(1, { message: 'At least one Product Color is required' })
-  productColors: ProductColorDto[];
+  productColors?: ProductColorDto[];
 
   @ApiProperty({ type: [ProductDetailDto] })
   @IsArray()
@@ -81,4 +94,12 @@ export class CreateProductDto {
   @IsNotEmpty()
   @ArrayMinSize(1, { message: 'At least one Product Detail Option is required' })
   productDetails: ProductDetailDto[];
+
+  @ApiProperty({ type: [ProductSizesDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductSizesDto)
+  @IsNotEmpty()
+  @ArrayMinSize(1, { message: 'At least one Product Size is required' })
+  productSizes: ProductSizesDto[];
 }
