@@ -245,6 +245,13 @@ export class CreateSizeMeasurementDto {
   @Min(0)
   @Max(999.99)
   KneeWidth: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Outseam: number;
 }
 
 

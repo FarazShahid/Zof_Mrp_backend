@@ -1180,3 +1180,6 @@ ADD COLUMN `FrontRise` DECIMAL(5,2) NULL;
 ALTER TABLE `sizemeasurements`
 ADD COLUMN `LegOpening` DECIMAL(5,2) NULL,
 ADD COLUMN `KneeWidth` DECIMAL(5,2) NULL;
+
+ALTER TABLE `sizemeasurements`
+ADD COLUMN `Outseam` DECIMAL(5,2) NULL;
