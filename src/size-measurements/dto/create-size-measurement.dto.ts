@@ -231,4 +231,27 @@ export class CreateSizeMeasurementDto {
   @Min(0)
   @Max(999.99)
   FrontRise: number;
-} 
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  LegOpening: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  KneeWidth: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Outseam: number;
+}
+
+

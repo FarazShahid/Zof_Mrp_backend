@@ -93,10 +93,10 @@ export class SizeMeasurement {
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   ShoulderSlope: number;
 
-  //bottom measurements
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   Hem: number;
 
+  //bottom measurements
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   BottomHem: number;
 
@@ -108,6 +108,15 @@ export class SizeMeasurement {
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   FrontRise: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  LegOpening: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  KneeWidth: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Outseam: number;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
