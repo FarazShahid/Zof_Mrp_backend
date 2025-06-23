@@ -260,40 +260,76 @@ export class CreateSizeMeasurementDto {
   @Max(999.99)
   bFrontRise: number;
 
-  @CommonApiProperty('Top Right Logo Position', '1')
+  @CommonApiProperty('Top Unit, Top Right Logo size', '1')
   @IsNumber()
   @IsOptional()
   @Min(0)
   @Max(999.99)
-  TopRight?: number;
+  t_TopRight?: number;
 
-  @CommonApiProperty('Top Left Logo Position', '1')
+  @CommonApiProperty('Top Unit, Top Left Logo size', '1')
   @IsNumber()
   @IsOptional()
   @Min(0)
   @Max(999.99)
-  TopLeft?: number;
+  t_TopLeft?: number;
 
-  @CommonApiProperty('Bottom Right Logo Position', '1')
+  @CommonApiProperty('Top Unit, Bottom Right Logo size', '1')
   @IsNumber()
   @IsOptional()
   @Min(0)
   @Max(999.99)
-  BottomRight?: number;
+  t_BottomRight?: number;
 
-  @CommonApiProperty('Bottom Left Logo Position', '1')
+  @CommonApiProperty('Top Unit, Bottom Left Logo size', '1')
   @IsNumber()
   @IsOptional()
   @Min(0)
   @Max(999.99)
-  BottomLeft?: number;
+  t_BottomLeft?: number;
 
-  @CommonApiProperty('Back Logo Position', '1')
+  @CommonApiProperty('Top Unit, Center Logo size', '1')
   @IsNumber()
   @IsOptional()
   @Min(0)
   @Max(999.99)
-  Back?: number;
+  t_Center?: number;
+
+  @CommonApiProperty('Top Unit, Back Logo Position', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  t_Back?: number;
+
+  @CommonApiProperty('Bottom Unit, Top Right Logo size', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  b_TopRight?: number;
+
+  @CommonApiProperty('Bottom Unit, Top Left Logo size', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  b_TopLeft?: number;
+
+  @CommonApiProperty('Bottom Unit, Bottom Right Logo size', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  b_BottomRight?: number;
+
+  @CommonApiProperty('Bottom Unit, Bottom Left Logo size', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  b_BottomLeft?: number;
+
 }
 
 

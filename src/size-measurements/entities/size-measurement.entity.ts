@@ -122,20 +122,35 @@ export class SizeMeasurement {
   bFrontRise: number;
 
   // Logo Placement
-  @Column({type: 'decimal', precision: 5, scale: 2, nullable: true})
-  TopRight: number;
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  t_TopRight: number;
 
-  @Column({type: 'decimal', precision: 5, scale: 2, nullable: true})
-  TopLeft: number;
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  t_TopLeft: number;
 
-  @Column({type: 'decimal', precision: 5, scale: 2, nullable: true})
-  BottomRight: number;
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  t_BottomRight: number;
 
-  @Column({type: 'decimal', precision: 5, scale: 2, nullable: true})
-  BottomLeft: number;
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  t_BottomLeft: number;
 
-  @Column({type: 'decimal', precision: 5, scale: 2, nullable: true})
-  Back: number;
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  t_Center: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  t_Back: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  b_TopRight: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  b_TopLeft: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  b_BottomRight: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  b_BottomLeft: number;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
