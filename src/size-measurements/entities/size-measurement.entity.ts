@@ -118,6 +118,25 @@ export class SizeMeasurement {
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   Outseam: number;
 
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  bFrontRise: number;
+
+  // Logo Placement
+  @Column({type: 'decimal', precision: 5, scale: 2, nullable: true})
+  TopRight: number;
+
+  @Column({type: 'decimal', precision: 5, scale: 2, nullable: true})
+  TopLeft: number;
+
+  @Column({type: 'decimal', precision: 5, scale: 2, nullable: true})
+  BottomRight: number;
+
+  @Column({type: 'decimal', precision: 5, scale: 2, nullable: true})
+  BottomLeft: number;
+
+  @Column({type: 'decimal', precision: 5, scale: 2, nullable: true})
+  Back: number;
+
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
 

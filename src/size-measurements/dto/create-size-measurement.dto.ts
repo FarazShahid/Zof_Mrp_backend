@@ -252,6 +252,48 @@ export class CreateSizeMeasurementDto {
   @Min(0)
   @Max(999.99)
   Outseam: number;
+
+  @CommonApiProperty('', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  bFrontRise: number;
+
+  @CommonApiProperty('Top Right Logo Position', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  TopRight?: number;
+
+  @CommonApiProperty('Top Left Logo Position', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  TopLeft?: number;
+
+  @CommonApiProperty('Bottom Right Logo Position', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  BottomRight?: number;
+
+  @CommonApiProperty('Bottom Left Logo Position', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  BottomLeft?: number;
+
+  @CommonApiProperty('Back Logo Position', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Back?: number;
 }
 
 

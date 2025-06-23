@@ -36,7 +36,6 @@ export class ProductsService {
         await queryRunner.startTransaction();
 
         try {
-
           if (createProductDto.productColors && createProductDto.productColors.length > 0) {
             for (const color of createProductDto.productColors) {
               await queryRunner.query(

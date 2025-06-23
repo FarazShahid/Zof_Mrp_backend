@@ -74,6 +74,12 @@ export class CreateProductDto {
   @Min(1)
   FabricTypeId: number;
 
+  @CommonApiProperty('Product Status', 'Product Status goes here')
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  productStatus?: string;
+
   @CommonApiProperty('Description', 'Description goes here')
   @IsString()
   @IsOptional()
