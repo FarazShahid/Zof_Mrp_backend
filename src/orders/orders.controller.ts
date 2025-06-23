@@ -1,13 +1,13 @@
 import {
-  Get, 
-  Post, 
-  Param, 
-  Body, 
-  Put, 
-  Delete, 
-  Req, 
-  ParseIntPipe, 
-  HttpStatus, 
+  Get,
+  Post,
+  Param,
+  Body,
+  Put,
+  Delete,
+  Req,
+  ParseIntPipe,
+  HttpStatus,
   HttpCode
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
@@ -17,9 +17,10 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
+import { OrderStatusLogs } from './entities/order-status-log';
 @ControllerAuthProtector('Orders', 'orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService) { }
 
   @Post()
   @ApiBody({ type: CreateOrderDto })
@@ -58,17 +59,17 @@ export class OrdersController {
     }
   }
 
-  @Put(':id') 
+  @Put(':id')
   @ApiBody({ type: CreateOrderDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update an order by id')
   async update(
-    @Param('id', ParseIntPipe) id: number, 
-    @Body() updateOrderDto: UpdateOrderDto, 
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateOrderDto: UpdateOrderDto,
     @Req() req
   ): Promise<any> {
     try {
-      const userId = req.user.id; 
+      const userId = req.user.id;
       return this.ordersService.updateOrder(id, updateOrderDto, userId);
     } catch (error) {
       console.error('Error updating order:', error);
@@ -84,6 +85,18 @@ export class OrdersController {
       return this.ordersService.deleteOrder(id);
     } catch (error) {
       console.error('Error deleting order:', error);
+      throw error;
+    }
+  }
+
+  @Get('order-status-log/:id')
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get order status log by order id')
+  async getOrderStatusLog(@Param('id', ParseIntPipe) orderId: number): Promise<Omit<OrderStatusLogs, 'Id' | 'UpdatedOn'>[]> {
+    try {
+      return this.ordersService.getOrderStatusLog(orderId);
+    } catch (error) {
+      console.error('Error fetching order status logs:', error);
       throw error;
     }
   }

@@ -13,6 +13,7 @@ import { OrderStatus } from '../orderstatus/entities/orderstatus.entity';
 import { Product } from '../products/entities/product.entity';
 import { ColorOption } from '../coloroption/_/color-option.entity';
 import { PrintingOptions } from '../printingoptions/entities/printingoptions.entity';
+import { OrderStatusLogs } from './entities/order-status-log';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PrintingOptions } from '../printingoptions/entities/printingoptions.ent
       Client,
       ClientEvent,
       OrderStatus,
+      OrderStatusLogs,
       Product,
       ColorOption,
       PrintingOptions

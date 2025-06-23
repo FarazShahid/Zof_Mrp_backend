@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Order } from './entities/orders.entity';
@@ -12,6 +12,7 @@ import { ClientEvent } from '../events/entities/clientevent.entity';
 import { Product } from '../products/entities/product.entity';
 import { PrintingOptions } from '../printingoptions/entities/printingoptions.entity';
 import { OrderStatus } from 'src/orderstatus/entities/orderstatus.entity';
+import { OrderStatusLogs } from './entities/order-status-log';
 
 @Injectable()
 export class OrdersService {
@@ -34,7 +35,8 @@ export class OrdersService {
     private printingOptionRepository: Repository<PrintingOptions>,
     @InjectRepository(OrderStatus)
     private orderStatusRepository: Repository<OrderStatus>,
-    private dataSource: DataSource,
+    @InjectRepository(OrderStatusLogs)
+    private orderStatusLogRepository: Repository<OrderStatusLogs>,
   ) { }
 
   async createOrder(createOrderDto: CreateOrderDto, createdBy: any): Promise<Order> {
@@ -86,6 +88,15 @@ export class OrdersService {
     });
 
     const savedOrder = await this.orderRepository.save(newOrder);
+    if (!savedOrder) {
+      throw new InternalServerErrorException('Failed to create order.');
+    }
+
+    const statusLog = this.orderStatusLogRepository.create({
+      OrderId: savedOrder.Id,
+      StatusId: 1
+    })
+    await this.orderStatusLogRepository.save(statusLog)
 
     if (Array.isArray(items) && items.length > 0) {
       const orderItems = items.map((item) => ({
@@ -406,6 +417,18 @@ export class OrdersService {
     await this.orderRepository.delete(id);
   }
 
+  async getOrderStatusLog(orderId: number): Promise<Omit<OrderStatusLogs, 'Id' | 'UpdatedOn'>[]> {
+    const orderStatusLogs = await this.orderStatusLogRepository.createQueryBuilder('orderStatusLog')
+      .leftJoin('orderstatus', 'status', 'orderStatusLog.StatusId = status.Id')
+      .select([
+        'status.Id As StatusId',
+        'status.StatusName AS StatusName',
+        'orderStatusLog.CreatedOn AS Timestamp'
+      ])
+      .where('orderStatusLog.OrderId = :orderId', { orderId })
+      .getRawMany();
+    return orderStatusLogs.map(({ id, UpdatedOn, ...rest }) => rest);
+  }
 
   async getEditOrder(id: number): Promise<any> {
     try {
@@ -713,8 +736,13 @@ export class OrdersService {
     if (!OrderStatus) {
       throw new NotFoundException(`Order Staus ID ${status} not found`);
     }
-
     order.OrderStatusId = status;
+
+    const statusLog = this.orderStatusLogRepository.create({
+      Order: order,
+      Status: OrderStatus
+    })
+    await this.orderStatusLogRepository.save(statusLog)
 
     return await this.orderRepository.save(order);
   }
