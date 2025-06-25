@@ -40,9 +40,8 @@ export class ProductDetailDto {
 
   @CommonApiProperty('Product Cut Option Id', 1)
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   @IsInt()
-  @Min(1)
   ProductCutOptionId: number;
 
   @CommonApiProperty('Sleeve Type Id', 1)
@@ -73,6 +72,12 @@ export class CreateProductDto {
   @IsInt()
   @Min(1)
   FabricTypeId: number;
+
+  @CommonApiProperty('Product Status', 'Product Status goes here')
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  productStatus?: string;
 
   @CommonApiProperty('Description', 'Description goes here')
   @IsString()

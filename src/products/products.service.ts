@@ -36,7 +36,6 @@ export class ProductsService {
         await queryRunner.startTransaction();
 
         try {
-
           if (createProductDto.productColors && createProductDto.productColors.length > 0) {
             for (const color of createProductDto.productColors) {
               await queryRunner.query(
@@ -119,6 +118,7 @@ export class ProductsService {
           'fabric.Name AS FabricName',
           'fabric.GSM AS GSM',
           'product.Description AS Description',
+          'product.productStatus AS productStatus',
           'product.CreatedOn AS CreatedOn',
           'product.UpdatedOn AS UpdatedOn',
           'product.CreatedBy AS CreatedBy',
@@ -136,6 +136,7 @@ export class ProductsService {
         FabricName: product.FabricName || "",
         GSM: product.GSM || "",
         Description: product.Description || "",
+        productStatus: product.productStatus || "",
         CreatedBy: product.CreatedBy || "",
         UpdatedBy: product.UpdatedBy || "",
         CreatedOn: product.CreatedOn || "",

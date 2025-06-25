@@ -16,6 +16,9 @@ export class Product {
     FabricTypeId: number;
 
     @Column()
+    productStatus: string;
+
+    @Column()
     Description: string;
 
     @CreateDateColumn({ type: 'timestamp' })

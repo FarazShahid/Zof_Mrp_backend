@@ -4,6 +4,7 @@ import { Client } from '../../clients/entities/client.entity';
 import { ClientEvent } from '../../events/entities/clientevent.entity';
 import { OrderStatus } from '../../orderstatus/entities/orderstatus.entity';
 import { OrderItem } from './order-item.entity';
+import { OrderStatusLogs } from './order-status-log';
 
 @Entity('orders')
 export class Order extends BaseEntity {
@@ -16,7 +17,7 @@ export class Order extends BaseEntity {
   @Column({ nullable: true })
   Description: string;
 
-  @Column({default: 1})
+  @Column({ default: 1 })
   OrderStatusId: number;
 
   @Column({ type: 'int', nullable: true })
@@ -46,6 +47,9 @@ export class Order extends BaseEntity {
   @ManyToOne(() => OrderStatus)
   @JoinColumn({ name: 'OrderStatusId' })
   status: OrderStatus;
+
+  @OneToMany(() => OrderStatusLogs, log => log.Order)
+  StatusLogs: OrderStatusLogs[];
 
   @OneToMany(() => OrderItem, orderItem => orderItem.order)
   orderItems: OrderItem[];

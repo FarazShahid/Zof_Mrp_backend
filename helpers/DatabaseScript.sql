@@ -396,7 +396,7 @@ CREATE TABLE `orders` (
   `OrderNumber` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `orders` (`Id`, `ClientId`, `OrderEventId`, `OrderStatusId`, `OrderPriority`, `OrderName`, `ExternalOrderId`, `Description`, `Deadline`, `CreatedOn`, `CreatedBy`, `UpdatedOn`, `UpdatedBy`, `OrderNumber`) VALUES
+INSERT INTO `orders` (`Id`, `ClientId`, `OrderEventId`, ` `, `OrderPriority`, `OrderName`, `ExternalOrderId`, `Description`, `Deadline`, `CreatedOn`, `CreatedBy`, `UpdatedOn`, `UpdatedBy`, `OrderNumber`) VALUES
 (22, 2, 1, 5, 1, 'CH-KP7822', '', '2order description', '2025-05-30 19:00:00', '2025-05-27 11:28:27', 'test@dev.com', '2025-05-27 12:56:34', 'test@dev.com', 'CHJH5144'),
 (23, 2, 3, 1, 1, 'CH-BO6575', '', '2order description', '2025-07-30 19:00:00', '2025-05-28 10:23:03', 'test@dev.com', '2025-05-28 10:23:03', 'test@dev.com', 'CHON9351'),
 (24, 2, 5, 1, 1, 'CH-NG7961', '', '2order description', '2025-12-30 19:00:00', '2025-05-28 12:05:21', 'test@dev.com', '2025-05-28 12:05:21', 'test@dev.com', 'CHLO4871'),
@@ -1167,19 +1167,46 @@ ON UPDATE CASCADE;
 
 
 ALTER TABLE `sizemeasurements`
-ADD COLUMN `BackNeckDrop` DECIMAL(5,2) NULL,
-ADD COLUMN `FrontNeckDrop` DECIMAL(5,2) NULL,
-ADD COLUMN `ShoulderSeam` DECIMAL(5,2) NULL,
-ADD COLUMN `ShoulderSlope` DECIMAL(5,2) NULL,
-ADD COLUMN `Hem` DECIMAL(5,2) NULL,
-ADD COLUMN `Inseam` DECIMAL(5,2) NULL,
-ADD COLUMN `Hip` DECIMAL(5,2) NULL,
-ADD COLUMN `FrontRise` DECIMAL(5,2) NULL;
+ADD COLUMN BackNeckDrop DECIMAL(5,2) NULL,
+ADD COLUMN FrontNeckDrop DECIMAL(5,2) NULL,
+ADD COLUMN ShoulderSeam DECIMAL(5,2) NULL,
+ADD COLUMN ShoulderSlope DECIMAL(5,2) NULL,
+ADD COLUMN Hem DECIMAL(5,2) NULL,
+ADD COLUMN Inseam DECIMAL(5,2) NULL,
+ADD COLUMN Hip DECIMAL(5,2) NULL,
+ADD COLUMN FrontRise DECIMAL(5,2) NULL,
+ADD COLUMN LegOpening DECIMAL(5,2) NULL,
+ADD COLUMN KneeWidth DECIMAL(5,2) NULL,
+ADD COLUMN Outseam DECIMAL(5,2) NULL,
+ADD COLUMN bFrontRise DECIMAL(5,2) NULL,
+ADD COLUMN t_TopRight DECIMAL(5,2) NULL,
+ADD COLUMN t_TopLeft DECIMAL(5,2) NULL,
+ADD COLUMN t_BottomRight DECIMAL(5,2) NULL,
+ADD COLUMN t_BottomLeft DECIMAL(5,2) NULL,
+ADD COLUMN t_Back DECIMAL(5,2) NULL,
+ADD COLUMN t_Center DECIMAL(5,2) NULL,
+ADD COLUMN b_TopRight DECIMAL(5,2) NULL,
+ADD COLUMN b_TopLeft DECIMAL(5,2) NULL,
+ADD COLUMN b_BottomRight DECIMAL(5,2) NULL,
+ADD COLUMN b_BottomLeft DECIMAL(5,2) NULL;
 
 
-ALTER TABLE `sizemeasurements`
-ADD COLUMN `LegOpening` DECIMAL(5,2) NULL,
-ADD COLUMN `KneeWidth` DECIMAL(5,2) NULL;
+ALTER TABLE `product`
+ADD COLUMN productStatus varchar(255) NULL;
 
-ALTER TABLE `sizemeasurements`
-ADD COLUMN `Outseam` DECIMAL(5,2) NULL;
+ALTER TABLE `productcategory`
+ADD COLUMN IsTopUnit BOOLEAN DEFAULT false,
+ADD COLUMN IsBottomUnit BOOLEAN DEFAULT false,
+ADD COLUMN SupportsLogo BOOLEAN DEFAULT false;
+
+CREATE TABLE `orderstatuslogs` (
+  `Id` INT AUTO_INCREMENT PRIMARY KEY,
+  `OrderId` INT NOT NULL,
+  `StatusId` INT NOT NULL,  
+  `CreatedOn` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `UpdatedOn` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT `FK_orderstatuslogs_order` FOREIGN KEY (`OrderId`)
+    REFERENCES `orders` (`Id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_orderstatuslogs_status` FOREIGN KEY (`StatusId`)
+    REFERENCES `orderstatus` (`Id`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

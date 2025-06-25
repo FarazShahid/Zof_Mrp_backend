@@ -16,29 +16,24 @@ export class SleeveTypeService {
 
     @InjectRepository(ProductCategory)
     private categoryRepository: Repository<ProductCategory>,
-  ) {}
+  ) { }
 
   async create(data: CreateSleeveTypeDto, userEmail: string): Promise<any> {
     try {
       this.logger.log(`Creating sleeve type with data: ${JSON.stringify(data)}, createdBy: ${userEmail}`);
-      
+
       const category = await this.categoryRepository.findOne({ where: { id: data.productCategoryId } });
       if (!category) {
         throw new NotFoundException(`Product Category not found.`);
       }
-    
-      const existingSleeve = await this.sleeveRepository.findOne({ where: { sleeveTypeName: data.sleeveTypeName } });
-      if (existingSleeve) {
-        throw new BadRequestException(`Sleeve Type already exists.`);
-      }
-    
+
       const newSleeve = this.sleeveRepository.create({
         sleeveTypeName: data.sleeveTypeName,
         productCategory: category,
         CreatedBy: userEmail,
         updatedBy: userEmail
       });
-    
+
       const savedSleeve = await this.sleeveRepository.save(newSleeve);
 
       return {
@@ -59,7 +54,7 @@ export class SleeveTypeService {
 
   async findAll(): Promise<any> {
     try {
-      
+
       const result = await this.sleeveRepository
         .createQueryBuilder('sleeve')
         .leftJoin('productcategory', 'category', 'sleeve.productCategoryId = category.id')
@@ -95,7 +90,7 @@ export class SleeveTypeService {
   async findOne(id: number): Promise<any> {
     try {
       this.logger.log(`Finding sleeve type with id: ${id}`);
-      
+
       const result = await this.sleeveRepository
         .createQueryBuilder('sleeve')
         .leftJoin('productcategory', 'category', 'sleeve.productCategoryId = category.id')
@@ -135,52 +130,52 @@ export class SleeveTypeService {
   async update(id: number, data: UpdateSleeveTypeDto, userEmail: string): Promise<any> {
     try {
       this.logger.log(`Updating sleeve type with id: ${id}, data: ${JSON.stringify(data)}, updatedBy: ${userEmail}`);
-      
+
       const sleeve = await this.sleeveRepository.findOne({ where: { id } });
       if (!sleeve) {
         throw new NotFoundException(`Sleeve Type not found.`);
       }
-    
+
       if (data.sleeveTypeName) {
         const existingSleeve = await this.sleeveRepository.findOne({
           where: { sleeveTypeName: data.sleeveTypeName },
         });
-    
+
         if (existingSleeve && existingSleeve.id !== id) {
           throw new BadRequestException(`Sleeve Type "${data.sleeveTypeName}" already exists.`);
         }
       }
-    
+
       if (data.productCategoryId) {
         const category = await this.categoryRepository.findOne({ where: { id: data.productCategoryId } });
         if (!category) {
           throw new NotFoundException(`Product Category with ID ${data.productCategoryId} not found.`);
         }
-      
+
         sleeve.productCategory = category;
       }
-    
+
       sleeve.sleeveTypeName = data.sleeveTypeName || sleeve.sleeveTypeName;
       sleeve.updatedBy = userEmail;
-    
+
       await this.sleeveRepository.save(sleeve);
-      
+
       return this.findOne(id);
     } catch (error) {
       this.logger.error(`Error updating sleeve type: ${error.message}`, error.stack);
       throw error;
     }
   }
-  
+
   async remove(id: number): Promise<void> {
     try {
       this.logger.log(`Removing sleeve type with id: ${id}`);
-      
+
       const sleeve = await this.sleeveRepository.findOne({ where: { id } });
       if (!sleeve) {
         throw new NotFoundException(`Sleeve Type not found.`);
       }
-      
+
       await this.sleeveRepository.delete(id);
     } catch (error) {
       this.logger.error(`Error deleting sleeve type: ${error.message}`, error.stack);
