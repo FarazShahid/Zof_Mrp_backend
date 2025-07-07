@@ -35,6 +35,7 @@ export class inventoryItemService {
     createdBy: string
   ) {
 
+
     let subCategory: any | null;
 
     const category = await this.inventoryCategoriesRepository.findOne({
@@ -65,6 +66,7 @@ export class inventoryItemService {
       where: { Id: data.SupplierId },
       withDeleted: false,
     });
+
     if (!supplier) {
       throw new NotFoundException(`Supplier with id ${data.SupplierId} not found`);
     }
@@ -73,6 +75,7 @@ export class inventoryItemService {
       where: { Id: data.UnitOfMeasureId },
       withDeleted: false,
     });
+
     if (!UnitOfMeasures) {
       throw new NotFoundException(`Unit Of Measures with id ${data.UnitOfMeasureId} not found`);
     }
@@ -82,15 +85,15 @@ export class inventoryItemService {
       take: 1,
       withDeleted: true
     });
+
     const lastId = lastItem.length > 0 ? lastItem[0].Id : 0;
     const newId = lastId + 1001;
-    if (!category) {
-      throw new NotFoundException(`Category of given subcategory not found not found`);
-    }
-    const categoryCode = category.Name.substring(0, 3).toUpperCase();
-    const subCategoryCode = subCategory?.Name?.substring(0, 3).toUpperCase() || "GEN";
 
-    const itemCode = `${categoryCode}-${subCategoryCode}-${newId}`;
+
+    const categoryCode = category?.Name?.substring(0, 3)?.toUpperCase();
+    // const subCategoryCode = subCategory?.Name?.substring(0, 3).toUpperCase() || "GEN";
+
+    const itemCode = `${categoryCode}-${newId}`;
 
     const inventoryItem = this.inventoryItemsRepository.create({
       ...data,
@@ -104,12 +107,12 @@ export class inventoryItemService {
 
     return {
       Id: savedItem.Id,
-      Name: savedItem.Name,
+      Name: savedItem?.Name,
       ItemCode: savedItem.ItemCode,
       CategoryId: savedItem.CategoryId || null,
-      CategoryName: category.Name || null,
+      CategoryName: category?.Name || null,
       SubCategoryId: savedItem.SubCategoryId,
-      SubCategoryName: subCategory.Name || null,
+      SubCategoryName: subCategory?.Name ?? null,
       UnitOfMeasureId: savedItem.UnitOfMeasureId,
       UnitOfMeasureName: UnitOfMeasures.Name,
       UnitOfMeasureShortForm: UnitOfMeasures.ShortForm,
@@ -122,16 +125,28 @@ export class inventoryItemService {
       CreatedOn: savedItem.CreatedOn,
       UpdatedOn: savedItem.UpdatedOn,
     };
+
   }
 
   async findAll() {
 
     const items = await this.inventoryItemsRepository.find();
 
-    const categoryIds = items.map(it => it.CategoryId !== null);
-    const subCategoryIds = items.filter(it => it.SubCategoryId !== null);
-    const suppliersIds = items.map(it => it.SupplierId);
-    const unitOfMeasureIds = items.map(it => it.UnitOfMeasureId);
+    const categoryIds = items
+      .filter(it => it.CategoryId !== null)
+      .map(it => it.CategoryId);
+
+    const subCategoryIds = items
+      .filter(it => it.SubCategoryId !== null)
+      .map(it => it.SubCategoryId);
+
+    const suppliersIds = items
+      .filter(it => it.SupplierId !== null)
+      .map(it => it.SupplierId);
+
+    const unitOfMeasureIds = items
+      .filter(it => it.UnitOfMeasureId !== null)
+      .map(it => it.UnitOfMeasureId);
 
 
     const categories = await this.inventoryCategoriesRepository.find({
@@ -253,16 +268,36 @@ export class inventoryItemService {
         throw new NotFoundException(`Inventory Item with ID ${Id} not found`);
       }
 
-      const { Name, ReorderLevel, updatedBy } = data;
+      const { CategoryId, SubCategoryId, updatedBy } = data;
+
+      if (CategoryId !== inventoryItem?.CategoryId) {
+        const category = await this.inventoryCategoriesRepository.findOne({ where: { Id: CategoryId } })
+        if (!category) throw new BadRequestException(`Category Item with ID ${Id} not found`)
+        inventoryItem.SubCategoryId = null
+      }
+      if (SubCategoryId) {
+        const subCategory = await this.inventorySubCategoriesRepository.findOne({
+          where: { Id: data.SubCategoryId },
+          withDeleted: false,
+        });
+        if (!subCategory) {
+          throw new NotFoundException(`Sub Category with id ${data.SubCategoryId} not found`);
+        }
+
+        if (subCategory.CategoryId !== data.CategoryId) {
+          throw new BadRequestException(`Sub Category does not belong to the given Category`);
+        }
+      }
 
       const updateData: Partial<typeof inventoryItem> = {
         ...inventoryItem,
+        Name: data.Name ?? inventoryItem.Name,
+        ReorderLevel: data.ReorderLevel ?? inventoryItem.ReorderLevel,
+        CategoryId: data.CategoryId,
+        SubCategoryId: data?.SubCategoryId ?? null,
         UpdatedBy: updatedBy,
         UpdatedOn: new Date(),
       };
-
-      if (Name !== undefined) updateData.Name = Name;
-      if (ReorderLevel !== undefined) updateData.ReorderLevel = ReorderLevel;
 
       const updated = await this.inventoryItemsRepository.save({
         ...updateData,
@@ -270,6 +305,7 @@ export class inventoryItemService {
       });
 
       return updated;
+
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
