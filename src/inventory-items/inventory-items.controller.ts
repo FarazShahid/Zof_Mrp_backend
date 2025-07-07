@@ -16,6 +16,7 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
+import { UpdateInventoryItemDto } from './_/update-inventory-items.dto';
 
 @ControllerAuthProtector('Inventory Items', 'inventory-items')
 export class InventoryItemController {
@@ -63,7 +64,7 @@ export class InventoryItemController {
   }
 
   @Put(':id')
-  @ApiBody({ type: CreateInventoryItemDto })
+  @ApiBody({ type: UpdateInventoryItemDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a Inventory Item by id')
   async update(
@@ -72,7 +73,7 @@ export class InventoryItemController {
     @CurrentUser() user: any
   ) {
     try {
-      const data = {
+      const data: UpdateInventoryItemDto = {
         ...updateData,
         updatedBy: user.email
       };
