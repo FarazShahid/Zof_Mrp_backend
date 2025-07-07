@@ -18,7 +18,6 @@ export class InventorySubCategories {
   @Column()
   CategoryId: number;
 
-
   @CreateDateColumn({ type: 'timestamp' })
   CreatedOn: Date;
 

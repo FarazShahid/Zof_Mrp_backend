@@ -5,9 +5,21 @@ import { inventoryTransectionService } from './inventory-transections.service';
 import { InventoryTransactions } from './_/inventory-transections.entity';
 import { InventoryItems } from 'src/inventory-items/_/inventory-items.entity';
 import { UnitOfMeasures } from 'src/inventory-unit-measures/_/inventory-unit-measures.entity';
+import { Client } from 'src/clients/entities/client.entity';
+import { Order } from 'src/orders/entities/orders.entity';
+import { InventorySuppliers } from 'src/inventory-suppliers/_/inventory-suppliers.entity';
 @Module({
-  imports: [TypeOrmModule.forFeature([InventoryTransactions, InventoryItems, UnitOfMeasures])],
+  imports: [
+    TypeOrmModule.forFeature([
+      InventoryTransactions,
+      InventoryItems,
+      UnitOfMeasures,
+      Client,
+      Order,
+      InventorySuppliers
+    ]),
+  ],
   controllers: [InventoryTransectionController],
   providers: [inventoryTransectionService],
 })
-export class InventoryTransectionsModule { }
+export class InventoryTransectionsModule {}

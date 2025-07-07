@@ -51,7 +51,7 @@ import { MediaHandlersModule } from './media-handlers/media-handlers.module';
       }),
       inject: [ConfigService],
     }),
-   AuthModule,
+    AuthModule,
     ClientsModule,
     ColorOptionModule,
     EventsModule,
@@ -77,4 +77,4 @@ import { MediaHandlersModule } from './media-handlers/media-handlers.module';
   ],
   controllers: []
 })
-export class AppModule {}
+export class AppModule { }

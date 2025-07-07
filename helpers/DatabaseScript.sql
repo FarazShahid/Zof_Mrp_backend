@@ -1210,3 +1210,49 @@ CREATE TABLE `orderstatuslogs` (
   CONSTRAINT `FK_orderstatuslogs_status` FOREIGN KEY (`StatusId`)
     REFERENCES `orderstatus` (`Id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- ** Script update on 02/07/2025
+-- Add New Cloumn in Inventory Transactions
+
+ALTER TABLE InventoryTransactions
+ADD COLUMN ClientId INT NULL,
+ADD COLUMN OrderId INT NULL,
+ADD COLUMN SupplierId INT NULL;
+
+
+-- Medai Table Script
+CREATE TABLE `media` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `file_name` VARCHAR(255) NOT NULL,
+  `file_type` VARCHAR(100) NOT NULL,
+  `file_url` TEXT NOT NULL,
+  `uploaded_by` VARCHAR(100),
+  `uploaded_on` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_on` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL,
+  PRIMARY KEY (`id`)
+);
+
+-- media_links Table Script
+
+CREATE TABLE `media_links` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `media_id` INT NOT NULL,
+  `reference_type` VARCHAR(100) NOT NULL,  -- e.g. 'inventory_item', 'order'
+  `reference_id` INT NOT NULL,
+  `tag` VARCHAR(100),                      -- e.g. 'thumbnail', 'invoice'
+  `created_on` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `created_by` VARCHAR(100),
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`media_id`) REFERENCES `media`(`id`) ON DELETE CASCADE
+);
+
+-- Add New Cloumn in Client Table
+
+ALTER TABLE Client
+ADD COLUMN POCName VARCHAR(100) NULL,
+ADD COLUMN POCEmail VARCHAR(100) NULL,
+ADD COLUMN Website VARCHAR(255) NULL,
+ADD COLUMN Linkedin VARCHAR(255) NULL,
+ADD COLUMN Instagram VARCHAR(255) NULL;

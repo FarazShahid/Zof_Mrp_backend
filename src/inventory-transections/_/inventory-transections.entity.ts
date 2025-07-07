@@ -27,6 +27,15 @@ export class InventoryTransactions {
     @CreateDateColumn({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
     CreatedOn: Date;
 
+    @Column()
+    ClientId: number
+
+    @Column()
+    OrderId: number
+    
+    @Column()
+    SupplierId: number
+
     @Column({ length: 100, nullable: true })
     CreatedBy: string;
 
