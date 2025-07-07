@@ -5,6 +5,7 @@ import {
   UploadedFile,
   UseInterceptors,
   Query,
+  Get,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaHandlersService } from './media-handlers.service';
@@ -29,11 +30,13 @@ export class MediaHandlersController {
   @ApiOperation({ summary: 'Upload a media file to Azure Blob Storage' })
   @ApiConsumes('multipart/form-data')
   @ApiQuery({
-    name: 'typeId',
-    type: Number,
+    name: 'referenceType',
     required: true,
-    description: 'Document type ID for categorizing the upload',
+    type: String,
+    example: 'order',
   })
+  @ApiQuery({ name: 'referenceId', required: true, type: Number, example: 1 })
+  @ApiQuery({ name: 'tag', required: false, type: String, example: 'invoice' })
   @ApiBody({
     schema: {
       type: 'object',
@@ -45,19 +48,40 @@ export class MediaHandlersController {
       },
     },
   })
-  @ApiResponse({
-    status: 201,
-    description: 'File uploaded successfully',
-    schema: {
-      example: { url: 'https://genxstorage.blob.core.windows.net/dev/yourfile.jpg' },
-    },
-  })
+  @ApiResponse({ status: 201, description: 'File uploaded and linked' })
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @Query('typeId') typeId: number,
-     @CurrentUser() currentUser: any
+    @Query('referenceType') referenceType: string,
+    @Query('referenceId') referenceId: number,
+    @Query('tag') tag: string,
+    @CurrentUser() currentUser: any,
   ) {
-    const url = await this.mediaHandlersService.uploadFile(file, typeId, currentUser.email);
+    const url = await this.mediaHandlersService.uploadFileAndLink(
+      file,
+      currentUser.email,
+      referenceType,
+      referenceId,
+      tag,
+    );
     return url ?? null;
+  }
+
+  @Get('documents')
+  @ApiOperation({ summary: 'Get documents by reference type and ID' })
+  @ApiQuery({
+    name: 'referenceType',
+    required: true,
+    type: String,
+    example: 'order',
+  })
+  @ApiQuery({ name: 'referenceId', required: true, type: Number, example: 1 })
+  async getDocumentsByReference(
+    @Query('referenceType') referenceType: string,
+    @Query('referenceId') referenceId: number,
+  ) {
+    return this.mediaHandlersService.getDocumentsByReference(
+      referenceType,
+      referenceId,
+    );
   }
 }

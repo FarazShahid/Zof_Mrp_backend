@@ -26,19 +26,39 @@ export class inventoryItemService {
   async create(
     data: {
       Name: string;
-      SubCategoryId: number;
+      SubCategoryId: number | null;
+      CategoryId: number;
       UnitOfMeasureId: number;
       SupplierId: number;
       ReorderLevel?: number;
     },
     createdBy: string
   ) {
-    const subCategory = await this.inventorySubCategoriesRepository.findOne({
-      where: { Id: data.SubCategoryId },
+
+    let subCategory: any | null;
+
+    const category = await this.inventoryCategoriesRepository.findOne({
+      where: { Id: data.CategoryId },
       withDeleted: false,
     });
-    if (!subCategory) {
-      throw new NotFoundException(`Sub Category with id ${data.SubCategoryId} not found`);
+
+    if (!category) {
+      throw new NotFoundException(`Category with id ${data.CategoryId} not found`);
+    }
+
+    if (data.SubCategoryId) {
+      subCategory = await this.inventorySubCategoriesRepository.findOne({
+        where: { Id: data.SubCategoryId },
+        withDeleted: false,
+      });
+
+      if (!subCategory) {
+        throw new NotFoundException(`Sub Category with id ${data.SubCategoryId} not found`);
+      }
+
+      if (subCategory.CategoryId !== data.CategoryId) {
+        throw new BadRequestException(`Sub Category does not belong to the given Category`);
+      }
     }
 
     const supplier = await this.inventorySuppliersRepository.findOne({
@@ -64,15 +84,11 @@ export class inventoryItemService {
     });
     const lastId = lastItem.length > 0 ? lastItem[0].Id : 0;
     const newId = lastId + 1001;
-    const category = await this.inventoryCategoriesRepository.findOne({
-      where: { Id: subCategory.CategoryId },
-      withDeleted: true,
-    });
     if (!category) {
       throw new NotFoundException(`Category of given subcategory not found not found`);
     }
     const categoryCode = category.Name.substring(0, 3).toUpperCase();
-    const subCategoryCode = subCategory.Name.substring(0, 3).toUpperCase();
+    const subCategoryCode = subCategory?.Name?.substring(0, 3).toUpperCase() || "GEN";
 
     const itemCode = `${categoryCode}-${subCategoryCode}-${newId}`;
 
@@ -90,6 +106,8 @@ export class inventoryItemService {
       Id: savedItem.Id,
       Name: savedItem.Name,
       ItemCode: savedItem.ItemCode,
+      CategoryId: savedItem.CategoryId || null,
+      CategoryName: category.Name || null,
       SubCategoryId: savedItem.SubCategoryId,
       SubCategoryName: subCategory.Name || null,
       UnitOfMeasureId: savedItem.UnitOfMeasureId,
@@ -109,13 +127,23 @@ export class inventoryItemService {
   async findAll() {
 
     const items = await this.inventoryItemsRepository.find();
-    const subCategoryIds = items.map(it => it.SubCategoryId);
+
+    const categoryIds = items.map(it => it.CategoryId !== null);
+    const subCategoryIds = items.filter(it => it.SubCategoryId !== null);
     const suppliersIds = items.map(it => it.SupplierId);
     const unitOfMeasureIds = items.map(it => it.UnitOfMeasureId);
+
+
+    const categories = await this.inventoryCategoriesRepository.find({
+      where: { Id: In(categoryIds) },
+      withDeleted: true,
+    });
+
     const subCategories = await this.inventorySubCategoriesRepository.find({
       where: { Id: In(subCategoryIds) },
       withDeleted: true,
     });
+
     const suppliers = await this.inventorySuppliersRepository.find({
       where: { Id: In(suppliersIds) },
       withDeleted: true,
@@ -126,7 +154,8 @@ export class inventoryItemService {
       withDeleted: true,
     });
 
-    const subCategoryMap = new Map(subCategories.map(cat => [cat.Id, cat.Name]));
+    const categoryMap = new Map(categories.map(cat => [cat.Id, cat.Name]))
+    const subCategoryMap = new Map(subCategories.map(sub => [sub.Id, sub.Name]));
     const suppliersMap = new Map(suppliers.map(sup => [sup.Id, sup.Name]));
     const unitOfMeasuresMap = new Map(unitOfMeasures.map(um => [um.Id, um]));
 
@@ -134,8 +163,10 @@ export class inventoryItemService {
       Id: item.Id,
       Name: item.Name,
       ItemCode: item.ItemCode,
+      CategoryId: item?.CategoryId || null,
+      CategoryName: item?.CategoryId ? categoryMap.get(item?.CategoryId) || null : null,
       SubCategoryId: item.SubCategoryId,
-      SubCategoryName: subCategoryMap.get(item.SubCategoryId) || null,
+      SubCategoryName: item?.SubCategoryId ? subCategoryMap.get(item.SubCategoryId) || null : null,
       UnitOfMeasureId: item.UnitOfMeasureId,
       UnitOfMeasureName: unitOfMeasuresMap.get(item.UnitOfMeasureId).Name || null,
       UnitOfMeasureShortForm: unitOfMeasuresMap.get(item.UnitOfMeasureId).ShortForm || null,
@@ -156,14 +187,29 @@ export class inventoryItemService {
       throw new NotFoundException(`Inventory Item with ID ${Id} not found`);
     }
 
-    const subCategory = await this.inventorySubCategoriesRepository.findOne({
-      where: { Id: inventoryItem.SubCategoryId },
+    const category = await this.inventoryCategoriesRepository.findOne({
+      where: { Id: inventoryItem.CategoryId },
       withDeleted: true,
     });
-    if (!subCategory) {
-      throw new NotFoundException(`Sub Category with id ${inventoryItem.SubCategoryId} not found`);
+
+    if (!category) {
+      throw new NotFoundException(`Category with id ${inventoryItem.CategoryId} not found`);
     }
 
+    let subCategoryName: string | null = null;
+
+    if (inventoryItem.SubCategoryId) {
+      const subCategory = await this.inventorySubCategoriesRepository.findOne({
+        where: { Id: inventoryItem.SubCategoryId },
+        withDeleted: true,
+      });
+
+      if (!subCategory) {
+        throw new NotFoundException(`Sub Category with id ${inventoryItem.SubCategoryId} not found`);
+      }
+
+      subCategoryName = subCategory.Name;
+    }
     const supplier = await this.inventorySuppliersRepository.findOne({
       where: { Id: inventoryItem.SupplierId },
       withDeleted: true,
@@ -183,8 +229,10 @@ export class inventoryItemService {
       Id: inventoryItem.Id,
       Name: inventoryItem.Name,
       ItemCode: inventoryItem.ItemCode,
-      SubCategoryId: inventoryItem.SubCategoryId,
-      SubCategoryName: subCategory.Name || null,
+      CategoryId: inventoryItem?.CategoryId || null,
+      CategoryName: category?.Name || null,
+      SubCategoryId: inventoryItem?.SubCategoryId || null,
+      SubCategoryName: subCategoryName || null,
       UnitOfMeasureId: inventoryItem.UnitOfMeasureId,
       UnitOfMeasureName: UnitOfMeasures.Name,
       SupplierId: inventoryItem.SupplierId,
@@ -205,19 +253,23 @@ export class inventoryItemService {
         throw new NotFoundException(`Inventory Item with ID ${Id} not found`);
       }
 
-      const { Name, ReorderLevel,  updatedBy } = data;
+      const { Name, ReorderLevel, updatedBy } = data;
 
-      const updateData: any = {};
+      const updateData: Partial<typeof inventoryItem> = {
+        ...inventoryItem,
+        UpdatedBy: updatedBy,
+        UpdatedOn: new Date(),
+      };
 
       if (Name !== undefined) updateData.Name = Name;
+      if (ReorderLevel !== undefined) updateData.ReorderLevel = ReorderLevel;
 
-      updateData.UpdatedBy = updatedBy;
-      updateData.UpdatedOn = new Date();
-      updateData.ReorderLevel = ReorderLevel;
+      const updated = await this.inventoryItemsRepository.save({
+        ...updateData,
+        Id,
+      });
 
-      await this.inventoryItemsRepository.update(Id, updateData);
-
-      return this.inventoryItemsRepository.findOne({ where: { Id } });
+      return updated;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;

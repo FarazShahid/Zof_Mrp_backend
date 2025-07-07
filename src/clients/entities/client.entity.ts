@@ -13,7 +13,22 @@ export class Client {
     Email: string;
 
     @Column({ length: 255 })
+    POCName: string;
+
+    @Column({ length: 255 })
     Phone: string;
+
+    @Column({ length: 255 })
+    POCEmail: string;
+    
+    @Column({ length: 255 })
+    Website: string;
+
+    @Column({ length: 255 })
+    Linkedin: string;
+
+    @Column({ length: 255 })
+    Instagram: string;
 
     @Column({ length: 255 })
     Country: string;

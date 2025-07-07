@@ -2,14 +2,13 @@
 import { Module } from '@nestjs/common';
 import { MediaHandlersService } from './media-handlers.service';
 import { MediaHandlersController } from './media-handler.controller';
-import { DocumentEntity } from './_/document.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Media } from 'src/media/_/media.entity';
+import { MediaLink } from 'src/media-link/_/media-link.entity';
 
 @Module({
    imports: [
-      TypeOrmModule.forFeature([
-       DocumentEntity
-      ]),
+      TypeOrmModule.forFeature([Media, MediaLink]),
     ],
   providers: [MediaHandlersService],
   controllers: [MediaHandlersController],

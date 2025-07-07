@@ -19,6 +19,9 @@ export class InventoryItems {
   ItemCode: string;
 
   @Column()
+  CategoryId: number;
+
+  @Column()
   SubCategoryId: number;
 
   @Column()

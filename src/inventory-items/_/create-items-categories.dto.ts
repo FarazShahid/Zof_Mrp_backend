@@ -8,9 +8,14 @@ export class CreateInventoryItemDto {
   @MaxLength(200)
   Name: string;
 
-  @CommonApiProperty('Sub Category ID', '1')
+  @CommonApiProperty('Category ID', '1')
   @IsNumber()
   @IsNotEmpty()
+  CategoryId: number;
+
+  @CommonApiProperty('Sub Category ID', '1')
+  @IsNumber()
+  @IsOptional()
   SubCategoryId: number;
 
   @CommonApiProperty('Unit of Measure', 1)
