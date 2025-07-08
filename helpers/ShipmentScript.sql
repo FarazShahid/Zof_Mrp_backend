@@ -92,7 +92,7 @@ CREATE TABLE `ShipmentBox` (
   `ShipmentId` INT NOT NULL,
   `Weight` FLOAT NOT NULL,
   `BoxNumber` INT NOT NULL,
-  `Quantity` VARCHAR(255) NOT NULL,
+  `Quantity` FLOAT NOT NULL,
   `OrderItem` VARCHAR(255) NOT NULL,
   `OrderItemDescription` VARCHAR(1000) NOT NULL,
   PRIMARY KEY (`Id`),

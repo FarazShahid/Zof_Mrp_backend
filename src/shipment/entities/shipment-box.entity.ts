@@ -20,7 +20,7 @@ export class ShipmentBox {
     BoxNumber: number;
 
     @Column()
-    Quantity: string;
+    Quantity: number;
 
     @Column()
     OrderItem: string;

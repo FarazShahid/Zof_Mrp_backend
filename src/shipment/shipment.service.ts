@@ -107,6 +107,9 @@ export class ShipmentService {
         ShipmentId: savedShipment.Id,
         BoxNumber: box.BoxNumber,
         Weight: box.Weight,
+        Quantity: box.Quantity,
+        OrderItem: box.OrderItem,
+        OrderItemDescription: box.OrderItemDescription
       }),
     );
     await this.shipmentBoxRepository.save(boxEntities);
@@ -168,7 +171,7 @@ export class ShipmentService {
     return await this.dataSource.transaction(async manager => {
       const {
         ShipmentCode,
-        OrderId,
+        OrderNumber,
         ShipmentCarrierId,
         ShipmentDate,
         ShipmentCost,
@@ -177,7 +180,6 @@ export class ShipmentService {
         WeightUnit,
         ReceivedTime,
         Status,
-        ShipmentDetails,
         boxes,
       } = updateShipmentDto;
 
@@ -201,6 +203,7 @@ export class ShipmentService {
       }
 
       // Update simple fields
+      if (OrderNumber !== undefined) existingShipment.OrderNumber = OrderNumber;
       if (ShipmentCode !== undefined) existingShipment.ShipmentCode = ShipmentCode;
       if (ShipmentDate !== undefined) existingShipment.ShipmentDate = new Date(ShipmentDate);
       if (ShipmentCost !== undefined) existingShipment.ShipmentCost = ShipmentCost;
