@@ -4,14 +4,33 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, Pri
 import { ShipmentBox } from "./shippment-box.entity";
 import { ShipmentDetail } from "./shipment-details";
 
-export enum ShipmentStatus {
-    Pending = 'Pending',
-    InTransit = 'In Transit',
-    Delivered = 'Delivered',
-    Received = 'Received',
-    Cancelled = 'Cancelled',
-}
+// export enum ShipmentStatus {
+//     Pending = 'Pending',
+//     InTransit = 'In Transit',
+//     Delivered = 'Delivered',
+//     Received = 'Received',
+//     Cancelled = 'Cancelled',
+// }
 
+
+export enum ShipmentStatus {
+    PENDING = "Pending",
+    AWAITING_PICKUP = "Awaiting Pickup",
+    PICKED_UP = "Picked Up",
+    DISPATCHED = "Dispatched",
+    IN_TRANSIT = "In Transit",
+    ARRIVED_AT_HUB = "Arrived at Hub",
+    CUSTOMS_HOLD = "Customs Hold",
+    CUSTOMS_CLEARED = "Customs Cleared",
+    DELAYED = "Delayed",
+    OUT_FOR_DELIVERY = "Out for Delivery",
+    DELIVERY_ATTEMPT_FAILED = "Delivery Attempt Failed",
+    DELIVERED = "Delivered",
+    RETURNED_TO_SENDER = "Returned to Sender",
+    CANCELLED = "Cancelled",
+    LOST = "Lost",
+    DAMAGED = "Damaged",
+}
 
 @Entity('Shipment')
 export class Shipment {

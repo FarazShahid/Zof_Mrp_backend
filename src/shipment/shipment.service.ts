@@ -1,3 +1,4 @@
+import { DataSource } from 'typeorm';
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateShipmentDto } from './dto/create-shipment.dto';
 import { UpdateShipmentDto } from './dto/update-shipment.dto';
@@ -9,7 +10,6 @@ import { OrderItem } from 'src/orders/entities/order-item.entity';
 import { Shipment } from './entities/shipment.entity';
 import { ShipmentDetail } from './entities/shipment-details';
 import { ShipmentBox } from './entities/shippment-box.entity';
-
 @Injectable()
 export class ShipmentService {
   constructor(
@@ -29,7 +29,9 @@ export class ShipmentService {
     private readonly shipmentDetailRepository: Repository<ShipmentDetail>,
 
     @InjectRepository(Shipment)
-    private readonly shipmentRepository: Repository<Shipment>
+    private readonly shipmentRepository: Repository<Shipment>,
+
+    private dataSource: DataSource
 
   ) { }
   async create(createShipmentDto: CreateShipmentDto, createdBy: any) {
@@ -129,6 +131,7 @@ export class ShipmentService {
 
     return shippments
   }
+
   async findOne(id: number) {
     const shippment = await this.shipmentRepository.findOne({
       where: { Id: id },
@@ -144,10 +147,108 @@ export class ShipmentService {
       },
     });
     if (!shippment) throw new NotFoundException(`Shipment with ${id} not found`)
+    return shippment
   }
 
-  update(id: number, updateShipmentDto: UpdateShipmentDto) {
-    return `This action updates a #${id} shipment`;
+  async update(id: number, updateShipmentDto: UpdateShipmentDto, updatedBy: string) {
+    const existingShipment = await this.shipmentRepository.findOne({ where: { Id: id } });
+    if (!existingShipment) throw new NotFoundException(`Shipment with ID ${id} not found`);
+
+    return await this.dataSource.transaction(async manager => {
+      const {
+        ShipmentCode,
+        OrderId,
+        ShipmentCarrierId,
+        ShipmentDate,
+        ShipmentCost,
+        TotalWeight,
+        NumberOfBoxes,
+        WeightUnit,
+        ReceivedTime,
+        Status,
+        ShipmentDetails,
+        boxes,
+      } = updateShipmentDto;
+
+      const shipmentRepo = manager.getRepository(Shipment);
+      const shipmentDetailRepo = manager.getRepository(ShipmentDetail);
+      const shipmentBoxRepo = manager.getRepository(ShipmentBox);
+      const orderItemRepo = manager.getRepository(OrderItem);
+
+      // Validate new OrderId
+      if (OrderId && OrderId !== existingShipment.OrderId) {
+        const order = await this.orderRepository.findOne({ where: { Id: OrderId } });
+        if (!order) throw new NotFoundException(`Order with ID ${OrderId} not found`);
+        existingShipment.OrderId = OrderId;
+      }
+
+      // Validate new CarrierId
+      if (ShipmentCarrierId && ShipmentCarrierId !== existingShipment.ShipmentCarrierId) {
+        const carrier = await this.shipmentCarrierRepository.findOne({ where: { Id: ShipmentCarrierId } });
+        if (!carrier) throw new NotFoundException(`Carrier with ID ${ShipmentCarrierId} not found`);
+        existingShipment.ShipmentCarrierId = ShipmentCarrierId;
+      }
+
+      // Update simple fields
+      if (ShipmentCode !== undefined) existingShipment.ShipmentCode = ShipmentCode;
+      if (ShipmentDate !== undefined) existingShipment.ShipmentDate = new Date(ShipmentDate);
+      if (ShipmentCost !== undefined) existingShipment.ShipmentCost = ShipmentCost;
+      if (TotalWeight !== undefined) existingShipment.TotalWeight = TotalWeight;
+      if (NumberOfBoxes !== undefined) existingShipment.NumberOfBoxes = NumberOfBoxes;
+      if (WeightUnit !== undefined) existingShipment.WeightUnit = WeightUnit;
+      if (ReceivedTime !== undefined) existingShipment.ReceivedTime = ReceivedTime ? new Date(ReceivedTime) : null;
+      if (Status !== undefined) existingShipment.Status = Status;
+      existingShipment.UpdatedBy = updatedBy;
+
+      // 🧩 Save updated shipment
+      await shipmentRepo.save(existingShipment);
+
+      // ✅ Validate and Replace ShipmentDetails
+      if (ShipmentDetails && Array.isArray(ShipmentDetails)) {
+        const orderItemIds = ShipmentDetails.map(d => d.OrderItemId);
+        const foundItems = await orderItemRepo.findBy({ Id: In(orderItemIds) });
+
+        if (foundItems.length !== orderItemIds.length) {
+          throw new BadRequestException('Some OrderItemIds are invalid.');
+        }
+
+        const invalidItems = foundItems.filter(i => i.OrderId !== existingShipment.OrderId);
+        if (invalidItems.length) {
+          throw new BadRequestException(
+            `OrderItemIds [${invalidItems.map(i => i.Id).join(', ')}] do not belong to Order ID ${existingShipment.OrderId}`
+          );
+        }
+
+        await shipmentDetailRepo.delete({ ShipmentId: existingShipment.Id });
+
+        const newDetails = ShipmentDetails.map(detail =>
+          shipmentDetailRepo.create({
+            ShipmentId: existingShipment.Id,
+            OrderItemId: detail.OrderItemId,
+            Quantity: detail.Quantity,
+            Size: detail.Size,
+            ItemDetails: detail.ItemDetails,
+          })
+        );
+        await shipmentDetailRepo.save(newDetails);
+      }
+
+      // ✅ Replace Boxes
+      if (boxes && Array.isArray(boxes)) {
+        await shipmentBoxRepo.delete({ ShipmentId: existingShipment.Id });
+
+        const newBoxes = boxes.map(box =>
+          shipmentBoxRepo.create({
+            ShipmentId: existingShipment.Id,
+            BoxNumber: box.BoxNumber,
+            Weight: box.Weight,
+          })
+        );
+        await shipmentBoxRepo.save(newBoxes);
+      }
+
+      return { message: `Shipment with ID ${id} updated successfully` };
+    });
   }
 
   async remove(id: number) {

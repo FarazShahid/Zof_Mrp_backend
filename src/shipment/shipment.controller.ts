@@ -39,8 +39,8 @@ export class ShipmentController {
   @ApiBody({ type: UpdateShipmentDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update shipment by id')
-  update(@Param('id') id: string, @Body() updateShipmentDto: UpdateShipmentDto) {
-    return this.shipmentService.update(+id, updateShipmentDto);
+  update(@Param('id') id: string, @Body() updateShipmentDto: UpdateShipmentDto, @CurrentUser() currentUser: any) {
+    return this.shipmentService.update(+id, updateShipmentDto, currentUser.email);
   }
 
   @Delete(':id')
