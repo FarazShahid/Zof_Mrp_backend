@@ -5,6 +5,7 @@ import { ClientEvent } from '../../events/entities/clientevent.entity';
 import { OrderStatus } from '../../orderstatus/entities/orderstatus.entity';
 import { OrderItem } from './order-item.entity';
 import { OrderStatusLogs } from './order-status-log';
+import { Shipment } from 'src/shipment/entities/shipment.entity';
 
 @Entity('orders')
 export class Order extends BaseEntity {
@@ -53,4 +54,8 @@ export class Order extends BaseEntity {
 
   @OneToMany(() => OrderItem, orderItem => orderItem.order)
   orderItems: OrderItem[];
+
+  //New Column
+  @OneToMany(() => Shipment, shipment => shipment.Order)
+  Shipments: Shipment[];
 }

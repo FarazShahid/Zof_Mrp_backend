@@ -1,25 +1,30 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { InventorySubCategories } from './_/inventory-sub-categories.entity';
 import { InventoryCategories } from 'src/inventory-categories/_/inventory-categories.entity';
+import { InventoryItems } from 'src/inventory-items/_/inventory-items.entity';
 
 @Injectable()
 export class InventorySubCategoryService {
- 
+
   constructor(
     @InjectRepository(InventorySubCategories)
     private readonly inventorySubCategoryRepository: Repository<InventorySubCategories>,
     @InjectRepository(InventoryCategories)
-  private readonly inventoryCategoryRepository: Repository<InventoryCategories>,
-  ) {}
+    private readonly inventoryCategoryRepository: Repository<InventoryCategories>,
+    @InjectRepository(InventoryItems)
+    private readonly inventoryItemsRepoistory: Repository<InventoryItems>,
+
+
+  ) { }
 
   async create(data: { Name: string, CategoryId: number }, createdBy: string) {
     const inventoryCategory = await this.inventoryCategoryRepository.findOne({
       where: { Id: data.CategoryId },
       withDeleted: true,
     });
-    
+
     if (!inventoryCategory) {
       throw new BadRequestException('Category does not exist.');
     }
@@ -31,7 +36,7 @@ export class InventorySubCategoryService {
     const savedRecord = await this.inventorySubCategoryRepository.save(inventorySubCategory);
     return {
       ...savedRecord,
-      CategoryName: inventoryCategory.Name 
+      CategoryName: inventoryCategory.Name
     };
   }
 
@@ -39,14 +44,14 @@ export class InventorySubCategoryService {
     const subCategories = await this.inventorySubCategoryRepository.find();
 
     const categoryIds = subCategories.map(sub => sub.CategoryId);
-  
+
     const categories = await this.inventoryCategoryRepository.find({
       where: { Id: In(categoryIds) },
       withDeleted: true,
     });
-  
+
     const categoryMap = new Map(categories.map(cat => [cat.Id, cat.Name]));
-  
+
     return subCategories.map(sub => ({
       Id: sub.Id,
       Name: sub.Name,
@@ -65,13 +70,13 @@ export class InventorySubCategoryService {
       where: { Id: inventorySubCategory.CategoryId },
       withDeleted: true,
     });
-    
+
     if (!inventoryCategory) {
       throw new BadRequestException('Category does not exist.');
     }
     return {
       ...inventorySubCategory,
-      CategoryName: inventoryCategory.Name 
+      CategoryName: inventoryCategory.Name
     };
   }
 
@@ -104,6 +109,15 @@ export class InventorySubCategoryService {
   }
 
   async delete(id: number) {
+    const usedSubCategory = await this.inventoryItemsRepoistory.count({
+      where: { SubCategoryId: id },
+    });
+
+    if (usedSubCategory > 0) {
+      throw new ConflictException(
+        `Cannot delete: one or more subcategories are used in inventory items`
+      );
+    }
     const result = await this.inventorySubCategoryRepository.softDelete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Inventory Sub Category with ID ${id} not found`);
