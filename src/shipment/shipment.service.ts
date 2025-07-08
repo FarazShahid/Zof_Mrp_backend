@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { CreateShipmentDto } from './dto/create-shipment.dto';
+import { CreateShipmentDto, ShipmentResponseDto } from './dto/create-shipment.dto';
 import { UpdateShipmentDto } from './dto/update-shipment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from 'src/orders/entities/orders.entity';
@@ -115,13 +115,14 @@ export class ShipmentService {
     return { message: 'Shipment created successfully' };
   }
 
-  async findAll(): Promise<Shipment[]> {
-    const shippments = await this.shipmentRepository.find({
+  async findAll(): Promise<ShipmentResponseDto[]> {
+    const shipments = await this.shipmentRepository.find({
       relations: [
         'ShipmentCarrier',
         'Boxes',
         'ShipmentDetails',
         'ShipmentDetails.OrderItem',
+        'ShipmentDetails.OrderItem.product',
         'Order',
       ],
       order: {
@@ -129,7 +130,26 @@ export class ShipmentService {
       },
     });
 
-    return shippments
+    return shipments.map((shipmentItem) => ({
+      Id: shipmentItem.Id,
+      ShipmentCode: shipmentItem.ShipmentCode,
+      ShipmentDate: shipmentItem.ShipmentDate,
+      ShipmentCost: shipmentItem.ShipmentCost,
+      WeightUnit: shipmentItem.WeightUnit,
+      TotalWeight: shipmentItem.TotalWeight,
+      NumberOfBoxes: shipmentItem.NumberOfBoxes,
+      ReceivedTime: shipmentItem.ReceivedTime,
+      Status: shipmentItem.Status,
+      ShipmentCarrierId: shipmentItem.ShipmentCarrier.Id,
+      ShipmentCarrierName: shipmentItem.ShipmentCarrier.Name,
+      OrderId: shipmentItem.Order.Id,
+      OrderName: shipmentItem.Order.OrderName,
+      OrderNumber: shipmentItem.Order.OrderNumber,
+      CreatedOn: shipmentItem.CreatedOn,
+      UpdatedOn: shipmentItem.UpdatedOn,
+      CreatedBy: shipmentItem.CreatedBy,
+      UpdatedBy: shipmentItem.UpdatedBy,
+    }))
   }
 
   async findOne(id: number) {

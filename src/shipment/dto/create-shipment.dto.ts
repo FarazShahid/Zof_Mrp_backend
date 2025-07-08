@@ -1,14 +1,14 @@
-import { 
-  IsString, 
-  IsNotEmpty, 
-  IsNumber, 
-  IsDateString, 
-  IsEnum, 
-  ValidateNested, 
-  IsArray, 
-  ArrayMinSize, 
-  Min, 
-  IsOptional 
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsDateString,
+  IsEnum,
+  ValidateNested,
+  IsArray,
+  ArrayMinSize,
+  Min,
+  IsOptional
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -110,4 +110,28 @@ export class CreateShipmentDto {
   @ArrayMinSize(1)
   @Type(() => ShipmentBoxDto)
   boxes: ShipmentBoxDto[];
+}
+
+
+
+
+export interface ShipmentResponseDto {
+  Id: number;
+  ShipmentCode: string;
+  ShipmentDate: string | Date;
+  ShipmentCost: number;
+  WeightUnit: string;
+  TotalWeight: number;
+  NumberOfBoxes: number;
+  ReceivedTime: string | Date | null;
+  Status: ShipmentStatus;
+  ShipmentCarrierId: number;
+  ShipmentCarrierName: string;
+  OrderId: number;
+  OrderName: string;
+  OrderNumber: string;
+  CreatedOn: string | Date;
+  UpdatedOn: string | Date;
+  CreatedBy: string;
+  UpdatedBy: string;
 }

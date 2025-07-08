@@ -63,24 +63,3 @@ CREATE TABLE `ShipmentDetails` (
   CONSTRAINT `fk_detail_shipment` FOREIGN KEY (`ShipmentId`) REFERENCES `Shipment`(`Id`) ON DELETE CASCADE,
   CONSTRAINT `fk_detail_orderitem` FOREIGN KEY (`OrderItemId`) REFERENCES `OrderItems`(`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-
-ALTER TABLE `Shipment`
-MODIFY COLUMN `Status` ENUM(
-  'Pending',
-  'Awaiting Pickup',
-  'Picked Up',
-  'Dispatched',
-  'In Transit',
-  'Arrived at Hub',
-  'Customs Hold',
-  'Customs Cleared',
-  'Delayed',
-  'Out for Delivery',
-  'Delivery Attempt Failed',
-  'Delivered',
-  'Returned to Sender',
-  'Cancelled',
-  'Lost',
-  'Damaged'
-) NOT NULL;
