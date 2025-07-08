@@ -3,7 +3,7 @@ import { BadRequestException, Injectable, InternalServerErrorException, NotFound
 import { CreateShipmentDto, ShipmentResponseDto } from './dto/create-shipment.dto';
 import { UpdateShipmentDto } from './dto/update-shipment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Order } from 'src/orders/entities/orders.entity';
+// import { Order } from 'src/orders/entities/orders.entity';
 import { In, Repository } from 'typeorm';
 import { ShipmentCarrier } from 'src/shipment-carrier/entities/shipment-carrier.entity';
 // import { OrderItem } from 'src/orders/entities/order-item.entity';
@@ -13,8 +13,8 @@ import { ShipmentBox } from './entities/shipment-box.entity';
 @Injectable()
 export class ShipmentService {
   constructor(
-    @InjectRepository(Order)
-    private readonly orderRepository: Repository<Order>,
+    // @InjectRepository(Order)
+    // private readonly orderRepository: Repository<Order>,
 
     @InjectRepository(ShipmentCarrier)
     private readonly shipmentCarrierRepository: Repository<ShipmentCarrier>,
@@ -110,7 +110,9 @@ export class ShipmentService {
       }),
     );
     await this.shipmentBoxRepository.save(boxEntities);
-    return { message: 'Shipment created successfully' };
+    return {
+      id: shipment.Id
+    };
   }
 
   async findAll(): Promise<ShipmentResponseDto[]> {
@@ -256,7 +258,9 @@ export class ShipmentService {
         );
         await shipmentBoxRepo.save(newBoxes);
       }
-      return { message: `Shipment with ID ${id} updated successfully` };
+      return {
+        id: existingShipment.Id
+      };
     });
   }
 
