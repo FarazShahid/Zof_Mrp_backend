@@ -19,4 +19,12 @@ export class ShipmentBox {
     @Column()
     BoxNumber: number;
 
+    @Column()
+    Quantity: string;
+
+    @Column()
+    OrderItem: string;
+
+    @Column()
+    OrderItemDescription: string
 }

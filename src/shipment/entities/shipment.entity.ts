@@ -1,8 +1,8 @@
 import { Order } from "src/orders/entities/orders.entity";
 import { ShipmentCarrier } from "src/shipment-carrier/entities/shipment-carrier.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { ShipmentBox } from "./shippment-box.entity";
-import { ShipmentDetail } from "./shipment-details";
+import { ShipmentBox } from "./shipment-box.entity";
+// import { ShipmentDetail } from "./shipment-details";
 
 // export enum ShipmentStatus {
 //     Pending = 'Pending',
@@ -11,7 +11,6 @@ import { ShipmentDetail } from "./shipment-details";
 //     Received = 'Received',
 //     Cancelled = 'Cancelled',
 // }
-
 
 export enum ShipmentStatus {
     PENDING = "Pending",
@@ -41,11 +40,14 @@ export class Shipment {
     ShipmentCode: string;
 
     @Column()
-    OrderId: number;
+    OrderNumber: string;
 
-    @ManyToOne(() => Order, order => order.Shipments)
-    @JoinColumn({ name: 'OrderId' })
-    Order: Order;
+    // @Column()
+    // OrderId: number;
+
+    // @ManyToOne(() => Order, order => order.Shipments)
+    // @JoinColumn({ name: 'OrderId' })
+    // Order: Order;
 
     @Column()
     ShipmentCarrierId: number;
@@ -75,8 +77,8 @@ export class Shipment {
     @Column({ type: 'enum', enum: ShipmentStatus })
     Status: ShipmentStatus;
 
-    @OneToMany(() => ShipmentDetail, detail => detail.Shipment, { cascade: true })
-    ShipmentDetails: ShipmentDetail[];
+    // @OneToMany(() => ShipmentDetail, detail => detail.Shipment, { cascade: true })
+    // ShipmentDetails: ShipmentDetail[];
 
     @OneToMany(() => ShipmentBox, box => box.Shipment, { cascade: true })
     Boxes: ShipmentBox[];

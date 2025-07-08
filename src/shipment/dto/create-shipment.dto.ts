@@ -15,26 +15,26 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ShipmentStatus } from '../entities/shipment.entity';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 
-export class ShipmentDetailDto {
-  @CommonApiProperty('Order Item ID', 1)
-  @IsNumber()
-  @Min(1)
-  OrderItemId: number;
+// export class ShipmentDetailDto {
+//   @CommonApiProperty('Order Item ID', 1)
+//   @IsNumber()
+//   @Min(1)
+//   OrderItemId: number;
 
-  @CommonApiProperty('Quantity', 1)
-  @IsNumber()
-  @Min(1)
-  Quantity: number;
+//   @CommonApiProperty('Quantity', 1)
+//   @IsNumber()
+//   @Min(1)
+//   Quantity: number;
 
-  @CommonApiProperty('Size', 'M')
-  @IsString()
-  Size: string;
+//   @CommonApiProperty('Size', 'M')
+//   @IsString()
+//   Size: string;
 
-  @CommonApiProperty('Item Details', 'Special instructions for packing')
-  @IsString()
-  @IsOptional()
-  ItemDetails?: string;
-}
+//   @CommonApiProperty('Item Details', 'Special instructions for packing')
+//   @IsString()
+//   @IsOptional()
+//   ItemDetails?: string;
+// }
 
 export class ShipmentBoxDto {
   @CommonApiProperty('Box Number', 1)
@@ -42,10 +42,25 @@ export class ShipmentBoxDto {
   @Min(1)
   BoxNumber: number;
 
+  @CommonApiProperty('Box Number', 1)
+  @IsNumber()
+  @Min(1)
+  Quantity: number;
+
   @CommonApiProperty('Weight', 2.5)
   @IsNumber()
   @Min(0.01)
   Weight: number;
+
+  @CommonApiProperty('Order Item Name', 'Green Jersey')
+  @IsOptional()
+  @IsString()
+  OrderItem: string;
+
+  @CommonApiProperty('Item Description', 'Information about item')
+  @IsString()
+  @IsOptional()
+  OrderItemDescription: string;
 }
 
 export class CreateShipmentDto {
@@ -54,10 +69,9 @@ export class CreateShipmentDto {
   @IsNotEmpty()
   ShipmentCode: string;
 
-  @CommonApiProperty('Order ID', 1)
-  @IsNumber()
-  @Min(1)
-  OrderId: number;
+  @CommonApiProperty('Order Number', 'CTA-158')
+  @IsString()
+  OrderNumber: string;
 
   @CommonApiProperty('Shipment Carrier ID', 1)
   @IsNumber()
@@ -97,12 +111,12 @@ export class CreateShipmentDto {
   @IsEnum(ShipmentStatus)
   Status: ShipmentStatus;
 
-  @ApiProperty({ type: [ShipmentDetailDto] })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @ArrayMinSize(1)
-  @Type(() => ShipmentDetailDto)
-  ShipmentDetails: ShipmentDetailDto[];
+  // @ApiProperty({ type: [ShipmentDetailDto] })
+  // @IsArray()
+  // @ValidateNested({ each: true })
+  // @ArrayMinSize(1)
+  // @Type(() => ShipmentDetailDto)
+  // ShipmentDetails: ShipmentDetailDto[];
 
   @ApiProperty({ type: [ShipmentBoxDto] })
   @IsArray()
@@ -127,8 +141,6 @@ export interface ShipmentResponseDto {
   Status: ShipmentStatus;
   ShipmentCarrierId: number;
   ShipmentCarrierName: string;
-  OrderId: number;
-  OrderName: string;
   OrderNumber: string;
   CreatedOn: string | Date;
   UpdatedOn: string | Date;

@@ -6,10 +6,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from 'src/orders/entities/orders.entity';
 import { In, Repository } from 'typeorm';
 import { ShipmentCarrier } from 'src/shipment-carrier/entities/shipment-carrier.entity';
-import { OrderItem } from 'src/orders/entities/order-item.entity';
+// import { OrderItem } from 'src/orders/entities/order-item.entity';
 import { Shipment } from './entities/shipment.entity';
-import { ShipmentDetail } from './entities/shipment-details';
-import { ShipmentBox } from './entities/shippment-box.entity';
+// import { ShipmentDetail } from './entities/shipment-details';
+import { ShipmentBox } from './entities/shipment-box.entity';
 @Injectable()
 export class ShipmentService {
   constructor(
@@ -19,14 +19,14 @@ export class ShipmentService {
     @InjectRepository(ShipmentCarrier)
     private readonly shipmentCarrierRepository: Repository<ShipmentCarrier>,
 
-    @InjectRepository(OrderItem)
-    private readonly orderItemRepository: Repository<OrderItem>,
+    // @InjectRepository(OrderItem)
+    // private readonly orderItemRepository: Repository<OrderItem>,
 
     @InjectRepository(ShipmentBox)
     private readonly shipmentBoxRepository: Repository<ShipmentBox>,
 
-    @InjectRepository(ShipmentDetail)
-    private readonly shipmentDetailRepository: Repository<ShipmentDetail>,
+    // @InjectRepository(ShipmentDetail)
+    // private readonly shipmentDetailRepository: Repository<ShipmentDetail>,
 
     @InjectRepository(Shipment)
     private readonly shipmentRepository: Repository<Shipment>,
@@ -37,7 +37,7 @@ export class ShipmentService {
   async create(createShipmentDto: CreateShipmentDto, createdBy: any) {
     const {
       ShipmentCode,
-      OrderId,
+      OrderNumber,
       ShipmentCarrierId,
       ShipmentDate,
       ShipmentCost,
@@ -46,15 +46,14 @@ export class ShipmentService {
       WeightUnit,
       ReceivedTime,
       Status,
-      ShipmentDetails,
       boxes,
     } = createShipmentDto;
 
     // Validate order
-    const order = await this.orderRepository.findOne({ where: { Id: OrderId } });
-    if (!order) {
-      throw new NotFoundException(`Order with ID ${OrderId} not found`);
-    }
+    // const order = await this.orderRepository.findOne({ where: { Id: OrderId } });
+    // if (!order) {
+    //   throw new NotFoundException(`Order with ID ${OrderId} not found`);
+    // }
 
     // Validate carrier
     const carrier = await this.shipmentCarrierRepository.findOne({ where: { Id: ShipmentCarrierId } });
@@ -63,28 +62,28 @@ export class ShipmentService {
     }
 
     // Validate order items
-    const orderItemIds = ShipmentDetails.map(detail => detail.OrderItemId);
+    // const orderItemIds = ShipmentDetails.map(detail => detail.OrderItemId);
 
-    const foundOrderItems = await this.orderItemRepository.findBy({ Id: In(orderItemIds) });
+    // const foundOrderItems = await this.orderItemRepository.findBy({ Id: In(orderItemIds) });
 
-    const validItemIds = new Set(foundOrderItems.map(item => item.Id));
+    // const validItemIds = new Set(foundOrderItems.map(item => item.Id));
 
-    for (const detail of ShipmentDetails) {
-      if (!validItemIds.has(detail.OrderItemId)) {
-        throw new NotFoundException(`Order Item with ID ${detail.OrderItemId} not found`);
-      }
-    }
+    // for (const detail of ShipmentDetails) {
+    //   if (!validItemIds.has(detail.OrderItemId)) {
+    //     throw new NotFoundException(`Order Item with ID ${detail.OrderItemId} not found`);
+    //   }
+    // }
 
     const shipment = this.shipmentRepository.create({
       ShipmentCode,
-      OrderId,
-      ShipmentCarrierId,
-      ShipmentDate: new Date(ShipmentDate),
       ShipmentCost,
       TotalWeight,
+      OrderNumber,
+      ShipmentCarrierId,
+      ShipmentDate: new Date(ShipmentDate),
       NumberOfBoxes,
       WeightUnit,
-      ReceivedTime: ReceivedTime ? new Date(ReceivedTime) : null,
+      ReceivedTime: new Date(ReceivedTime) || null,
       Status,
       CreatedBy: createdBy,
       UpdatedBy: createdBy,
@@ -92,16 +91,16 @@ export class ShipmentService {
 
     const savedShipment = await this.shipmentRepository.save(shipment);
 
-    const shipmentDetailEntities = ShipmentDetails.map(detail =>
-      this.shipmentDetailRepository.create({
-        ShipmentId: savedShipment.Id,
-        OrderItemId: detail.OrderItemId,
-        Quantity: detail.Quantity,
-        Size: detail.Size,
-        ItemDetails: detail.ItemDetails,
-      }),
-    );
-    await this.shipmentDetailRepository.save(shipmentDetailEntities);
+    // const shipmentDetailEntities = ShipmentDetails.map(detail =>
+    //   this.shipmentDetailRepository.create({
+    //     ShipmentId: savedShipment.Id,
+    //     OrderItemId: detail.OrderItemId,
+    //     Quantity: detail.Quantity,
+    //     Size: detail.Size,
+    //     ItemDetails: detail.ItemDetails,
+    //   }),
+    // );
+    // await this.shipmentDetailRepository.save(shipmentDetailEntities);
 
     const boxEntities = boxes.map(box =>
       this.shipmentBoxRepository.create({
@@ -110,7 +109,6 @@ export class ShipmentService {
         Weight: box.Weight,
       }),
     );
-
     await this.shipmentBoxRepository.save(boxEntities);
     return { message: 'Shipment created successfully' };
   }
@@ -119,11 +117,7 @@ export class ShipmentService {
     const shipments = await this.shipmentRepository.find({
       relations: [
         'ShipmentCarrier',
-        'Boxes',
-        'ShipmentDetails',
-        'ShipmentDetails.OrderItem',
-        'ShipmentDetails.OrderItem.product',
-        'Order',
+        'Boxes'
       ],
       order: {
         ShipmentDate: 'DESC',
@@ -142,9 +136,7 @@ export class ShipmentService {
       Status: shipmentItem.Status,
       ShipmentCarrierId: shipmentItem.ShipmentCarrier.Id,
       ShipmentCarrierName: shipmentItem.ShipmentCarrier.Name,
-      OrderId: shipmentItem.Order.Id,
-      OrderName: shipmentItem.Order.OrderName,
-      OrderNumber: shipmentItem.Order.OrderNumber,
+      OrderNumber: shipmentItem.OrderNumber,
       CreatedOn: shipmentItem.CreatedOn,
       UpdatedOn: shipmentItem.UpdatedOn,
       CreatedBy: shipmentItem.CreatedBy,
@@ -157,10 +149,7 @@ export class ShipmentService {
       where: { Id: id },
       relations: [
         'ShipmentCarrier',
-        'Boxes',
-        'ShipmentDetails',
-        'ShipmentDetails.OrderItem',
-        'Order',
+        'Boxes'
       ],
       order: {
         ShipmentDate: 'DESC',
@@ -191,16 +180,16 @@ export class ShipmentService {
       } = updateShipmentDto;
 
       const shipmentRepo = manager.getRepository(Shipment);
-      const shipmentDetailRepo = manager.getRepository(ShipmentDetail);
+      // const shipmentDetailRepo = manager.getRepository(ShipmentDetail);
       const shipmentBoxRepo = manager.getRepository(ShipmentBox);
-      const orderItemRepo = manager.getRepository(OrderItem);
+      // const orderItemRepo = manager.getRepository(OrderItem);
 
       // Validate new OrderId
-      if (OrderId && OrderId !== existingShipment.OrderId) {
-        const order = await this.orderRepository.findOne({ where: { Id: OrderId } });
-        if (!order) throw new NotFoundException(`Order with ID ${OrderId} not found`);
-        existingShipment.OrderId = OrderId;
-      }
+      // if (OrderId && OrderId !== existingShipment.OrderId) {
+      //   const order = await this.orderRepository.findOne({ where: { Id: OrderId } });
+      //   if (!order) throw new NotFoundException(`Order with ID ${OrderId} not found`);
+      //   existingShipment.OrderId = OrderId;
+      // }
 
       // Validate new CarrierId
       if (ShipmentCarrierId && ShipmentCarrierId !== existingShipment.ShipmentCarrierId) {
@@ -220,53 +209,53 @@ export class ShipmentService {
       if (Status !== undefined) existingShipment.Status = Status;
       existingShipment.UpdatedBy = updatedBy;
 
-      // 🧩 Save updated shipment
       await shipmentRepo.save(existingShipment);
 
-      // ✅ Validate and Replace ShipmentDetails
-      if (ShipmentDetails && Array.isArray(ShipmentDetails)) {
-        const orderItemIds = ShipmentDetails.map(d => d.OrderItemId);
-        const foundItems = await orderItemRepo.findBy({ Id: In(orderItemIds) });
+      // Validate and Replace ShipmentDetails
+      // if (ShipmentDetails && Array.isArray(ShipmentDetails)) {
+      //   const orderItemIds = ShipmentDetails.map(d => d.OrderItemId);
+      //   const foundItems = await orderItemRepo.findBy({ Id: In(orderItemIds) });
 
-        if (foundItems.length !== orderItemIds.length) {
-          throw new BadRequestException('Some OrderItemIds are invalid.');
-        }
+      //   if (foundItems.length !== orderItemIds.length) {
+      //     throw new BadRequestException('Some OrderItemIds are invalid.');
+      //   }
 
-        const invalidItems = foundItems.filter(i => i.OrderId !== existingShipment.OrderId);
-        if (invalidItems.length) {
-          throw new BadRequestException(
-            `OrderItemIds [${invalidItems.map(i => i.Id).join(', ')}] do not belong to Order ID ${existingShipment.OrderId}`
-          );
-        }
+      //   const invalidItems = foundItems.filter(i => i.OrderId !== existingShipment.OrderId);
+      //   if (invalidItems.length) {
+      //     throw new BadRequestException(
+      //       `OrderItemIds [${invalidItems.map(i => i.Id).join(', ')}] do not belong to Order ID ${existingShipment.OrderId}`
+      //     );
+      //   }
 
-        await shipmentDetailRepo.delete({ ShipmentId: existingShipment.Id });
+      //   await shipmentDetailRepo.delete({ ShipmentId: existingShipment.Id });
 
-        const newDetails = ShipmentDetails.map(detail =>
-          shipmentDetailRepo.create({
-            ShipmentId: existingShipment.Id,
-            OrderItemId: detail.OrderItemId,
-            Quantity: detail.Quantity,
-            Size: detail.Size,
-            ItemDetails: detail.ItemDetails,
-          })
-        );
-        await shipmentDetailRepo.save(newDetails);
-      }
+      //   const newDetails = ShipmentDetails.map(detail =>
+      //     shipmentDetailRepo.create({
+      //       ShipmentId: existingShipment.Id,
+      //       OrderItemId: detail.OrderItemId,
+      //       Quantity: detail.Quantity,
+      //       Size: detail.Size,
+      //       ItemDetails: detail.ItemDetails,
+      //     })
+      //   );
+      //   await shipmentDetailRepo.save(newDetails);
+      // }
 
-      // ✅ Replace Boxes
+      // Replace Boxes
       if (boxes && Array.isArray(boxes)) {
         await shipmentBoxRepo.delete({ ShipmentId: existingShipment.Id });
-
         const newBoxes = boxes.map(box =>
           shipmentBoxRepo.create({
             ShipmentId: existingShipment.Id,
             BoxNumber: box.BoxNumber,
             Weight: box.Weight,
+            OrderItem: box.orderItem,
+            Quantity: box.Quantity,
+            OrderItemDescription: box.OrderItemDescription,
           })
         );
         await shipmentBoxRepo.save(newBoxes);
       }
-
       return { message: `Shipment with ID ${id} updated successfully` };
     });
   }
