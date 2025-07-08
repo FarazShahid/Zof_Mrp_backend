@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { InventoryItems } from './_/inventory-items.entity';
@@ -6,6 +6,7 @@ import { InventorySubCategories } from 'src/inventory-sub-categories/_/inventory
 import { InventorySuppliers } from 'src/inventory-suppliers/_/inventory-suppliers.entity';
 import { InventoryCategories } from 'src/inventory-categories/_/inventory-categories.entity';
 import { UnitOfMeasures } from 'src/inventory-unit-measures/_/inventory-unit-measures.entity';
+import { InventoryTransactions } from 'src/inventory-transections/_/inventory-transections.entity';
 
 @Injectable()
 export class inventoryItemService {
@@ -21,6 +22,8 @@ export class inventoryItemService {
     private readonly inventoryCategoriesRepository: Repository<InventoryCategories>,
     @InjectRepository(UnitOfMeasures)
     private readonly inventoryUnitOfMeasuresRepository: Repository<UnitOfMeasures>,
+    @InjectRepository(InventoryTransactions)
+    private readonly inventoryTransactionRepository: Repository<InventoryTransactions>,
   ) { }
 
   async create(
@@ -315,6 +318,16 @@ export class inventoryItemService {
   }
 
   async delete(id: number) {
+    const existingTransaction = await this.inventoryTransactionRepository.find(
+      {
+        where: { InventoryItemId: id },
+        withDeleted: true,
+      },
+    );
+
+    if (existingTransaction.length > 0) {
+      throw new ConflictException('Cannot delete item: one or more transactions exist against this item.');
+    }
     const result = await this.inventoryItemsRepository.softDelete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Inventory Item with ID ${id} not found`);

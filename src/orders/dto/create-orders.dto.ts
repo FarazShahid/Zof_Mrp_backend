@@ -15,6 +15,7 @@ import {
 import { Type } from 'class-transformer';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 import { ApiProperty } from '@nestjs/swagger';
+
 export class OrderItemDetailDto {
   @CommonApiProperty('Color Option Id', 'Color Option Id')
   @IsNumber()
