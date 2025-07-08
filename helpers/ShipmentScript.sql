@@ -73,7 +73,7 @@ CREATE TABLE `Shipment` (
   `ShipmentCarrierId` INT NOT NULL,
   `ShipmentDate` TIMESTAMP NOT NULL,
   `ShipmentCost` DECIMAL(10,2) NOT NULL,
-  `TotalWeight` FLOAT NOT NULL,
+`TotalWeight` FLOAT NOT NULL,
   `NumberOfBoxes` INT NOT NULL,
   `WeightUnit` VARCHAR(255) NOT NULL,
   `ReceivedTime` TIMESTAMP NULL DEFAULT NULL,

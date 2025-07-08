@@ -254,7 +254,7 @@ export class ShipmentService {
             ShipmentId: existingShipment.Id,
             BoxNumber: box.BoxNumber,
             Weight: box.Weight,
-            OrderItem: box.orderItem,
+            OrderItem: box.OrderItem,
             Quantity: box.Quantity,
             OrderItemDescription: box.OrderItemDescription,
           })
