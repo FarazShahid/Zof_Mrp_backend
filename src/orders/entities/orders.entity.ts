@@ -55,6 +55,6 @@ export class Order extends BaseEntity {
   orderItems: OrderItem[];
 
   //New Column
-  @OneToMany(() => Shipment, shipment => shipment.Order)
-  Shipments: Shipment[];
+  // @OneToMany(() => Shipment, shipment => shipment.Order)
+  // Shipments: Shipment[];
 }
