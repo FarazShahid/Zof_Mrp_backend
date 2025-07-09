@@ -80,6 +80,7 @@ export class inventoryTransectionService {
 
         const transection = this.inventoryTransactionsRepository.create({
             ...data,
+            CurrentStock: newStock,
             CreatedBy: createdBy,
             UpdatedBy: createdBy,
         });
@@ -143,7 +144,7 @@ export class inventoryTransectionService {
                 ItemName: item?.Name || null,
                 ItemCode: item?.ItemCode || null,
                 RedorderLevel: item?.ReorderLevel || null,
-                Stock: item?.Stock || null,
+                Stock: tx?.CurrentStock || null,
                 UnitOfMeasureId: item?.UnitOfMeasureId || null,
                 UnitOfMeasureName:
                     unitOfMeasuresMap.get(item.UnitOfMeasureId).Name || null,
@@ -222,7 +223,7 @@ export class inventoryTransectionService {
             InventoryItemId: transaction.InventoryItemId,
             ItemName: item?.Name || null,
             ItemCode: item?.ItemCode || null,
-            ItemStock: item?.Stock || null,
+            ItemStock: transaction?.CurrentStock || null,
             UnitOfMeasureId: item?.UnitOfMeasureId || null,
             UnitOfMeasureName: UnitOfMeasures?.Name || null,
             UnitOfMeasureShortForm: UnitOfMeasures?.ShortForm || null,
@@ -317,6 +318,7 @@ export class inventoryTransectionService {
 
             // Step 4: Update transaction
             await this.inventoryTransactionsRepository.update(Id, {
+                CurrentStock: stock,
                 Quantity: data.Quantity,
                 TransactionType: data.TransactionType,
                 ClientId: data?.ClientId ?? existingTransaction?.ClientId,
