@@ -25,7 +25,7 @@ export class InventoryTransactions {
     TransactionDate: Date;
 
     @Column({ type: 'int', nullable: true })
-    CurrentStock: Date;
+    CurrentStock: number;
 
     @CreateDateColumn({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
     CreatedOn: Date;

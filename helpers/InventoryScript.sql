@@ -149,3 +149,7 @@ ALTER TABLE `InventoryItems`
 ADD CONSTRAINT `InventoryItems_ibfk_4`
 FOREIGN KEY (`CategoryId`) REFERENCES `InventoryCategories` (`Id`)
 ON DELETE SET NULL;
+
+
+ALTER TABLE InventoryTransactions
+ADD COLUMN CurrentStock INT(11) DEFAULT NULL;
