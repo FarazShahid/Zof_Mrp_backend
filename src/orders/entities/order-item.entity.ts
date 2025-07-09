@@ -4,6 +4,7 @@ import { Order } from './orders.entity';
 import { Product } from '../../products/entities/product.entity';
 import { OrderItemsPrintingOption } from './order-item-printiing.option.entity';
 import { OrderItemDetails } from './order-item-details';
+import { ShipmentDetail } from 'src/shipment/entities/shipment-details';
 
 @Entity('orderitems')
 export class OrderItem extends BaseEntity {
@@ -43,4 +44,6 @@ export class OrderItem extends BaseEntity {
   @OneToMany(() => OrderItemDetails, orderItemDetail => orderItemDetail.orderItem)
   orderItemDetails: OrderItemDetails[];
 
-}
+  //New COlumn
+  @OneToMany(() => ShipmentDetail, detail => detail.OrderItem)
+  ShipmentDetails: ShipmentDetail[];}

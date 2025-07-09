@@ -24,6 +24,8 @@ import { InventoryItemsModule } from './inventory-items/inventory-items.module';
 import { InventoryTransectionsModule } from './inventory-transections/inventory-transections.module';
 import { InventoryUnitOfMeasuresModule } from './inventory-unit-measures/inventory-unit-measures.module';
 import { MediaHandlersModule } from './media-handlers/media-handlers.module';
+import { ShipmentCarrierModule } from './shipment-carrier/shipment-carrier.module';
+import { ShipmentModule } from './shipment/shipment.module';
 
 @Module({
   imports: [
@@ -73,7 +75,9 @@ import { MediaHandlersModule } from './media-handlers/media-handlers.module';
     SizeoptionsModule,
     SleeveTypeModule,
     UserModule,
-    MediaHandlersModule
+    MediaHandlersModule,
+    ShipmentCarrierModule,
+    ShipmentModule
   ],
   controllers: []
 })

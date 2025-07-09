@@ -54,4 +54,7 @@ export class Order extends BaseEntity {
   @OneToMany(() => OrderItem, orderItem => orderItem.order)
   orderItems: OrderItem[];
 
+  //New Column
+  @OneToMany(() => Shipment, shipment => shipment.Order)
+  Shipments: Shipment[];
 }
