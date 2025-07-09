@@ -1,4 +1,4 @@
-import { Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, Patch } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -6,10 +6,11 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
+import { UpdateProductStatusDto } from './dto/update-status-dto';
 
 @ControllerAuthProtector('Products', 'products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(private readonly productsService: ProductsService) { }
 
   @Post()
   @ApiBody({ type: CreateProductDto })
@@ -57,12 +58,25 @@ export class ProductsController {
     }
   }
 
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a product by id')
   remove(@Param('id') id: string) {
     try {
       return this.productsService.remove(+id);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Patch('archive-status/:id')
+  @ApiBody({ type: UpdateProductStatusDto })
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Update archived status of a product by its id')
+  updateProductStatus(@Param('id') id: string, @Body() updateProductStatus: UpdateProductStatusDto, @CurrentUser() user: any) {
+    try {
+      return this.productsService.updateProductStatus(+id, updateProductStatus, user.email);
     } catch (error) {
       throw error;
     }

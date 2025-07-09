@@ -1,9 +1,12 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { Repository, DataSource } from 'typeorm';
+import { UpdateProductStatusDto } from './dto/update-status-dto';
+import { Client } from 'src/clients/entities/client.entity';
+import { ProductPrintingOptions } from './entities/available-printing-options.entity';
 
 
 @Injectable()
@@ -12,12 +15,20 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+
+    @InjectRepository(Product)
+    private readonly printingOptionsRep: Repository<ProductPrintingOptions>,
+
+    @InjectRepository(Client)
+    private readonly clientRepository: Repository<Client>,
+
     private dataSource: DataSource
   ) { }
 
   async create(createProductDto: CreateProductDto, createdBy: string): Promise<Product> {
     try {
-
+      const client = await this.clientRepository.findOne({ where: { Id: createProductDto.ClientId } })
+      if (!client) throw new BadRequestException(`Client with ID ${createProductDto.ClientId} not found`)
       const newProduct = this.productRepository.create({
         ...createProductDto,
         CreatedBy: createdBy,
@@ -29,7 +40,8 @@ export class ProductsService {
       if (
         (createProductDto.productColors && createProductDto.productColors.length > 0) ||
         (createProductDto.productDetails && createProductDto.productDetails.length > 0) ||
-        (createProductDto.productSizes && createProductDto.productSizes.length > 0)
+        (createProductDto.productSizes && createProductDto.productSizes.length > 0) ||
+        (createProductDto.printingOptions && createProductDto.printingOptions.length > 0)
       ) {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -49,6 +61,19 @@ export class ProductsService {
                   createdBy,
                 ]
               );
+            }
+          }
+
+          if (createProductDto.printingOptions && createProductDto.printingOptions.length > 0) {
+            for (const printingOption of createProductDto.printingOptions) {
+              const newOption = queryRunner.manager.create(ProductPrintingOptions, {
+                ProductId: savedProduct.Id,
+                PrintingOptionId: printingOption.PrintingOptionId, // assuming you renamed it from just `Id` to be more descriptive
+                CreatedBy: createdBy,
+                UpdatedBy: createdBy
+              });
+
+              await queryRunner.manager.save(ProductPrintingOptions, newOption);
             }
           }
 
@@ -108,8 +133,8 @@ export class ProductsService {
         .createQueryBuilder('product')
         .leftJoin('fabrictype', 'fabric', 'fabric.Id = product.FabricTypeId')
         .leftJoin('productcategory', 'category', 'category.Id = product.ProductCategoryId')
+        .leftJoin('Client', 'client', 'client.Id = product.ClientId')
         .select([
-          'product.Id AS Id',
           'product.Name AS Name',
           'product.ProductCategoryId AS ProductCategoryId',
           'category.Type AS ProductCategoryName',
@@ -119,6 +144,9 @@ export class ProductsService {
           'fabric.GSM AS GSM',
           'product.Description AS Description',
           'product.productStatus AS productStatus',
+          'product.isArchived AS isArchived',
+          'client.Id AS ClientId',
+          'client.Name AS ClientName',
           'product.CreatedOn AS CreatedOn',
           'product.UpdatedOn AS UpdatedOn',
           'product.CreatedBy AS CreatedBy',
@@ -127,20 +155,23 @@ export class ProductsService {
         .getRawMany();
 
       return products.map(product => ({
-        Id: product.Id,
-        Name:product.Name,
-        ProductCategoryId: product.ProductCategoryId,
-        ProductCategoryName: product.ProductCategoryName,
-        FabricTypeId: product.FabricTypeId || "",
-        FabricType: product.FabricType || "",
-        FabricName: product.FabricName || "",
-        GSM: product.GSM || "",
-        Description: product.Description || "",
-        productStatus: product.productStatus || "",
-        CreatedBy: product.CreatedBy || "",
-        UpdatedBy: product.UpdatedBy || "",
-        CreatedOn: product.CreatedOn || "",
-        UpdatedOn: product.UpdatedOn || ""
+        Id: product?.Id,
+        Name: product?.Name,
+        ProductCategoryId: product?.ProductCategoryId,
+        ProductCategoryName: product?.ProductCategoryName,
+        FabricTypeId: product?.FabricTypeId || "",
+        FabricType: product?.FabricType || "",
+        FabricName: product?.FabricName || "",
+        GSM: product?.GSM || "",
+        Description: product?.Description || "",
+        productStatus: product?.productStatus || "",
+        isArchived: product?.isArchived || false,
+        ClientId: product?.ClientId || null,
+        ClientName: product?.ClientName || null,
+        CreatedBy: product?.CreatedBy || "",
+        UpdatedBy: product?.UpdatedBy || "",
+        CreatedOn: product?.CreatedOn || "",
+        UpdatedOn: product?.UpdatedOn || ""
       }));
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -153,6 +184,8 @@ export class ProductsService {
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
+
+    const printingOptions = await this.printingOptionsRep.find({ where: { ProductId: id } })
 
     const productColors = await this.dataSource.query(
       `SELECT * FROM availablecoloroptions WHERE ProductId = ?`,
@@ -174,6 +207,7 @@ export class ProductsService {
 
     return {
       ...product,
+      ...printingOptions,
       productColors,
       productDetails,
       productSizes,
@@ -185,8 +219,13 @@ export class ProductsService {
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
+    let isClientIdUpdated = product.ClientId !== updateProductDto.ClientId;
+    if (isClientIdUpdated) {
+      const newClient = await this.clientRepository.findOne({ where: { Id: updateProductDto.ClientId } })
+      if (!newClient) throw new BadRequestException(`Client with ID ${updateProductDto.ClientId} not found`)
+    }
 
-    const { productColors, productDetails, productSizes, ...productData } = updateProductDto;
+    const { productColors, productDetails, productSizes, printingOptions, ...productData } = updateProductDto;
 
     const updatedProduct = await this.productRepository.save({
       ...productData,
@@ -198,7 +237,8 @@ export class ProductsService {
     if (
       (productColors && Array.isArray(productColors)) ||
       (productDetails && Array.isArray(productDetails)) ||
-      (productSizes && Array.isArray(productSizes))
+      (productSizes && Array.isArray(productSizes)) ||
+      (printingOptions && Array.isArray(printingOptions))
     ) {
       const queryRunner = this.dataSource.createQueryRunner();
       await queryRunner.connect();
@@ -310,6 +350,31 @@ export class ProductsService {
           }
         }
 
+        if (updateProductDto.printingOptions && updateProductDto.printingOptions.length > 0) {
+          const printingOptionRepo = queryRunner.manager.getRepository(ProductPrintingOptions);
+          const existingOptions = await printingOptionRepo.find({
+            where: { ProductId: id },
+          });
+          const incomingIds = updateProductDto.printingOptions.map(o => o.PrintingOptionId);
+          const toRemove = existingOptions.filter(opt => !incomingIds.includes(opt.Id));
+
+          if (toRemove.length > 0) {
+            await printingOptionRepo.remove(toRemove);
+          }
+          const existingIds = existingOptions.map(opt => opt.Id);
+          const toAdd = updateProductDto.printingOptions.filter(opt => !existingIds.includes(opt.PrintingOptionId));
+
+          if (toAdd.length > 0) {
+            const newPrintingOptions = toAdd.map(opt =>
+              printingOptionRepo.create({
+                ProductId: id,
+              }),
+            );
+
+            await printingOptionRepo.save(newPrintingOptions);
+          }
+        }
+
         await queryRunner.commitTransaction();
       } catch (error) {
         await queryRunner.rollbackTransaction();
@@ -322,6 +387,18 @@ export class ProductsService {
     return updatedProduct;
   }
 
+  async updateProductStatus(id: number, updateProductStatusDto: UpdateProductStatusDto, updatedBy: string): Promise<any> {
+    const { isArchived } = updateProductStatusDto
+    const product = await this.productRepository.findOne({ where: { Id: id } });
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+    product.isArchived = isArchived;
+    product.UpdatedBy = updatedBy;
+    const updatedProduct = await this.productRepository.save(product)
+    if (!updatedProduct) throw new InternalServerErrorException("Can't update status. Please try again later")
+    return { message: 'Updated Successfully' }
+  }
 
   async remove(id: number): Promise<{ message: string }> {
     const queryRunner = this.dataSource.createQueryRunner();

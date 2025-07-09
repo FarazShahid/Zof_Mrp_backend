@@ -4,12 +4,16 @@ import { Repository } from 'typeorm';
 import { SizeOption } from './entities/sizeoptions.entity';
 import { CreateSizeOptionDto } from './dto/create-sizeoptions.dto';
 import { UpdateSizeOptionDto } from './dto/update-sizeoptions.dto';
+import { AvailbleSizeOptions } from 'src/products/entities/available-size-options';
 
 @Injectable()
 export class SizeoptionsService {
   constructor(
     @InjectRepository(SizeOption)
     private sizeOptionRepository: Repository<SizeOption>,
+
+    @InjectRepository(AvailbleSizeOptions)
+    private availableSizeOptionsRepo: Repository<AvailbleSizeOptions>,
   ) { }
 
   async getAllSizeOptions() {
@@ -95,11 +99,18 @@ export class SizeoptionsService {
 
   async remove(id: number): Promise<void> {
     const sizeOption = await this.sizeOptionRepository.findOne({ where: { Id: id } });
-
     if (!sizeOption) {
       throw new NotFoundException(`Size Option with ID ${id} not found`);
     }
+    const assignedToProduct = await this.isAssignedToProduct(id)
+    if (assignedToProduct) throw new BadRequestException("Cannot delete: This item is currently assigned to one or more products.");
     await this.sizeOptionRepository.delete(id);
+  }
+
+
+  async isAssignedToProduct(sizeId: number): Promise<boolean> {
+    const sizeList = await this.availableSizeOptionsRepo.find({ where: { Id: sizeId } })
+    return sizeList.length > 0
   }
 
 }
