@@ -103,15 +103,12 @@ CREATE TABLE `ShipmentBox` (
 
 -- 10/7/2025 
 
-CREATE TABLE `ProductPrintingOptions` (
-  `Id` INT NOT NULL AUTO_INCREMENT,
-  `ProductId` INT NOT NULL,
-  PRIMARY KEY (`Id`),
-  CONSTRAINT `FK_ProductPrintingOptions_Product` FOREIGN KEY (`ProductId`)
-    REFERENCES `product` (`Id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- Drop FOREIGN KEY ProductId
+ALTER TABLE `ProductPrintingOptions` 
+DROP FOREIGN KEY `FK_ProductPrintingOptions_Product`;
+
+DROP TABLE IF EXISTS `ProductPrintingOptions`;
+
 
 ALTER TABLE `product`
 ADD COLUMN `isArchived` BOOLEAN NOT NULL DEFAULT FALSE;
@@ -124,3 +121,13 @@ ADD CONSTRAINT `FK_Product_Client`
 FOREIGN KEY (`ClientId`) REFERENCES `client`(`Id`)
 ON DELETE SET NULL
 ON UPDATE CASCADE;
+
+
+CREATE TABLE `productprintingoptions` (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `ProductId` INT NOT NULL,
+  `PrintingOptionId` INT NOT NULL,
+  PRIMARY KEY (`Id`),
+  CONSTRAINT `FK_productprintingoptions_product` FOREIGN KEY (`ProductId`) REFERENCES `product`(`Id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_productprintingoptions_printingoption` FOREIGN KEY (`PrintingOptionId`) REFERENCES `printingoptions`(`Id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { ProductPrintingOptions } from 'src/products/entities/product-printing-options.entity';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 
 @Entity('printingoptions')
 export class PrintingOptions {
@@ -7,6 +8,9 @@ export class PrintingOptions {
 
   @Column()
   Type: string;
+
+  @OneToMany(() => ProductPrintingOptions, ppo => ppo.PrintingOption)
+  ProductPrintingOptions: ProductPrintingOptions[];
 
   @CreateDateColumn({ type: 'timestamp' })
   CreatedOn: Date;

@@ -40,6 +40,7 @@ class ProductPrintingOptionsDto {
   @IsInt()
   @Min(1)
   PrintingOptionId: number;
+  
 }
 
 export class ProductDetailDto {

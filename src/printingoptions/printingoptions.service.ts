@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PrintingOptions } from './entities/printingoptions.entity';
 import { CreatePrintingOptionDto, UpdatePrintingOptionDto } from './dto/printing-option.dto';
-import { ProductPrintingOptions } from 'src/products/entities/available-printing-options.entity';
+import { ProductPrintingOptions } from 'src/products/entities/product-printing-options.entity';
 
 @Injectable()
 export class PrintingoptionsService {
@@ -102,8 +102,8 @@ export class PrintingoptionsService {
     };
   }
 
-  async isAssignedToProduct(id: number): Promise<boolean> {
-    const printingOptionsList = await this.availablePrintingOptions.find({ where: { Id: id } })
+  async isAssignedToProduct(PrintingOptionId: number): Promise<boolean> {
+    const printingOptionsList = await this.availablePrintingOptions.find({ where: { PrintingOptionId: PrintingOptionId } })
     return printingOptionsList.length > 0
   }
 }

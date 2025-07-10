@@ -6,7 +6,7 @@ import { Product } from './entities/product.entity';
 import { Repository, DataSource } from 'typeorm';
 import { UpdateProductStatusDto } from './dto/update-status-dto';
 import { Client } from 'src/clients/entities/client.entity';
-import { ProductPrintingOptions } from './entities/available-printing-options.entity';
+import { ProductPrintingOptions } from './entities/product-printing-options.entity';
 
 
 @Injectable()
@@ -16,8 +16,8 @@ export class ProductsService {
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
 
-    @InjectRepository(Product)
-    private readonly printingOptionsRep: Repository<ProductPrintingOptions>,
+    @InjectRepository(ProductPrintingOptions)
+    private readonly productPrintingOptionsRepo: Repository<ProductPrintingOptions>,
 
     @InjectRepository(Client)
     private readonly clientRepository: Repository<Client>,
@@ -185,7 +185,10 @@ export class ProductsService {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
-    const printingOptions = await this.printingOptionsRep.find({ where: { ProductId: id } })
+    const printingOptions = await this.productPrintingOptionsRepo.find({
+      where: { Product: { Id: product.Id } },
+      relations: ['Product', 'PrintingOption']
+    });
 
     const productColors = await this.dataSource.query(
       `SELECT * FROM availablecoloroptions WHERE ProductId = ?`,
@@ -207,7 +210,7 @@ export class ProductsService {
 
     return {
       ...product,
-      ...printingOptions,
+      printingOptions,
       productColors,
       productDetails,
       productSizes,
@@ -356,18 +359,18 @@ export class ProductsService {
             where: { ProductId: id },
           });
           const incomingIds = updateProductDto.printingOptions.map(o => o.PrintingOptionId);
-          const toRemove = existingOptions.filter(opt => !incomingIds.includes(opt.Id));
-
+          const toRemove = existingOptions.filter(opt => !incomingIds.includes(opt.PrintingOptionId));
           if (toRemove.length > 0) {
             await printingOptionRepo.remove(toRemove);
           }
-          const existingIds = existingOptions.map(opt => opt.Id);
-          const toAdd = updateProductDto.printingOptions.filter(opt => !existingIds.includes(opt.PrintingOptionId));
+          const existingPrintingOptionIds = existingOptions.map(opt => opt.PrintingOptionId);
+          const toAdd = updateProductDto.printingOptions.filter(opt => !existingPrintingOptionIds.includes(opt.PrintingOptionId));
 
           if (toAdd.length > 0) {
             const newPrintingOptions = toAdd.map(opt =>
               printingOptionRepo.create({
                 ProductId: id,
+                PrintingOptionId: opt.PrintingOptionId,
               }),
             );
 
@@ -420,6 +423,8 @@ export class ProductsService {
 
       // Delete related available size options
       await queryRunner.query(`DELETE FROM availblesizeoptions WHERE ProductId = ?`, [id]);
+
+      await queryRunner.manager.delete(ProductPrintingOptions, { ProductId: id });
 
       // Delete the product itself
       await queryRunner.query(`DELETE FROM product WHERE Id = ?`, [id]);

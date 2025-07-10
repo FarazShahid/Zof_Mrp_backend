@@ -109,7 +109,7 @@ export class SizeoptionsService {
 
 
   async isAssignedToProduct(sizeId: number): Promise<boolean> {
-    const sizeList = await this.availableSizeOptionsRepo.find({ where: { Id: sizeId } })
+    const sizeList = await this.availableSizeOptionsRepo.find({ where: { sizeId: sizeId } })
     return sizeList.length > 0
   }
 

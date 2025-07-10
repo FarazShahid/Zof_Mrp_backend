@@ -17,7 +17,7 @@ export class ColorOptionService {
   ) { }
 
   async isAssignedToProduct(colorId: number): Promise<boolean> {
-    const colorsList = await this.availableColorOptionsRepo.find({ where: { Id: colorId } })
+    const colorsList = await this.availableColorOptionsRepo.find({ where: { colorId: colorId } })
     return colorsList.length > 0
   }
 

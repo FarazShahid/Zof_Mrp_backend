@@ -1,6 +1,6 @@
 import { Client } from "src/clients/entities/client.entity";
 import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn, CreateDateColumn, ManyToOne, JoinColumn, OneToMany } from "typeorm";
-import { ProductPrintingOptions } from "./available-printing-options.entity";
+import { ProductPrintingOptions } from "./product-printing-options.entity";
 
 @Entity('product')
 export class Product {
@@ -18,8 +18,8 @@ export class Product {
     @Column()
     ClientId: number;
 
-    @OneToMany(() => ProductPrintingOptions, po => po.Product)
-    PrintingOptions: ProductPrintingOptions[];
+    @OneToMany(() => ProductPrintingOptions, ppo => ppo.Product)
+    ProductPrintingOptions: ProductPrintingOptions[];
     
     @Column()
     ProductCategoryId: number;
