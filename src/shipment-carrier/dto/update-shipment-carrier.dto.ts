@@ -1,4 +1,4 @@
 import { PartialType } from '@nestjs/swagger';
-import { CreateShipmentCarrierDto } from './create-Shipment-carrier.dto';
+import { CreateShipmentCarrierDto } from './create-shipment-carrier.dto';
 
 export class UpdateShipmentCarrierDto extends PartialType(CreateShipmentCarrierDto) {}
