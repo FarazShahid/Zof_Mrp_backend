@@ -103,13 +103,6 @@ CREATE TABLE `ShipmentBox` (
 
 -- 10/7/2025 
 
--- Drop FOREIGN KEY ProductId
-ALTER TABLE `ProductPrintingOptions` 
-DROP FOREIGN KEY `FK_ProductPrintingOptions_Product`;
-
-DROP TABLE IF EXISTS `ProductPrintingOptions`;
-
-
 ALTER TABLE `product`
 ADD COLUMN `isArchived` BOOLEAN NOT NULL DEFAULT FALSE;
 

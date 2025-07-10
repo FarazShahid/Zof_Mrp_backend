@@ -290,10 +290,11 @@ export class inventoryTransectionService {
             switch (existingTransaction.TransactionType) {
                 case 'IN':
                 case 'Opening Balance':
+                case 'Return to Stock':
                     stock -= existingTransaction.Quantity;
                     break;
                 case 'OUT':
-                case 'PRODUCTION':
+                case 'Return to Supplier':
                 case 'Disposal':
                     stock += existingTransaction.Quantity;
                     break;
@@ -304,10 +305,11 @@ export class inventoryTransectionService {
             switch (newType) {
                 case 'IN':
                 case 'Opening Balance':
+                case 'Return to Stock':
                     stock += newQty;
                     break;
                 case 'OUT':
-                case 'PRODUCTION':
+                case 'Return to Supplier':
                 case 'Disposal':
                     stock -= newQty;
                     break;
@@ -364,10 +366,11 @@ export class inventoryTransectionService {
         switch (transaction.TransactionType) {
             case 'IN':
             case 'Opening Balance':
+            case 'Return to Stock':
                 updatedStock -= transaction.Quantity;
                 break;
             case 'OUT':
-            case 'PRODUCTION':
+            case 'Return to Supplier':
             case 'Disposal':
                 updatedStock += transaction.Quantity;
                 break;
@@ -396,10 +399,11 @@ export class inventoryTransectionService {
         switch (type) {
             case 'IN':
             case 'Opening Balance':
+            case 'Return to Stock':
                 return stock + qty;
             case 'OUT':
             case 'Disposal':
-            case 'PRODUCTION':
+            case 'Return to Supplier':
                 return stock - qty;
             default:
                 return stock;
