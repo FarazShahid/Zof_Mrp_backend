@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ShipmentCarrierController } from './Shipment-carrier.controller';
+import { ShipmentCarrierController } from './shipment-carrier.controller';
 import { ShipmentCarrierService } from './shipment-carrier.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ShipmentCarrier } from './entities/shipment-carrier.entity';
