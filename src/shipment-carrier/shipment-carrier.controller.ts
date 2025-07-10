@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Delete, HttpCode, HttpStatus, Put } from '@nestjs/common';
-import { CreateShipmentCarrierDto } from './dto/create-Shipment-carrier.dto';
-import { UpdateShipmentCarrierDto } from './dto/update-Shipment-carrier.dto';
+import { CreateShipmentCarrierDto } from './dto/create-shipment-carrier.dto';
+import { UpdateShipmentCarrierDto } from './dto/update-shipment-carrier.dto';
 import { ShipmentCarrierService } from './shipment-carrier.service';
 import { ApiBody } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
