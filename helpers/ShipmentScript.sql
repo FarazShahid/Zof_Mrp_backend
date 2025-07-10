@@ -99,3 +99,28 @@ CREATE TABLE `ShipmentBox` (
   KEY `ShipmentId_idx` (`ShipmentId`),
   CONSTRAINT `fk_box_shipment` FOREIGN KEY (`ShipmentId`) REFERENCES `Shipment`(`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- 10/7/2025 
+
+CREATE TABLE `ProductPrintingOptions` (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `ProductId` INT NOT NULL,
+  PRIMARY KEY (`Id`),
+  CONSTRAINT `FK_ProductPrintingOptions_Product` FOREIGN KEY (`ProductId`)
+    REFERENCES `product` (`Id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE `product`
+ADD COLUMN `isArchived` BOOLEAN NOT NULL DEFAULT FALSE;
+
+ALTER TABLE `product`
+ADD COLUMN `ClientId` INT DEFAULT NULL;
+
+ALTER TABLE `product`
+ADD CONSTRAINT `FK_Product_Client`
+FOREIGN KEY (`ClientId`) REFERENCES `client`(`Id`)
+ON DELETE SET NULL
+ON UPDATE CASCADE;
