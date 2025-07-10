@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { CreateShipmentCarrierDto } from './dto/create-Shipment-carrier.dto';
-import { UpdateShipmentCarrierDto } from './dto/update-Shipment-carrier.dto';
+import { CreateShipmentCarrierDto } from './dto/create-shipment-carrier.dto';
+import { UpdateShipmentCarrierDto } from './dto/update-shipment-carrier.dto';
 import { ShipmentCarrier } from './entities/shipment-carrier.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
