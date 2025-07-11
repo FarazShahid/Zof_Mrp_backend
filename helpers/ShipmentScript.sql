@@ -124,3 +124,6 @@ CREATE TABLE `productprintingoptions` (
   CONSTRAINT `FK_productprintingoptions_product` FOREIGN KEY (`ProductId`) REFERENCES `product`(`Id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_productprintingoptions_printingoption` FOREIGN KEY (`PrintingOptionId`) REFERENCES `printingoptions`(`Id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE `Shipment`
+ADD COLUMN `TrackingId` VARCHAR(255) NOT NULL,

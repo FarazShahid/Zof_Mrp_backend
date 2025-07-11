@@ -77,6 +77,7 @@ export class inventoryTransectionService {
             Stock: newStock,
             UpdatedBy: createdBy,
         });
+        
 
         const transection = this.inventoryTransactionsRepository.create({
             ...data,
@@ -96,6 +97,7 @@ export class inventoryTransectionService {
         const clientIds = [
             ...new Set(transactions.map((tx) => tx.ClientId).filter(Boolean)),
         ];
+        
         const orderIds = [
             ...new Set(transactions.map((tx) => tx.OrderId).filter(Boolean)),
         ];

@@ -37,6 +37,7 @@ export class ShipmentService {
   async create(createShipmentDto: CreateShipmentDto, createdBy: any) {
     const {
       ShipmentCode,
+      TrackingId,
       OrderNumber,
       ShipmentCarrierId,
       ShipmentDate,
@@ -76,6 +77,7 @@ export class ShipmentService {
 
     const shipment = this.shipmentRepository.create({
       ShipmentCode,
+      TrackingId,
       ShipmentCost,
       TotalWeight,
       OrderNumber,
@@ -132,6 +134,7 @@ export class ShipmentService {
     return shipments.map((shipmentItem) => ({
       Id: shipmentItem.Id,
       ShipmentCode: shipmentItem.ShipmentCode,
+      TrackingId: shipmentItem.TrackingId,
       ShipmentDate: shipmentItem.ShipmentDate,
       ShipmentCost: shipmentItem.ShipmentCost,
       WeightUnit: shipmentItem.WeightUnit,
@@ -171,6 +174,7 @@ export class ShipmentService {
     return await this.dataSource.transaction(async manager => {
       const {
         ShipmentCode,
+        TrackingId,
         OrderNumber,
         ShipmentCarrierId,
         ShipmentDate,
@@ -205,6 +209,7 @@ export class ShipmentService {
       // Update simple fields
       if (OrderNumber !== undefined) existingShipment.OrderNumber = OrderNumber;
       if (ShipmentCode !== undefined) existingShipment.ShipmentCode = ShipmentCode;
+      if (TrackingId !== undefined) existingShipment.TrackingId = TrackingId;
       if (ShipmentDate !== undefined) existingShipment.ShipmentDate = new Date(ShipmentDate);
       if (ShipmentCost !== undefined) existingShipment.ShipmentCost = ShipmentCost;
       if (TotalWeight !== undefined) existingShipment.TotalWeight = TotalWeight;

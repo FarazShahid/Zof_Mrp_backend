@@ -1,15 +1,19 @@
-import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateShipmentCarrierDto } from './dto/create-shipment-carrier.dto';
 import { UpdateShipmentCarrierDto } from './dto/update-shipment-carrier.dto';
 import { ShipmentCarrier } from './entities/shipment-carrier.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Shipment } from 'src/shipment/entities/shipment.entity';
 
 @Injectable()
 export class ShipmentCarrierService {
   constructor(
     @InjectRepository(ShipmentCarrier)
-    private readonly carrierRepo: Repository<ShipmentCarrier>
+    private readonly carrierRepo: Repository<ShipmentCarrier>,
+
+    @InjectRepository(Shipment)
+    private readonly shipmentRepo: Repository<Shipment>
   ) { }
   async create(createShipmentCarrierDto: CreateShipmentCarrierDto, createdBy: any) {
     const existingCareer = await this.carrierRepo.findOne({ where: { Name: createShipmentCarrierDto.Name } })
@@ -60,6 +64,17 @@ export class ShipmentCarrierService {
     if (!carrier) {
       throw new NotFoundException(`Carrier with ID ${id} not found`);
     }
+
+    const relatedShipment= await this.shipmentRepo.findOne({
+      where: {ShipmentCarrierId: id}
+    })
+
+    if(relatedShipment){
+      throw new BadRequestException(
+      'Cannot delete carrier. Shipments are still associated.'
+    );
+    }
+
     await this.carrierRepo.delete(id);
     return { message: `Carrier with ID ${id} has been deleted` };
   }
