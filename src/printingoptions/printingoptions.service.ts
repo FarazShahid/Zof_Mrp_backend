@@ -3,13 +3,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PrintingOptions } from './entities/printingoptions.entity';
 import { CreatePrintingOptionDto, UpdatePrintingOptionDto } from './dto/printing-option.dto';
+import { ProductPrintingOptions } from 'src/products/entities/product-printing-options.entity';
 
 @Injectable()
 export class PrintingoptionsService {
   constructor(
     @InjectRepository(PrintingOptions)
-    private printingOptionsRepository: Repository<PrintingOptions>
-  ) {}
+    private printingOptionsRepository: Repository<PrintingOptions>,
+
+    @InjectRepository(ProductPrintingOptions)
+    private availablePrintingOptions: Repository<ProductPrintingOptions>
+
+  ) { }
+
 
   async getAllPrintingOptions() {
     const printingOptions = await this.printingOptionsRepository.find();
@@ -61,6 +67,8 @@ export class PrintingoptionsService {
     if (!printingOption) {
       throw new NotFoundException(`Printing Option with ID ${id} not found`);
     }
+    const assignedToProduct = await this.isAssignedToProduct(id)
+    if (assignedToProduct) throw new BadRequestException("Cannot delete: This item is currently assigned to one or more products.");
 
     await this.printingOptionsRepository.delete(id);
   }
@@ -92,5 +100,10 @@ export class PrintingoptionsService {
       UpdatedOn: savedPrintingOption.UpdatedOn,
       UpdatedBy: savedPrintingOption.UpdatedBy
     };
+  }
+
+  async isAssignedToProduct(PrintingOptionId: number): Promise<boolean> {
+    const printingOptionsList = await this.availablePrintingOptions.find({ where: { PrintingOptionId: PrintingOptionId } })
+    return printingOptionsList.length > 0
   }
 }

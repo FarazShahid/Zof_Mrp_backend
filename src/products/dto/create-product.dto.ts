@@ -33,6 +33,16 @@ class ProductSizesDto {
   sizeId: number;
 }
 
+class ProductPrintingOptionsDto {
+  @CommonApiProperty('Printing Option Id', 1)
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
+  PrintingOptionId: number;
+  
+}
+
 export class ProductDetailDto {
   @CommonApiProperty('Product Detail Id', 1)
   @IsOptional()
@@ -59,6 +69,13 @@ export class CreateProductDto {
   @IsInt()
   @Min(1)
   ProductCategoryId: number;
+
+  @CommonApiProperty('Client Id', 1)
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
+  ClientId: number;
 
   @CommonApiProperty('Product name', 'T-Shirt', true)
   @IsString()
@@ -91,6 +108,14 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => ProductColorDto)
   productColors?: ProductColorDto[];
+
+  @ApiProperty({ type: [ProductPrintingOptionsDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductPrintingOptionsDto)
+  printingOptions?: ProductPrintingOptionsDto[];
+
 
   @ApiProperty({ type: [ProductDetailDto] })
   @IsArray()

@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn, CreateDateColumn } from "typeorm";
+import { Client } from "src/clients/entities/client.entity";
+import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn, CreateDateColumn, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import { ProductPrintingOptions } from "./product-printing-options.entity";
 
 @Entity('product')
 export class Product {
@@ -9,8 +11,21 @@ export class Product {
     @Column()
     Name: string;
 
+    @ManyToOne(() => Client, client => client.Products)
+    @JoinColumn({ name: 'ClientId' })
+    Client: Client;
+    
+    @Column()
+    ClientId: number;
+
+    @OneToMany(() => ProductPrintingOptions, ppo => ppo.Product)
+    ProductPrintingOptions: ProductPrintingOptions[];
+    
     @Column()
     ProductCategoryId: number;
+
+    @Column()
+    isArchived: boolean;
 
     @Column()
     FabricTypeId: number;

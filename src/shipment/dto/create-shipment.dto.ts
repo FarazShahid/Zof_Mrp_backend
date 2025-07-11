@@ -69,6 +69,11 @@ export class CreateShipmentDto {
   @IsNotEmpty()
   ShipmentCode: string;
 
+  @CommonApiProperty('Tracking Id', 'TD-534-T534')
+  @IsString()
+  @IsNotEmpty()
+  TrackingId:  string;
+
   @CommonApiProperty('Order Number', 'CTA-158')
   @IsString()
   OrderNumber: string;
@@ -132,6 +137,7 @@ export class CreateShipmentDto {
 export interface ShipmentResponseDto {
   Id: number;
   ShipmentCode: string;
+  TrackingId: string;
   ShipmentDate: string | Date;
   ShipmentCost: number;
   WeightUnit: string;

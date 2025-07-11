@@ -153,3 +153,7 @@ ON DELETE SET NULL;
 
 ALTER TABLE InventoryTransactions
 ADD COLUMN CurrentStock INT(11) DEFAULT NULL;
+
+
+ALTER TABLE InventoryTransactions
+MODIFY COLUMN TransactionType ENUM('IN', 'OUT', 'Opening Balance', 'Return to Stock', 'Return to Supplier', 'Disposal') NOT NULL;

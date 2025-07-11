@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Product } from "src/products/entities/product.entity";
+import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
 
 @Entity('client')
 export class Client {
@@ -20,7 +21,7 @@ export class Client {
 
     @Column({ length: 255 })
     POCEmail: string;
-    
+
     @Column({ length: 255 })
     Website: string;
 
@@ -45,12 +46,15 @@ export class Client {
     @Column()
     ClientStatusId: number;
 
+    @OneToMany(() => Product, product => product.Client)
+    Products: Product[];
+
     @CreateDateColumn({ type: 'timestamp' })
     CreatedOn: string;
 
     @Column({ length: 255, nullable: true })
     CreatedBy: string;
-    
+
     @UpdateDateColumn({ type: 'timestamp' })
     UpdatedOn: string;
 

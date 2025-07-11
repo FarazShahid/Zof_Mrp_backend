@@ -40,6 +40,9 @@ export class Shipment {
     ShipmentCode: string;
 
     @Column()
+    TrackingId: string;
+
+    @Column()
     OrderNumber: string;
 
     // @Column()
