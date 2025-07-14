@@ -455,7 +455,7 @@ export class ProductsService {
       const availablePrintingOptions = await this.productRepository
         .createQueryBuilder('product')
         .leftJoin('productprintingoptions', 'ppo', 'ppo.ProductId = product.Id')
-        .leftJoin('PrintingOption', 'po', 'po.Id = ppo.po.Id')
+        .leftJoin('printingoptions', 'po', 'po.Id = ppo.PrintingOptionId')
         .select([
           'ppo.Id AS Id',
           'po.Type AS Type',
@@ -473,7 +473,7 @@ export class ProductsService {
         Type: printingOption.Type,
       }));
     } catch (error) {
-      console.error("Error fetching available colors:", error);
+      console.error("Error fetching available printing options:", error);
       return [];
     }
   }
