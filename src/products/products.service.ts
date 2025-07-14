@@ -127,14 +127,15 @@ export class ProductsService {
     }
   }
 
-  async getAllProducts(): Promise<any[]> {
+  async getAllProducts(filter?: string | undefined | null): Promise<any[]> {
     try {
-      const products = await this.productRepository
+      let query = this.productRepository
         .createQueryBuilder('product')
         .leftJoin('fabrictype', 'fabric', 'fabric.Id = product.FabricTypeId')
         .leftJoin('productcategory', 'category', 'category.Id = product.ProductCategoryId')
         .leftJoin('Client', 'client', 'client.Id = product.ClientId')
         .select([
+          'product.Id AS Id',
           'product.Name AS Name',
           'product.ProductCategoryId AS ProductCategoryId',
           'category.Type AS ProductCategoryName',
@@ -152,7 +153,15 @@ export class ProductsService {
           'product.CreatedBy AS CreatedBy',
           'product.UpdatedBy AS UpdatedBy'
         ])
-        .getRawMany();
+      query.orderBy('product.CreatedOn', 'DESC');
+
+      if (filter === "archive") {
+        query.where('product.isArchived = :isArchived', { isArchived: true });
+      } else if (filter === "unarchive") {
+        query.where('product.isArchived = :isArchived', { isArchived: false });
+      }
+
+      const products = await query.getRawMany();
 
       return products.map(product => ({
         Id: product?.Id,
@@ -165,7 +174,7 @@ export class ProductsService {
         GSM: product?.GSM || "",
         Description: product?.Description || "",
         productStatus: product?.productStatus || "",
-        isArchived: product?.isArchived || false,
+        isArchived: Boolean(product?.isArchived) || false,
         ClientId: product?.ClientId || null,
         ClientName: product?.ClientName || null,
         CreatedBy: product?.CreatedBy || "",
@@ -441,6 +450,34 @@ export class ProductsService {
   }
 
 
+  async getAvailablePrintingOptionsByProductId(productId: number): Promise<any[]> {
+    try {
+      const availablePrintingOptions = await this.productRepository
+        .createQueryBuilder('product')
+        .leftJoin('productprintingoptions', 'ppo', 'ppo.ProductId = product.Id')
+        .leftJoin('PrintingOption', 'po', 'po.Id = ppo.po.Id')
+        .select([
+          'ppo.Id AS Id',
+          'po.Type AS Type',
+        ])
+        .where('product.Id = :productId', { productId })
+        .andWhere('ppo.Id IS NOT NULL')
+        .getRawMany();
+
+      if (!availablePrintingOptions || availablePrintingOptions.length === 0) {
+        return [];
+      }
+
+      return availablePrintingOptions.map((printingOption) => ({
+        Id: printingOption.Id,
+        Type: printingOption.Type,
+      }));
+    } catch (error) {
+      console.error("Error fetching available colors:", error);
+      return [];
+    }
+  }
+  
   async getAvailableColorsByProductId(productId: number): Promise<any[]> {
     try {
       const availableColors = await this.productRepository

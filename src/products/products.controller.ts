@@ -1,4 +1,4 @@
-import { Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, Patch } from '@nestjs/common';
+import { Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, Patch, Query } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -7,6 +7,7 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
 import { UpdateProductStatusDto } from './dto/update-status-dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @ControllerAuthProtector('Products', 'products')
 export class ProductsController {
@@ -27,13 +28,17 @@ export class ProductsController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all products')
-  findAll() {
+  @ApiQuery({ name: 'filter', required: false, description: 'Filter by unarchive products' })
+  findAll(
+    @Query('filter') filter?: string,
+  ) {
     try {
-      return this.productsService.getAllProducts();
+      return this.productsService.getAllProducts(filter);
     } catch (error) {
       throw error;
     }
   }
+
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
@@ -77,6 +82,17 @@ export class ProductsController {
   updateProductStatus(@Param('id') id: string, @Body() updateProductStatus: UpdateProductStatusDto, @CurrentUser() user: any) {
     try {
       return this.productsService.updateProductStatus(+id, updateProductStatus, user.email);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('available-printing-options/:id')
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get available printing options by product id')
+  async getAvailablePrintingOptionsByProductId(@Param('id') productId: number): Promise<any> {
+    try {
+      return this.productsService.getAvailablePrintingOptionsByProductId(productId);
     } catch (error) {
       throw error;
     }
