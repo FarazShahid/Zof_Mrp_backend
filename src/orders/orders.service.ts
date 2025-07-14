@@ -47,9 +47,14 @@ export class OrdersService {
       throw new NotFoundException(`Client with ID ${ClientId} not found`);
     }
 
-    const event = await this.eventRepository.findOne({ where: { Id: OrderEventId } });
-    if (!event) {
-      throw new NotFoundException(`Event with ID ${OrderEventId} not found`);
+    if (createOrderDto.OrderEventId) {
+      const event = await this.eventRepository.findOne({ where: { Id: OrderEventId } });
+      if (!event) {
+        throw new NotFoundException(`Event with ID ${OrderEventId} not found`);
+      }
+    }
+    else {
+      createOrderDto.OrderEventId = null
     }
 
     const productIds = items.map(item => item.ProductId);
@@ -69,12 +74,12 @@ export class OrdersService {
     ];
 
     if (printingOptionIds.length > 0) {
-      console.log(printingOptionIds);
       const printingOptions = await this.printingOptionRepository.find({ where: { Id: In(printingOptionIds) } });
       if (printingOptions.length !== printingOptionIds.length) {
         throw new NotFoundException('One or more printing options not found');
       }
     }
+
 
     const newOrder = this.orderRepository.create({
       ClientId: ClientId,
@@ -102,7 +107,7 @@ export class OrdersService {
       const orderItems = items.map((item) => ({
         OrderId: savedOrder.Id,
         ProductId: item.ProductId,
-        Description: item.Description,
+        Description: item?.Description ?? null,
         OrderItemPriority: item.OrderItemPriority || 0,
         ImageId: item.ImageId,
         FileId: item.FileId,
@@ -119,7 +124,7 @@ export class OrdersService {
         if (Array.isArray(item.orderItemDetails) && item.ProductId) {
           const orderItemDetails = item.orderItemDetails.map((option) => ({
             OrderItemId: savedOrderItems[i].Id,
-            ColorOptionId: option.ColorOptionId,
+            ColorOptionId: option?.ColorOptionId ?? null,
             Quantity: option.Quantity,
             Priority: option.Priority,
             SizeOption: option.SizeOption,
@@ -181,7 +186,7 @@ export class OrdersService {
         Id: order.Id,
         ClientId: order.ClientId,
         ClientName: order.ClientName,
-        OrderEventId: order.OrderEventId,
+        OrderEventId: order?.OrderEventId ?? null,
         EventName: order.EventName,
         Description: order.Description,
         OrderStatusId: order.OrderStatusId,
@@ -253,7 +258,7 @@ export class OrdersService {
       OrderNumber: order.OrderNumber,
       ExternalOrderId: order.ExternalOrderId,
       Description: order.order_Description,
-      OrderEventId: order.order_OrderEventId,
+      OrderEventId: order?.order_OrderEventId ?? null,
       ClientId: order.order_ClientId,
       OrderPriority: order.OrderPriority,
       OrderStatusId: order.order_OrderStatusId,
@@ -284,6 +289,10 @@ export class OrdersService {
       if (!event) {
         throw new NotFoundException(`Event with ID ${updateData.OrderEventId} not found`);
       }
+    }
+    else {
+      updateOrderDto.OrderEventId = null
+      updateData.OrderEventId = null
     }
 
     if (Array.isArray(items) && items.length > 0) {
@@ -328,7 +337,7 @@ export class OrdersService {
       const newOrderItems = items.map((item) => ({
         OrderId: id,
         ProductId: item.ProductId,
-        Description: item.Description,
+        Description: item?.Description ?? null,
         ImageId: item.ImageId,
         FileId: item.FileId,
         VideoId: item.VideoId,
@@ -336,7 +345,7 @@ export class OrdersService {
         UpdatedBy: updatedBy,
         CreatedOn: new Date(),
         UpdatedOn: new Date(),
-        OrderItemPriority: item.OrderItemPriority,
+        OrderItemPriority: item?.OrderItemPriority || 0,
       }));
 
       const savedOrderItems = await this.orderItemRepository.save(newOrderItems);
@@ -357,7 +366,7 @@ export class OrdersService {
         if (Array.isArray(item.orderItemDetails) && item.ProductId) {
           const orderItemDetails = item.orderItemDetails.map((option) => ({
             OrderItemId: savedOrderItems[i].Id,
-            ColorOptionId: option.ColorOptionId,
+            ColorOptionId: option?.ColorOptionId ?? null,
             Quantity: option.Quantity,
             Priority: option.Priority,
             SizeOption: option.SizeOption,
@@ -380,7 +389,7 @@ export class OrdersService {
     const updatedOrder = await this.orderRepository.save({
       ...order,
       ClientId: updateData.ClientId,
-      OrderEventId: updateData.OrderEventId,
+      OrderEventId: updateData?.OrderEventId ?? null,
       Description: updateData.Description,
       Deadline: updateData.Deadline,
       OrderPriority: updateData.OrderPriority,
@@ -516,8 +525,6 @@ export class OrdersService {
       const processedItems = [];
       const itemMap = new Map();
 
-      console
-
       for (const item of orderItemsData) {
         if (!itemMap.has(item.Id)) {
           const newItem = {
@@ -528,11 +535,11 @@ export class OrdersService {
             ProductFabricType: item.ProductFabricType,
             ProductFabricName: item.ProductFabricName,
             ProductFabricGSM: item.ProductFabricGSM,
-            Description: item.Description,
+            Description: item?.Description ?? null,
             OrderNumber: orderData.OrderNumber,
             OrderName: orderData.OrderName,
             ExternalOrderId: orderData.ExternalOrderId,
-            OrderItemPriority: item.OrderItemPriority,
+            OrderItemPriority: item?.OrderItemPriority || 0,
             ImageId: item.ImageId,
             ImagePath: item.ImagePath,
             FileId: item.FileId,
@@ -549,18 +556,18 @@ export class OrdersService {
 
         const currentItem = itemMap.get(item.Id);
 
-        if (item.PrintingOptionId && !currentItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
+        if (currentItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
           currentItem.printingOptions.push({
-            PrintingOptionId: item.PrintingOptionId,
-            PrintingOptionName: item.PrintingOptionName,
+            PrintingOptionId: item.PrintingOptionId??null,
+            PrintingOptionName: item.PrintingOptionName??"Unknown printing option",
             Description: item.PrintingOptionDescription
           });
         }
 
-        if (item.ColorOptionId && !currentItem.orderItemDetails.some(od => od.ColorOptionId === item.ColorOptionId)) {
+        if (!currentItem.orderItemDetails.some(od => od.ColorOptionId === item.ColorOptionId)) {
           currentItem.orderItemDetails.push({
-            ColorOptionId: item.ColorOptionId,
-            ColorOptionName: item.ColorOptionName || 'Unknown Color',
+            ColorOptionId: item?.ColorOptionId ?? null,
+            ColorOptionName: item?.ColorOptionName || 'Unknown Color',
             HexCode: item.ColorHexCode,
             Quantity: item.Quantity,
             Priority: item.Priority,
@@ -576,7 +583,7 @@ export class OrdersService {
         Id: orderData.Id,
         ClientId: orderData.ClientId,
         ClientName: orderData.ClientName || 'Unknown Client',
-        OrderEventId: orderData.OrderEventId,
+        OrderEventId: orderData?.OrderEventId ?? null,
         EventName: orderData.EventName || 'Unknown Event',
         OrderPriority: orderData.OrderPriority,
         Description: orderData.Description,
@@ -651,7 +658,7 @@ export class OrdersService {
       const existingItem = acc.find(orderItem => orderItem.Id === item.Id);
 
       if (existingItem) {
-        if (item.PrintingOptionId && !existingItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
+        if (!existingItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
           existingItem.printingOptions.push({
             PrintingOptionId: item.PrintingOptionId,
             PrintingOptionName: item.PrintingOptionName,
@@ -659,11 +666,11 @@ export class OrdersService {
           });
         }
 
-        if (item.ColorOptionId && !existingItem.colors.some(c => c.ColorOptionId === item.ColorOptionId)) {
+        if (!existingItem.colors.some(c => c.ColorOptionId === item.ColorOptionId)) {
           existingItem.colors.push({
-            ColorOptionId: item.ColorOptionId,
-            ColorName: item.ColorName,
-            HexCode: item.ColorHexCode,
+            ColorOptionId: item?.ColorOptionId ?? null,
+            ColorName: item?.ColorName ?? 'Unknown color',
+            HexCode: item?.ColorHexCode ?? null,
             Quantity: item.OrderItemDetailQuanity,
             Priority: item.OrderItemDetailPriority,
             SizeOptionId: item.SizeOptionId,
@@ -678,7 +685,7 @@ export class OrdersService {
           OrderId: item.OrderId,
           ProductId: item.ProductId,
           ProductName: item.ProductName || '',
-          Description: item.Description,
+          Description: item?.Description ?? null,
           OrderItemPriority: item.OrderItemPriority || 0,
           ImageId: item.ImageId,
           ImagePath: item.ImagePath,
@@ -697,12 +704,12 @@ export class OrdersService {
               },
             ]
             : [],
-          colors: item.ColorOptionId
+          colors: item?.ColorOptionId
             ? [
               {
-                ColorOptionId: item.ColorOptionId,
-                ColorName: item.ColorName,
-                HexCode: item.ColorHexCode,
+                ColorOptionId: item?.ColorOptionId ?? null,
+                ColorName: item?.ColorName ?? 'Unknown color',
+                HexCode: item?.ColorHexCode ?? null,
                 Quantity: item.OrderItemDetailQuanity,
                 Priority: item.OrderItemDetailPriority,
                 SizeOptionId: item.SizeOptionId,

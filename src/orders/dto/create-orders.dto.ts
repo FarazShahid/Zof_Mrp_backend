@@ -1,12 +1,12 @@
-import { 
-  IsArray, 
-  IsOptional, 
-  IsString, 
-  IsNumber, 
-  IsNotEmpty, 
-  IsDateString, 
-  ValidateNested, 
-  Min, 
+import {
+  IsArray,
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsNotEmpty,
+  IsDateString,
+  ValidateNested,
+  Min,
   IsInt,
   ArrayMinSize,
   Max,
@@ -19,7 +19,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class OrderItemDetailDto {
   @CommonApiProperty('Color Option Id', 'Color Option Id')
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   @IsInt()
   @Min(1)
   ColorOptionId: number;
@@ -85,6 +85,7 @@ export class OrderItemDto {
   @IsInt()
   @Min(0)
   @Max(999)
+  @IsOptional()
   OrderItemPriority: number;
 
   @CommonApiProperty('Image Id', '1')
@@ -135,7 +136,7 @@ export class CreateOrderDto {
 
   @CommonApiProperty('Order Event Id', '1')
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   @IsInt()
   @Min(1)
   OrderEventId: number;
@@ -147,10 +148,9 @@ export class CreateOrderDto {
   Description: string;
 
   @CommonApiProperty('Order Deadline', '27-08-2024')
-  @IsDateString()
   @IsNotEmpty()
   Deadline: string;
-  
+
   @CommonApiProperty('Order Priority', '1')
   @IsNumber()
   @IsInt()
@@ -175,7 +175,7 @@ export class CreateOrderDto {
   @IsOptional()
   @MaxLength(100)
   ExternalOrderId: string;
-  
+
   @ApiProperty({ type: [OrderItemDto] })
   @IsArray()
   @ArrayMinSize(1, { message: 'At least one order item is required' })
