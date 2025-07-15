@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,10 +13,8 @@ import { UpdateProductStatusDto } from './dto/update-status-dto';
 import { Client } from 'src/clients/entities/client.entity';
 import { ProductPrintingOptions } from './entities/product-printing-options.entity';
 
-
 @Injectable()
 export class ProductsService {
-
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
@@ -22,13 +25,23 @@ export class ProductsService {
     @InjectRepository(Client)
     private readonly clientRepository: Repository<Client>,
 
-    private dataSource: DataSource
-  ) { }
+    private dataSource: DataSource,
+  ) {}
 
-  async create(createProductDto: CreateProductDto, createdBy: string): Promise<Product> {
+  async create(
+    createProductDto: CreateProductDto,
+    createdBy: string,
+  ): Promise<Product> {
     try {
-      const client = await this.clientRepository.findOne({ where: { Id: createProductDto.ClientId } })
-      if (!client) throw new BadRequestException(`Client with ID ${createProductDto.ClientId} not found`)
+      const client = await this.clientRepository.findOne({
+        where: { Id: createProductDto.ClientId },
+      });
+
+      if (!client)
+        throw new BadRequestException(
+          `Client with ID ${createProductDto.ClientId} not found`,
+        );
+
       const newProduct = this.productRepository.create({
         ...createProductDto,
         CreatedBy: createdBy,
@@ -37,84 +50,96 @@ export class ProductsService {
 
       const savedProduct = await this.productRepository.save(newProduct);
 
-      if (
-        (createProductDto.productColors && createProductDto.productColors.length > 0) ||
-        (createProductDto.productDetails && createProductDto.productDetails.length > 0) ||
-        (createProductDto.productSizes && createProductDto.productSizes.length > 0) ||
-        (createProductDto.printingOptions && createProductDto.printingOptions.length > 0)
-      ) {
+      const hasRelations =
+        (createProductDto.productColors?.length ?? 0) > 0 ||
+        (createProductDto.productDetails?.length ?? 0) > 0 ||
+        (createProductDto.productSizes?.length ?? 0) > 0 ||
+        (createProductDto.printingOptions?.length ?? 0) > 0;
+
+      if (hasRelations) {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
         try {
-          if (createProductDto.productColors && createProductDto.productColors.length > 0) {
-            for (const color of createProductDto.productColors) {
-              await queryRunner.query(
-                `INSERT INTO availablecoloroptions (colorId, ProductId, ImageId, CreatedBy, UpdatedBy) 
-                 VALUES (?, ?, ?, ?, ?)`,
-                [
-                  color.colorId,
-                  savedProduct.Id,
-                  color.ImageId,
-                  createdBy,
-                  createdBy,
-                ]
-              );
-            }
+          // Insert productColors
+          const validColors = (createProductDto.productColors ?? []).filter(
+            (color) => color.colorId && color.ImageId,
+          );
+
+          for (const color of validColors) {
+            await queryRunner.query(
+              `INSERT INTO availablecoloroptions (colorId, ProductId, ImageId, CreatedBy, UpdatedBy) 
+              VALUES (?, ?, ?, ?, ?)`,
+              [
+                color.colorId,
+                savedProduct.Id,
+                color.ImageId,
+                createdBy,
+                createdBy,
+              ],
+            );
           }
 
-          if (createProductDto.printingOptions && createProductDto.printingOptions.length > 0) {
-            for (const printingOption of createProductDto.printingOptions) {
-              const newOption = queryRunner.manager.create(ProductPrintingOptions, {
+          // Insert printingOptions
+
+          const validOptions = (createProductDto.printingOptions ?? []).filter(
+            (option) => option.PrintingOptionId,
+          );
+
+          for (const option of validOptions) {
+            const newOption = queryRunner.manager.create(
+              ProductPrintingOptions,
+              {
                 ProductId: savedProduct.Id,
-                PrintingOptionId: printingOption.PrintingOptionId, // assuming you renamed it from just `Id` to be more descriptive
+                PrintingOptionId: option.PrintingOptionId,
                 CreatedBy: createdBy,
-                UpdatedBy: createdBy
-              });
+                UpdatedBy: createdBy,
+              },
+            );
 
-              await queryRunner.manager.save(ProductPrintingOptions, newOption);
-            }
+            await queryRunner.manager.save(ProductPrintingOptions, newOption);
           }
 
-          if (createProductDto.productDetails && createProductDto.productDetails.length > 0) {
-            for (const detail of createProductDto.productDetails) {
-              await queryRunner.query(
-                `INSERT INTO productdetails 
-                (ProductId, ProductCutOptionId, CreatedBy, UpdatedBy, SleeveTypeId) 
-                VALUES (?, ?, ?, ?, ?)`,
-                [
-                  savedProduct.Id,
-                  detail.ProductCutOptionId,
-                  createdBy,
-                  createdBy,
-                  detail.SleeveTypeId,
-                ]
-              );
-            }
+          // Insert productDetails
+          const validDetails = (createProductDto.productDetails ?? []).filter(
+            (detail) => detail.ProductCutOptionId && detail.SleeveTypeId,
+          );
+
+          for (const detail of validDetails) {
+            await queryRunner.query(
+              `INSERT INTO productdetails 
+             (ProductId, ProductCutOptionId, CreatedBy, UpdatedBy, SleeveTypeId) 
+             VALUES (?, ?, ?, ?, ?)`,
+              [
+                savedProduct.Id,
+                detail.ProductCutOptionId,
+                createdBy,
+                createdBy,
+                detail.SleeveTypeId,
+              ],
+            );
           }
 
-          const tempListOfProduct = createProductDto.productSizes.map(e => e.sizeId)
+          // ✅ Insert productSizes
+          const sizeIds = (createProductDto.productSizes ?? [])
+            .map((s) => s.sizeId)
+            .filter((id) => id);
 
-          if (tempListOfProduct.length > 0) {
-            for (const size of tempListOfProduct) {
-              console.log(size);
-              await queryRunner.query(
-                `INSERT INTO availblesizeoptions 
-                (sizeId, ProductId) 
-                VALUES (?, ?)`,
-                [
-                  size,
-                  savedProduct.Id
-                ]
-              );
-            }
+          for (const sizeId of sizeIds) {
+            await queryRunner.query(
+              `INSERT INTO availblesizeoptions (sizeId, ProductId) VALUES (?, ?)`,
+              [sizeId, savedProduct.Id],
+            );
           }
 
           await queryRunner.commitTransaction();
         } catch (error) {
           await queryRunner.rollbackTransaction();
-          throw new Error('Failed to insert color options and/or product details');
+          console.error('Insert transaction error:', error);
+          throw new BadRequestException(
+            error.message || 'Failed to insert product relations',
+          );
         } finally {
           await queryRunner.release();
         }
@@ -132,7 +157,11 @@ export class ProductsService {
       let query = this.productRepository
         .createQueryBuilder('product')
         .leftJoin('fabrictype', 'fabric', 'fabric.Id = product.FabricTypeId')
-        .leftJoin('productcategory', 'category', 'category.Id = product.ProductCategoryId')
+        .leftJoin(
+          'productcategory',
+          'category',
+          'category.Id = product.ProductCategoryId',
+        )
         .leftJoin('Client', 'client', 'client.Id = product.ClientId')
         .select([
           'product.Id AS Id',
@@ -151,39 +180,39 @@ export class ProductsService {
           'product.CreatedOn AS CreatedOn',
           'product.UpdatedOn AS UpdatedOn',
           'product.CreatedBy AS CreatedBy',
-          'product.UpdatedBy AS UpdatedBy'
-        ])
+          'product.UpdatedBy AS UpdatedBy',
+        ]);
       query.orderBy('product.CreatedOn', 'DESC');
 
-      if (filter === "archive") {
+      if (filter === 'archive') {
         query.where('product.isArchived = :isArchived', { isArchived: true });
-      } else if (filter === "unarchive") {
+      } else if (filter === 'unarchive') {
         query.where('product.isArchived = :isArchived', { isArchived: false });
       }
 
       const products = await query.getRawMany();
 
-      return products.map(product => ({
+      return products.map((product) => ({
         Id: product?.Id,
         Name: product?.Name,
         ProductCategoryId: product?.ProductCategoryId,
         ProductCategoryName: product?.ProductCategoryName,
-        FabricTypeId: product?.FabricTypeId || "",
-        FabricType: product?.FabricType || "",
-        FabricName: product?.FabricName || "",
-        GSM: product?.GSM || "",
-        Description: product?.Description || "",
-        productStatus: product?.productStatus || "",
+        FabricTypeId: product?.FabricTypeId || '',
+        FabricType: product?.FabricType || '',
+        FabricName: product?.FabricName || '',
+        GSM: product?.GSM || '',
+        Description: product?.Description || '',
+        productStatus: product?.productStatus || '',
         isArchived: Boolean(product?.isArchived) || false,
         ClientId: product?.ClientId || null,
         ClientName: product?.ClientName || null,
-        CreatedBy: product?.CreatedBy || "",
-        UpdatedBy: product?.UpdatedBy || "",
-        CreatedOn: product?.CreatedOn || "",
-        UpdatedOn: product?.UpdatedOn || ""
+        CreatedBy: product?.CreatedBy || '',
+        UpdatedBy: product?.UpdatedBy || '',
+        CreatedOn: product?.CreatedOn || '',
+        UpdatedOn: product?.UpdatedOn || '',
       }));
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error('Error fetching products:', error);
       return [];
     }
   }
@@ -196,12 +225,12 @@ export class ProductsService {
 
     const printingOptions = await this.productPrintingOptionsRepo.find({
       where: { Product: { Id: product.Id } },
-      relations: ['Product', 'PrintingOption']
+      relations: ['Product', 'PrintingOption'],
     });
 
     const productColors = await this.dataSource.query(
       `SELECT * FROM availablecoloroptions WHERE ProductId = ?`,
-      [id]
+      [id],
     );
 
     const productSizes = await this.dataSource.query(
@@ -209,12 +238,12 @@ export class ProductsService {
      FROM availblesizeoptions s
      INNER JOIN sizeoptions so ON s.sizeId = so.Id
      WHERE s.ProductId = ?`,
-      [id]
+      [id],
     );
 
     const productDetails = await this.dataSource.query(
       `SELECT * FROM productdetails WHERE ProductId = ?`,
-      [id]
+      [id],
     );
 
     return {
@@ -226,18 +255,33 @@ export class ProductsService {
     };
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto, updatedBy: string): Promise<any> {
+  async update(
+    id: number,
+    updateProductDto: UpdateProductDto,
+    updatedBy: string,
+  ): Promise<any> {
     const product = await this.productRepository.findOne({ where: { Id: id } });
-    if (!product) {
+    if (!product)
       throw new NotFoundException(`Product with ID ${id} not found`);
-    }
-    let isClientIdUpdated = product.ClientId !== updateProductDto.ClientId;
+
+    const isClientIdUpdated = product.ClientId !== updateProductDto.ClientId;
     if (isClientIdUpdated) {
-      const newClient = await this.clientRepository.findOne({ where: { Id: updateProductDto.ClientId } })
-      if (!newClient) throw new BadRequestException(`Client with ID ${updateProductDto.ClientId} not found`)
+      const newClient = await this.clientRepository.findOne({
+        where: { Id: updateProductDto.ClientId },
+      });
+      if (!newClient)
+        throw new BadRequestException(
+          `Client with ID ${updateProductDto.ClientId} not found`,
+        );
     }
 
-    const { productColors, productDetails, productSizes, printingOptions, ...productData } = updateProductDto;
+    const {
+      productColors,
+      productDetails,
+      productSizes,
+      printingOptions,
+      ...productData
+    } = updateProductDto;
 
     const updatedProduct = await this.productRepository.save({
       ...productData,
@@ -246,170 +290,196 @@ export class ProductsService {
       UpdatedOn: new Date(),
     });
 
-    if (
-      (productColors && Array.isArray(productColors)) ||
-      (productDetails && Array.isArray(productDetails)) ||
-      (productSizes && Array.isArray(productSizes)) ||
-      (printingOptions && Array.isArray(printingOptions))
-    ) {
-      const queryRunner = this.dataSource.createQueryRunner();
-      await queryRunner.connect();
-      await queryRunner.startTransaction();
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-      try {
-        // ----- Update Colors -----
-        if (productColors && Array.isArray(productColors)) {
-          const existingColors: { Id: number }[] = await queryRunner.query(
-            `SELECT Id FROM availablecoloroptions WHERE ProductId = ?`,
-            [id]
+    try {
+      // --- Colors ---
+      if (Array.isArray(productColors)) {
+        const validColors = productColors.filter((c) => c.colorId && c.ImageId);
+        const existingColors: { Id: number }[] = await queryRunner.query(
+          `SELECT Id FROM availablecoloroptions WHERE ProductId = ?`,
+          [id],
+        );
+        const updatedColorIds = validColors
+          .filter((c) => c.Id)
+          .map((c) => c.Id);
+        const toRemove = existingColors.filter(
+          (c) => !updatedColorIds.includes(c.Id),
+        );
+        if (toRemove.length) {
+          const ids = toRemove.map((c) => c.Id).join(',');
+          await queryRunner.query(
+            `DELETE FROM availablecoloroptions WHERE Id IN (${ids})`,
           );
-          const updatedColorIds = productColors.filter(c => c.Id).map(c => c.Id);
-          const colorsToRemove = existingColors.filter(c => !updatedColorIds.includes(c.Id));
-          if (colorsToRemove.length > 0) {
-            const idsToRemove = colorsToRemove.map(c => c.Id).join(',');
-            await queryRunner.query(`DELETE FROM availablecoloroptions WHERE Id IN (${idsToRemove})`);
-          }
-          for (const color of productColors) {
-            if (color.Id) {
-              await queryRunner.query(
-                `UPDATE availablecoloroptions 
-               SET colorId = ?, ImageId = ?, UpdatedOn = ?, UpdatedBy = ? 
-               WHERE Id = ?`,
-                [color.colorId, color.ImageId, new Date(), updatedBy, color.Id]
-              );
-            } else {
-              await queryRunner.query(
-                `INSERT INTO availablecoloroptions 
-                (ProductId, colorId, ImageId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy) 
-               VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                [id, color.colorId, color.ImageId, new Date(), updatedBy, new Date(), updatedBy]
-              );
-            }
-          }
         }
-
-        // ----- Update Details -----
-        if (productDetails && Array.isArray(productDetails)) {
-          const existingDetails: { Id: number }[] = await queryRunner.query(
-            `SELECT Id FROM productdetails WHERE ProductId = ?`,
-            [id]
-          );
-          const updatedDetailIds = productDetails.filter(d => d.Id).map(d => d.Id);
-          const detailsToRemove = existingDetails.filter(d => !updatedDetailIds.includes(d.Id));
-          if (detailsToRemove.length > 0) {
-            const idsToRemove = detailsToRemove.map(d => d.Id).join(',');
-            await queryRunner.query(`DELETE FROM productdetails WHERE Id IN (${idsToRemove})`);
-          }
-          for (const detail of productDetails) {
-            if (detail.Id) {
-              await queryRunner.query(
-                `UPDATE productdetails 
-               SET ProductCutOptionId = ?, UpdatedOn = ?, UpdatedBy = ?, SleeveTypeId = ? 
-               WHERE Id = ?`,
-                [
-                  detail.ProductCutOptionId,
-                  new Date(),
-                  updatedBy,
-                  detail.SleeveTypeId,
-                  detail.Id,
-                ]
-              );
-            } else {
-              await queryRunner.query(
-                `INSERT INTO productdetails 
-                (ProductId, ProductCutOptionId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, SleeveTypeId) 
-               VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                [
-                  id,
-                  detail.ProductCutOptionId,
-                  new Date(),
-                  updatedBy,
-                  new Date(),
-                  updatedBy,
-                  detail.SleeveTypeId,
-                ]
-              );
-            }
-          }
-        }
-
-        // ----- Update Sizes -----
-        if (productSizes && Array.isArray(productSizes)) {
-          // Fetch existing sizes by ProductId
-          const existingSizes: { Id: number, sizeId: number }[] = await queryRunner.query(
-            `SELECT Id, sizeId FROM availblesizeoptions WHERE ProductId = ?`,
-            [id]
-          );
-
-          const updatedSizeIds = productSizes.map(s => s.sizeId);
-
-          // Find sizes to remove (existing but not in updated)
-          const sizesToRemove = existingSizes.filter(s => !updatedSizeIds.includes(s.sizeId));
-          if (sizesToRemove.length > 0) {
-            const idsToRemove = sizesToRemove.map(s => s.Id).join(',');
-            await queryRunner.query(`DELETE FROM availblesizeoptions WHERE Id IN (${idsToRemove})`);
-          }
-
-          // Find sizes to add (in updated but not existing)
-          const existingSizeIds = existingSizes.map(s => s.sizeId);
-          const sizesToAdd = productSizes.filter(s => !existingSizeIds.includes(s.sizeId));
-
-          for (const size of sizesToAdd) {
+        for (const color of validColors) {
+          if (color.Id) {
             await queryRunner.query(
-              `INSERT INTO availblesizeoptions (sizeId, ProductId) VALUES (?, ?)`,
-              [size.sizeId, id]
+              `UPDATE availablecoloroptions 
+             SET colorId = ?, ImageId = ?, UpdatedOn = ?, UpdatedBy = ? 
+             WHERE Id = ?`,
+              [color.colorId, color.ImageId, new Date(), updatedBy, color.Id],
+            );
+          } else {
+            await queryRunner.query(
+              `INSERT INTO availablecoloroptions 
+             (ProductId, colorId, ImageId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+              [
+                id,
+                color.colorId,
+                color.ImageId,
+                new Date(),
+                updatedBy,
+                new Date(),
+                updatedBy,
+              ],
             );
           }
         }
-
-        if (updateProductDto.printingOptions && updateProductDto.printingOptions.length > 0) {
-          const printingOptionRepo = queryRunner.manager.getRepository(ProductPrintingOptions);
-          const existingOptions = await printingOptionRepo.find({
-            where: { ProductId: id },
-          });
-          const incomingIds = updateProductDto.printingOptions.map(o => o.PrintingOptionId);
-          const toRemove = existingOptions.filter(opt => !incomingIds.includes(opt.PrintingOptionId));
-          if (toRemove.length > 0) {
-            await printingOptionRepo.remove(toRemove);
-          }
-          const existingPrintingOptionIds = existingOptions.map(opt => opt.PrintingOptionId);
-          const toAdd = updateProductDto.printingOptions.filter(opt => !existingPrintingOptionIds.includes(opt.PrintingOptionId));
-
-          if (toAdd.length > 0) {
-            const newPrintingOptions = toAdd.map(opt =>
-              printingOptionRepo.create({
-                ProductId: id,
-                PrintingOptionId: opt.PrintingOptionId,
-              }),
-            );
-
-            await printingOptionRepo.save(newPrintingOptions);
-          }
-        }
-
-        await queryRunner.commitTransaction();
-      } catch (error) {
-        await queryRunner.rollbackTransaction();
-        throw new Error('Failed to update product colors, details, and sizes');
-      } finally {
-        await queryRunner.release();
       }
-    }
 
-    return updatedProduct;
+      // --- Details ---
+      if (Array.isArray(productDetails)) {
+        const validDetails = productDetails.filter(
+          (d) => d.ProductCutOptionId && d.SleeveTypeId,
+        );
+        const existingDetails: { Id: number }[] = await queryRunner.query(
+          `SELECT Id FROM productdetails WHERE ProductId = ?`,
+          [id],
+        );
+        const updatedDetailIds = validDetails
+          .filter((d) => d.Id)
+          .map((d) => d.Id);
+        const toRemove = existingDetails.filter(
+          (d) => !updatedDetailIds.includes(d.Id),
+        );
+        if (toRemove.length) {
+          const ids = toRemove.map((d) => d.Id).join(',');
+          await queryRunner.query(
+            `DELETE FROM productdetails WHERE Id IN (${ids})`,
+          );
+        }
+        for (const detail of validDetails) {
+          if (detail.Id) {
+            await queryRunner.query(
+              `UPDATE productdetails 
+             SET ProductCutOptionId = ?, UpdatedOn = ?, UpdatedBy = ?, SleeveTypeId = ? 
+             WHERE Id = ?`,
+              [
+                detail.ProductCutOptionId,
+                new Date(),
+                updatedBy,
+                detail.SleeveTypeId,
+                detail.Id,
+              ],
+            );
+          } else {
+            await queryRunner.query(
+              `INSERT INTO productdetails 
+             (ProductId, ProductCutOptionId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, SleeveTypeId) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+              [
+                id,
+                detail.ProductCutOptionId,
+                new Date(),
+                updatedBy,
+                new Date(),
+                updatedBy,
+                detail.SleeveTypeId,
+              ],
+            );
+          }
+        }
+      }
+
+      // --- Sizes ---
+      if (Array.isArray(productSizes)) {
+        const sizeIds = productSizes.map((s) => s.sizeId).filter(Boolean);
+        const existingSizes: { Id: number; sizeId: number }[] =
+          await queryRunner.query(
+            `SELECT Id, sizeId FROM availblesizeoptions WHERE ProductId = ?`,
+            [id],
+          );
+        const existingSizeIds = existingSizes.map((s) => s.sizeId);
+        const toRemove = existingSizes.filter(
+          (s) => !sizeIds.includes(s.sizeId),
+        );
+        if (toRemove.length) {
+          const ids = toRemove.map((s) => s.Id).join(',');
+          await queryRunner.query(
+            `DELETE FROM availblesizeoptions WHERE Id IN (${ids})`,
+          );
+        }
+        const toAdd = sizeIds.filter((sid) => !existingSizeIds.includes(sid));
+        for (const sizeId of toAdd) {
+          await queryRunner.query(
+            `INSERT INTO availblesizeoptions (sizeId, ProductId) VALUES (?, ?)`,
+            [sizeId, id],
+          );
+        }
+      }
+
+      // --- Printing Options ---
+      if (Array.isArray(printingOptions)) {
+        const printingOptionRepo = queryRunner.manager.getRepository(
+          ProductPrintingOptions,
+        );
+        const existingOptions = await printingOptionRepo.find({
+          where: { ProductId: id },
+        });
+        const incomingIds = printingOptions.map((p) => p.PrintingOptionId);
+        const toRemove = existingOptions.filter(
+          (e) => !incomingIds.includes(e.PrintingOptionId),
+        );
+        if (toRemove.length) await printingOptionRepo.remove(toRemove);
+
+        const existingIds = existingOptions.map((e) => e.PrintingOptionId);
+        const toAdd = printingOptions
+          .filter((p) => !existingIds.includes(p.PrintingOptionId))
+          .map((p) =>
+            printingOptionRepo.create({
+              ProductId: id,
+              PrintingOptionId: p.PrintingOptionId,
+            }),
+          );
+
+        if (toAdd.length) await printingOptionRepo.save(toAdd);
+      }
+
+      await queryRunner.commitTransaction();
+      return updatedProduct;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error('Update transaction error:', error);
+      throw new BadRequestException(
+        error.message || 'Failed to update product',
+      );
+    } finally {
+      await queryRunner.release();
+    }
   }
 
-  async updateProductStatus(id: number, updateProductStatusDto: UpdateProductStatusDto, updatedBy: string): Promise<any> {
-    const { isArchived } = updateProductStatusDto
+  async updateProductStatus(
+    id: number,
+    updateProductStatusDto: UpdateProductStatusDto,
+    updatedBy: string,
+  ): Promise<any> {
+    const { isArchived } = updateProductStatusDto;
     const product = await this.productRepository.findOne({ where: { Id: id } });
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
     product.isArchived = isArchived;
     product.UpdatedBy = updatedBy;
-    const updatedProduct = await this.productRepository.save(product)
-    if (!updatedProduct) throw new InternalServerErrorException("Can't update status. Please try again later")
-    return { message: 'Updated Successfully' }
+    const updatedProduct = await this.productRepository.save(product);
+    if (!updatedProduct)
+      throw new InternalServerErrorException(
+        "Can't update status. Please try again later",
+      );
+    return { message: 'Updated Successfully' };
   }
 
   async remove(id: number): Promise<{ message: string }> {
@@ -418,22 +488,35 @@ export class ProductsService {
     await queryRunner.startTransaction();
 
     try {
-      const product = await this.productRepository.findOne({ where: { Id: id } });
+      const product = await this.productRepository.findOne({
+        where: { Id: id },
+      });
 
       if (!product) {
         throw new NotFoundException(`Product with ID ${id} not found`);
       }
 
       // Delete related available color options
-      await queryRunner.query(`DELETE FROM availablecoloroptions WHERE ProductId = ?`, [id]);
+      await queryRunner.query(
+        `DELETE FROM availablecoloroptions WHERE ProductId = ?`,
+        [id],
+      );
 
       // Delete related product details
-      await queryRunner.query(`DELETE FROM productdetails WHERE ProductId = ?`, [id]);
+      await queryRunner.query(
+        `DELETE FROM productdetails WHERE ProductId = ?`,
+        [id],
+      );
 
       // Delete related available size options
-      await queryRunner.query(`DELETE FROM availblesizeoptions WHERE ProductId = ?`, [id]);
+      await queryRunner.query(
+        `DELETE FROM availblesizeoptions WHERE ProductId = ?`,
+        [id],
+      );
 
-      await queryRunner.manager.delete(ProductPrintingOptions, { ProductId: id });
+      await queryRunner.manager.delete(ProductPrintingOptions, {
+        ProductId: id,
+      });
 
       // Delete the product itself
       await queryRunner.query(`DELETE FROM product WHERE Id = ?`, [id]);
@@ -443,23 +526,23 @@ export class ProductsService {
       return { message: `Product with ID ${id} has been deleted successfully` };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw new BadRequestException(error.message || `Error deleting product with ID ${id}`);
+      throw new BadRequestException(
+        error.message || `Error deleting product with ID ${id}`,
+      );
     } finally {
       await queryRunner.release();
     }
   }
 
-
-  async getAvailablePrintingOptionsByProductId(productId: number): Promise<any[]> {
+  async getAvailablePrintingOptionsByProductId(
+    productId: number,
+  ): Promise<any[]> {
     try {
       const availablePrintingOptions = await this.productRepository
         .createQueryBuilder('product')
         .leftJoin('productprintingoptions', 'ppo', 'ppo.ProductId = product.Id')
         .leftJoin('printingoptions', 'po', 'po.Id = ppo.PrintingOptionId')
-        .select([
-          'ppo.Id AS Id',
-          'po.Type AS Type',
-        ])
+        .select(['ppo.Id AS Id', 'po.Type AS Type'])
         .where('product.Id = :productId', { productId })
         .andWhere('ppo.Id IS NOT NULL')
         .getRawMany();
@@ -473,16 +556,20 @@ export class ProductsService {
         Type: printingOption.Type,
       }));
     } catch (error) {
-      console.error("Error fetching available printing options:", error);
+      console.error('Error fetching available printing options:', error);
       return [];
     }
   }
-  
+
   async getAvailableColorsByProductId(productId: number): Promise<any[]> {
     try {
       const availableColors = await this.productRepository
         .createQueryBuilder('product')
-        .leftJoin('availablecoloroptions', 'colors', 'colors.ProductId = product.Id')
+        .leftJoin(
+          'availablecoloroptions',
+          'colors',
+          'colors.ProductId = product.Id',
+        )
         .leftJoin('coloroption', 'color', 'color.Id = colors.colorId')
         .select([
           'colors.Id AS Id',
@@ -505,7 +592,7 @@ export class ProductsService {
         ImageId: color.ImageId,
       }));
     } catch (error) {
-      console.error("Error fetching available colors:", error);
+      console.error('Error fetching available colors:', error);
       return [];
     }
   }
@@ -514,7 +601,11 @@ export class ProductsService {
     try {
       const availableSizes = await this.productRepository
         .createQueryBuilder('product')
-        .leftJoin('availblesizeoptions', 'sizes', 'sizes.ProductId = product.Id')
+        .leftJoin(
+          'availblesizeoptions',
+          'sizes',
+          'sizes.ProductId = product.Id',
+        )
         .leftJoin('sizeoptions', 'size', 'size.Id = sizes.sizeId')
         .select([
           'sizes.Id AS Id',
@@ -535,7 +626,7 @@ export class ProductsService {
         SizeName: size.SizeName,
       }));
     } catch (error) {
-      console.error("Error fetching available sizes:", error);
+      console.error('Error fetching available sizes:', error);
       return [];
     }
   }
@@ -545,10 +636,14 @@ export class ProductsService {
       const cutOptions = await this.productRepository
         .createQueryBuilder('product')
         .leftJoin('productdetails', 'details', 'details.ProductId = product.Id')
-        .leftJoin('productcutoptions', 'cutOption', 'cutOption.Id = details.ProductCutOptionId')
+        .leftJoin(
+          'productcutoptions',
+          'cutOption',
+          'cutOption.Id = details.ProductCutOptionId',
+        )
         .select([
           'cutOption.Id AS Id',
-          'cutOption.OptionProductCutOptions AS Name'
+          'cutOption.OptionProductCutOptions AS Name',
         ])
         .where('product.Id = :productId', { productId })
         .andWhere('details.Id IS NOT NULL')
@@ -560,10 +655,10 @@ export class ProductsService {
 
       return cutOptions.map((option) => ({
         Id: option.Id,
-        Name: option.Name
+        Name: option.Name,
       }));
     } catch (error) {
-      console.error("Error fetching available cut options:", error);
+      console.error('Error fetching available cut options:', error);
       throw new BadRequestException('Error fetching cut options for product');
     }
   }
@@ -573,7 +668,11 @@ export class ProductsService {
       const sleevetypes = await this.productRepository
         .createQueryBuilder('product')
         .leftJoin('productdetails', 'details', 'details.ProductId = product.Id')
-        .leftJoin('sleevetype', 'sleevetype', 'sleevetype.Id = details.SleeveTypeId ')
+        .leftJoin(
+          'sleevetype',
+          'sleevetype',
+          'sleevetype.Id = details.SleeveTypeId ',
+        )
         .select(['DISTINCT details.SleeveTypeId ', 'sleevetype.*'])
         .where('product.Id = :productId', { productId })
         .andWhere('details.SleeveTypeId  IS NOT NULL')
@@ -581,7 +680,7 @@ export class ProductsService {
         .getRawMany();
       return sleevetypes;
     } catch (error) {
-      console.error("Error fetching available Sleeve Types:", error);
+      console.error('Error fetching available Sleeve Types:', error);
       throw new BadRequestException('Error fetching sleeve types for product');
     }
   }
