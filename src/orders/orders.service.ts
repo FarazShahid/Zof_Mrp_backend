@@ -150,6 +150,61 @@ export class OrdersService {
     return savedOrder;
   }
 
+
+  async reorder(orderId: number, createdBy: string): Promise<Order> {
+    const existingOrder = await this.orderRepository.findOne({
+      where: { Id: orderId },
+      relations: [
+        'orderItems',
+        'orderItems.printingOptions',
+        'orderItems.orderItemDetails',
+      ],
+    });
+
+    if (!existingOrder) {
+      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    }
+
+    // Prepare CreateOrderDto-compatible object
+    const reorderDto: CreateOrderDto = {
+      ClientId: existingOrder.ClientId,
+      OrderEventId: existingOrder.OrderEventId,
+      Description: `${existingOrder.Description || 'Reorder'} (Copy)`,
+      Deadline: existingOrder.Deadline.toISOString(),
+      OrderPriority: existingOrder.OrderPriority ?? 0,
+      ExternalOrderId: existingOrder.ExternalOrderId,
+      OrderNumber: existingOrder.OrderNumber,
+      OrderName: existingOrder.OrderName,
+      items: [],
+    };
+
+    for (const item of existingOrder.orderItems) {
+      reorderDto.items.push({
+        ProductId: item.ProductId,
+        Description: item.Description,
+        OrderItemPriority: item.OrderItemPriority,
+        ImageId: item.ImageId,
+        FileId: item.FileId,
+        VideoId: item.VideoId,
+        printingOptions: item.printingOptions?.map((po) => ({
+          PrintingOptionId: po.PrintingOptionId,
+          Description: po.Description,
+        })) || [],
+        orderItemDetails: item.orderItemDetails?.map((detail) => ({
+          ColorOptionId: detail.ColorOptionId,
+          Quantity: detail.Quantity,
+          Priority: detail.Priority,
+          SizeOption: detail.SizeOption,
+          MeasurementId: detail.MeasurementId,
+        })) || [],
+      });
+    }
+
+    // Create new order using the existing createOrder() logic
+    return this.createOrder(reorderDto, createdBy);
+  }
+
+
   async getAllOrders(): Promise<any> {
     try {
 
@@ -558,8 +613,8 @@ export class OrdersService {
 
         if (currentItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
           currentItem.printingOptions.push({
-            PrintingOptionId: item.PrintingOptionId??null,
-            PrintingOptionName: item.PrintingOptionName??"Unknown printing option",
+            PrintingOptionId: item.PrintingOptionId ?? null,
+            PrintingOptionName: item.PrintingOptionName ?? "Unknown printing option",
             Description: item.PrintingOptionDescription
           });
         }

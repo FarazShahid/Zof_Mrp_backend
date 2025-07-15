@@ -79,6 +79,17 @@ export class OrdersController {
     }
   }
 
+  @Post(':id/reorder')
+  @HttpCode(HttpStatus.CREATED)
+  @CommonApiResponses('Reorders an existing order by ID')
+  async reorderOrder(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() currentUser: any
+  ): Promise<any> {
+    return this.ordersService.reorder(id, currentUser.email);
+  }
+
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete an order by id')
