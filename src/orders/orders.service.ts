@@ -623,7 +623,7 @@ export class OrdersService {
           });
         }
 
-        if (!currentItem.orderItemDetails.some(od => od.ColorOptionId === item.ColorOptionId)) {
+        if (!currentItem.orderItemDetails.some(od => od.OrderItemDetailId === item.OrderItemDetailId)) {
           currentItem.orderItemDetails.push({
             ColorOptionId: item?.ColorOptionId ?? null,
             ColorOptionName: item?.ColorOptionName || 'Unknown Color',
