@@ -39,6 +39,8 @@ export class OrdersService {
     private orderStatusLogRepository: Repository<OrderStatusLogs>,
   ) { }
 
+  
+
   async createOrder(createOrderDto: CreateOrderDto, createdBy: any): Promise<Order> {
     const { ClientId, OrderEventId, Description, Deadline, OrderPriority, ExternalOrderId, OrderName, OrderNumber, items } = createOrderDto;
 
@@ -83,11 +85,13 @@ export class OrdersService {
 
     const newOrder = this.orderRepository.create({
       ClientId: ClientId,
-      OrderEventId,
+      OrderEventId: createOrderDto.OrderEventId ?? null,
       Description,
       Deadline,
       OrderPriority,
       ExternalOrderId,
+      OrderNumber,
+      OrderName,
       CreatedBy: createdBy,
       UpdatedBy: createdBy
     });

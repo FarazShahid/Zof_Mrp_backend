@@ -11,7 +11,7 @@ export class Order extends BaseEntity {
   @Column()
   ClientId: number;
 
-  @Column()
+  @Column({ nullable: true })
   OrderEventId: number;
 
   @Column({ nullable: true })
