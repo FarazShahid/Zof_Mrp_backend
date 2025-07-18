@@ -80,7 +80,6 @@ export class SizeMeasurement {
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   PlacketWidth: number;
 
-  //added these 9 columns from here
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   BackNeckDrop: number;
 
@@ -95,6 +94,26 @@ export class SizeMeasurement {
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   Hem: number;
+
+  // new fields for top measurements
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Neckwidth: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  CollarOpening: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  ArmHoleStraight: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  BottomRib: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  CuffHeight: number;
+
+@Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  ColllarHeightCenterBack: number;
+
 
   //bottom measurements
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
@@ -120,6 +139,44 @@ export class SizeMeasurement {
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   bFrontRise: number;
+
+  // new fields for bottom unit
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  WasitStretch: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  WasitRelax: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Thigh: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  BackRise: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  TotalLength: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  WBHeight: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  bBottomWidth: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  BottomOriginal: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  BottomElastic: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  BottomCuffZipped: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  BottomStraightZipped: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  HemBottom: number;
 
   // Logo Placement
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
@@ -158,9 +215,13 @@ export class SizeMeasurement {
   @Column({ length: 100, nullable: true })
   CreatedBy: string;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+  @Column({
+    type: 'datetime',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
   UpdatedOn: Date;
 
   @Column({ length: 100, nullable: true })
   UpdatedBy: string;
-} 
+}

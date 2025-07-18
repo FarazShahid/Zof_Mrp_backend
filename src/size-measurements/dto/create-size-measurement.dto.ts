@@ -1,4 +1,12 @@
-import { IsString, IsNumber, IsOptional, Min, Max, IsNotEmpty, IsInt } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  Min,
+  Max,
+  IsNotEmpty,
+  IsInt,
+} from 'class-validator';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 
 export class CreateSizeMeasurementDto {
@@ -20,7 +28,6 @@ export class CreateSizeMeasurementDto {
   @IsString()
   @IsOptional()
   Measurement1?: string;
-
 
   @CommonApiProperty('Product Category Id', 1)
   @IsNumber()
@@ -260,6 +267,135 @@ export class CreateSizeMeasurementDto {
   @Max(999.99)
   bFrontRise: number;
 
+  // new fields
+  @CommonApiProperty('Neck Width', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Neckwidth?: number;
+
+  @CommonApiProperty('Collar Opening', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  CollarOpening?: number;
+
+  @CommonApiProperty('Collar Opening', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  ColllarHeightCenterBack?: number;
+
+  @CommonApiProperty('Cuff Height', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  CuffHeight?: number;
+
+  @CommonApiProperty('Arm Hole Straight', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  ArmHoleStraight?: number;
+
+  @CommonApiProperty('Bottom Rib', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  BottomRib?: number;
+
+  @CommonApiProperty('Wasit Stretch', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  WasitStretch?: number;
+
+  @CommonApiProperty('Wasit Relax', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  WasitRelax?: number;
+
+  @CommonApiProperty('Wasit Relax', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Thigh?: number;
+
+  @CommonApiProperty('Back Rise', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  BackRise?: number;
+
+  @CommonApiProperty('Total Length', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  TotalLength?: number;
+
+  @CommonApiProperty('WB Height', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  WBHeight?: number;
+
+  @CommonApiProperty('Bottom Width', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  bBottomWidth?: number;
+
+  @CommonApiProperty('Bottom Width', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  BottomOriginal?: number;
+
+  @CommonApiProperty('Bottom Width', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  BottomElastic?: number;
+
+  @CommonApiProperty('Bottom Width', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  BottomCuffZipped?: number;
+
+  @CommonApiProperty('Bottom Width', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  BottomStraightZipped?: number;
+
+@CommonApiProperty('Hem Bottom', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  HemBottom?: number;
+
+  // end new fields
+
   @CommonApiProperty('Top Unit, Top Right Logo size', '1')
   @IsNumber()
   @IsOptional()
@@ -329,7 +465,4 @@ export class CreateSizeMeasurementDto {
   @Min(0)
   @Max(999.99)
   b_BottomLeft?: number;
-
 }
-
-
