@@ -26,7 +26,7 @@ export class ProductsService {
     private readonly clientRepository: Repository<Client>,
 
     private dataSource: DataSource,
-  ) {}
+  ) { }
 
   async create(
     createProductDto: CreateProductDto,
@@ -103,7 +103,7 @@ export class ProductsService {
 
           // Insert productDetails
           const validDetails = (createProductDto.productDetails ?? []).filter(
-            (detail) => detail.ProductCutOptionId && detail.SleeveTypeId,
+            (detail) => detail.ProductCutOptionId || detail.SleeveTypeId,
           );
 
           for (const detail of validDetails) {
@@ -113,10 +113,10 @@ export class ProductsService {
              VALUES (?, ?, ?, ?, ?)`,
               [
                 savedProduct.Id,
-                detail.ProductCutOptionId,
+                detail.ProductCutOptionId ?? null,
                 createdBy,
                 createdBy,
-                detail.SleeveTypeId,
+                detail.SleeveTypeId ?? null,
               ],
             );
           }
@@ -344,7 +344,7 @@ export class ProductsService {
       // --- Details ---
       if (Array.isArray(productDetails)) {
         const validDetails = productDetails.filter(
-          (d) => d.ProductCutOptionId && d.SleeveTypeId,
+          (d) => d.ProductCutOptionId || d.SleeveTypeId,
         );
         const existingDetails: { Id: number }[] = await queryRunner.query(
           `SELECT Id FROM productdetails WHERE ProductId = ?`,
@@ -353,13 +353,13 @@ export class ProductsService {
         const updatedDetailIds = validDetails
           .filter((d) => d.Id)
           .map((d) => d.Id);
-        const toRemove = existingDetails.filter(
-          (d) => !updatedDetailIds.includes(d.Id),
-        );
+        const toRemove = existingDetails
+          .map(r => r.Id)
+          .filter(existingId => !updatedDetailIds.includes(existingId));
         if (toRemove.length) {
-          const ids = toRemove.map((d) => d.Id).join(',');
+          const list = toRemove.join(',');
           await queryRunner.query(
-            `DELETE FROM productdetails WHERE Id IN (${ids})`,
+            `DELETE FROM productdetails WHERE Id IN (${list})`
           );
         }
         for (const detail of validDetails) {
@@ -369,10 +369,10 @@ export class ProductsService {
              SET ProductCutOptionId = ?, UpdatedOn = ?, UpdatedBy = ?, SleeveTypeId = ? 
              WHERE Id = ?`,
               [
-                detail.ProductCutOptionId,
+                detail.ProductCutOptionId ?? null,
                 new Date(),
                 updatedBy,
-                detail.SleeveTypeId,
+                detail.SleeveTypeId ?? null,
                 detail.Id,
               ],
             );
@@ -383,12 +383,12 @@ export class ProductsService {
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
               [
                 id,
-                detail.ProductCutOptionId,
+                detail.ProductCutOptionId ?? null,
                 new Date(),
                 updatedBy,
                 new Date(),
                 updatedBy,
-                detail.SleeveTypeId,
+                detail.SleeveTypeId ?? null,
               ],
             );
           }

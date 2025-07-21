@@ -1396,5 +1396,15 @@ ADD COLUMN BottomCuffZipped DECIMAL(5,2) NULL,
 ADD COLUMN BottomStraightZipped DECIMAL(5,2) NULL,
 ADD COLUMN CuffHeight DECIMAL(5,2) NULL,
 ADD COLUMN ColllarHeightCenterBack DECIMAL(5,2) NULL,
-ADD COLUMN HemBottom DECIMAL(5,2) NULL
+ADD COLUMN HemBottom DECIMAL(5,2) NULL;
 
+
+
+-- product detials size options-
+ALTER TABLE `productdetails`
+MODIFY COLUMN `ProductCutOptionId` INT(11) NULL DEFAULT NULL;
+
+
+ALTER TABLE `sizemeasurements`
+ADD COLUMN `t_left_sleeve`  DECIMAL(5,2) NULL,
+ADD COLUMN `t_right_sleeve` DECIMAL(5,2) NULL;

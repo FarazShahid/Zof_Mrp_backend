@@ -387,7 +387,7 @@ export class CreateSizeMeasurementDto {
   @Max(999.99)
   BottomStraightZipped?: number;
 
-@CommonApiProperty('Hem Bottom', '1')
+  @CommonApiProperty('Hem Bottom', '1')
   @IsNumber()
   @IsOptional()
   @Min(0)
@@ -438,6 +438,20 @@ export class CreateSizeMeasurementDto {
   @Max(999.99)
   t_Back?: number;
 
+  @CommonApiProperty('Top Unit, Left Sleeve Logo Size', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  t_left_sleeve: number;
+
+  @CommonApiProperty('Top Unit, Right Sleeve Logo Size', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  t_right_sleeve: number
+  
   @CommonApiProperty('Bottom Unit, Top Right Logo size', '1')
   @IsNumber()
   @IsOptional()
@@ -465,4 +479,5 @@ export class CreateSizeMeasurementDto {
   @Min(0)
   @Max(999.99)
   b_BottomLeft?: number;
+
 }

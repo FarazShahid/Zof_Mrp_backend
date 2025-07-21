@@ -40,7 +40,7 @@ class ProductPrintingOptionsDto {
   @IsInt()
   @Min(1)
   PrintingOptionId: number;
-  
+
 }
 
 export class ProductDetailDto {
@@ -56,7 +56,7 @@ export class ProductDetailDto {
 
   @CommonApiProperty('Sleeve Type Id', 1)
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   @IsInt()
   @Min(1)
   SleeveTypeId: number;
@@ -118,11 +118,10 @@ export class CreateProductDto {
 
 
   @ApiProperty({ type: [ProductDetailDto] })
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ProductDetailDto)
-  @IsNotEmpty()
-  @ArrayMinSize(1, { message: 'At least one Product Detail Option is required' })
   productDetails: ProductDetailDto[];
 
   @ApiProperty({ type: [ProductSizesDto] })

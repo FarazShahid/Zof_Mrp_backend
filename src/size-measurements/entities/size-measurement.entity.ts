@@ -111,7 +111,7 @@ export class SizeMeasurement {
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   CuffHeight: number;
 
-@Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   ColllarHeightCenterBack: number;
 
 
@@ -208,6 +208,12 @@ export class SizeMeasurement {
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   b_BottomLeft: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  t_left_sleeve: number;
+  
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  t_right_sleeve: number
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
