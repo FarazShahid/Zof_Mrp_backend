@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Order } from './entities/orders.entity';
@@ -37,51 +41,68 @@ export class OrdersService {
     private orderStatusRepository: Repository<OrderStatus>,
     @InjectRepository(OrderStatusLogs)
     private orderStatusLogRepository: Repository<OrderStatusLogs>,
-  ) { }
+  ) {}
 
+  async createOrder(
+    createOrderDto: CreateOrderDto,
+    createdBy: any,
+  ): Promise<Order> {
+    const {
+      ClientId,
+      OrderEventId,
+      Description,
+      Deadline,
+      OrderPriority,
+      ExternalOrderId,
+      OrderName,
+      OrderNumber,
+      items,
+    } = createOrderDto;
 
-
-  async createOrder(createOrderDto: CreateOrderDto, createdBy: any): Promise<Order> {
-    const { ClientId, OrderEventId, Description, Deadline, OrderPriority, ExternalOrderId, OrderName, OrderNumber, items } = createOrderDto;
-
-    const client = await this.clientRepository.findOne({ where: { Id: ClientId } });
+    const client = await this.clientRepository.findOne({
+      where: { Id: ClientId },
+    });
     if (!client) {
       throw new NotFoundException(`Client with ID ${ClientId} not found`);
     }
 
     if (createOrderDto.OrderEventId) {
-      const event = await this.eventRepository.findOne({ where: { Id: OrderEventId } });
+      const event = await this.eventRepository.findOne({
+        where: { Id: OrderEventId },
+      });
       if (!event) {
         throw new NotFoundException(`Event with ID ${OrderEventId} not found`);
       }
-    }
-    else {
-      createOrderDto.OrderEventId = null
+    } else {
+      createOrderDto.OrderEventId = null;
     }
 
-    const productIds = items.map(item => item.ProductId);
-    const products = await this.productRepository.find({ where: { Id: In(productIds) } });
+    const productIds = items.map((item) => item.ProductId);
+    const products = await this.productRepository.find({
+      where: { Id: In(productIds) },
+    });
     if (products.length !== productIds.length) {
       throw new NotFoundException('One or more products not found');
     }
 
     const printingOptionIds = [
       ...new Set(
-        items.flatMap(item =>
+        items.flatMap((item) =>
           item.printingOptions
-            ? item.printingOptions.map(option => option.PrintingOptionId)
-            : []
-        )
-      )
+            ? item.printingOptions.map((option) => option.PrintingOptionId)
+            : [],
+        ),
+      ),
     ];
 
     if (printingOptionIds.length > 0) {
-      const printingOptions = await this.printingOptionRepository.find({ where: { Id: In(printingOptionIds) } });
+      const printingOptions = await this.printingOptionRepository.find({
+        where: { Id: In(printingOptionIds) },
+      });
       if (printingOptions.length !== printingOptionIds.length) {
         throw new NotFoundException('One or more printing options not found');
       }
     }
-
 
     const newOrder = this.orderRepository.create({
       ClientId: ClientId,
@@ -93,7 +114,7 @@ export class OrdersService {
       OrderNumber,
       OrderName,
       CreatedBy: createdBy,
-      UpdatedBy: createdBy
+      UpdatedBy: createdBy,
     });
 
     const savedOrder = await this.orderRepository.save(newOrder);
@@ -103,9 +124,9 @@ export class OrdersService {
 
     const statusLog = this.orderStatusLogRepository.create({
       OrderId: savedOrder.Id,
-      StatusId: 1
-    })
-    await this.orderStatusLogRepository.save(statusLog)
+      StatusId: 1,
+    });
+    await this.orderStatusLogRepository.save(statusLog);
 
     if (Array.isArray(items) && items.length > 0) {
       const orderItems = items.map((item) => ({
@@ -139,7 +160,10 @@ export class OrdersService {
           await this.orderItemDetailRepository.save(orderItemDetails);
         }
 
-        if (Array.isArray(item.printingOptions) && item.printingOptions.length > 0) {
+        if (
+          Array.isArray(item.printingOptions) &&
+          item.printingOptions.length > 0
+        ) {
           const printingOptions = item.printingOptions.map((option) => ({
             OrderItemId: savedOrderItems[i].Id,
             PrintingOptionId: option.PrintingOptionId,
@@ -152,9 +176,7 @@ export class OrdersService {
     }
 
     return savedOrder;
-
   }
-
 
   async reorder(orderId: number, createdBy: string): Promise<Order> {
     const existingOrder = await this.orderRepository.findOne({
@@ -191,17 +213,19 @@ export class OrdersService {
         ImageId: item.ImageId,
         FileId: item.FileId,
         VideoId: item.VideoId,
-        printingOptions: item.printingOptions?.map((po) => ({
-          PrintingOptionId: po.PrintingOptionId,
-          Description: po.Description,
-        })) || [],
-        orderItemDetails: item.orderItemDetails?.map((detail) => ({
-          ColorOptionId: detail.ColorOptionId,
-          Quantity: detail.Quantity,
-          Priority: detail.Priority,
-          SizeOption: detail.SizeOption,
-          MeasurementId: detail.MeasurementId,
-        })) || [],
+        printingOptions:
+          item.printingOptions?.map((po) => ({
+            PrintingOptionId: po.PrintingOptionId,
+            Description: po.Description,
+          })) || [],
+        orderItemDetails:
+          item.orderItemDetails?.map((detail) => ({
+            ColorOptionId: detail.ColorOptionId,
+            Quantity: detail.Quantity,
+            Priority: detail.Priority,
+            SizeOption: detail.SizeOption,
+            MeasurementId: detail.MeasurementId,
+          })) || [],
       });
     }
 
@@ -209,10 +233,8 @@ export class OrdersService {
     return this.createOrder(reorderDto, createdBy);
   }
 
-
   async getAllOrders(): Promise<any> {
     try {
-
       const result = await this.orderRepository
         .createQueryBuilder('order')
         .leftJoin('client', 'client', 'order.ClientId = client.Id')
@@ -233,7 +255,7 @@ export class OrdersService {
           'order.OrderName AS OrderName',
           'order.ExternalOrderId AS ExternalOrderId',
           'order.CreatedOn AS CreatedOn',
-          'order.UpdatedOn AS UpdatedOn'
+          'order.UpdatedOn AS UpdatedOn',
         ])
         .orderBy('order.CreatedOn', 'DESC')
         .getRawMany();
@@ -242,7 +264,7 @@ export class OrdersService {
         .createQueryBuilder('order')
         .getCount();
 
-      const formattedOrders = result.map(order => ({
+      const formattedOrders = result.map((order) => ({
         Id: order.Id,
         ClientId: order.ClientId,
         ClientName: order.ClientName,
@@ -257,7 +279,7 @@ export class OrdersService {
         OrderName: order.OrderName,
         ExternalOrderId: order.ExternalOrderId,
         CreatedOn: order.CreatedOn,
-        UpdatedOn: order.UpdatedOn
+        UpdatedOn: order.UpdatedOn,
       }));
 
       return formattedOrders;
@@ -266,7 +288,6 @@ export class OrdersService {
       throw error;
     }
   }
-
 
   async getOrdersByClientId(clientId: number): Promise<any[]> {
     const orders = await this.orderRepository
@@ -329,7 +350,12 @@ export class OrdersService {
     }));
   }
 
-  async updateOrder(id: number, updateOrderDto: any, updatedBy: number): Promise<Order> {
+  async updateOrder(
+    id: number,
+    updateOrderDto: any,
+    updatedBy: any,
+  ): Promise<Order> {
+    
     const order = await this.orderRepository.findOne({ where: { Id: id } });
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
@@ -338,48 +364,61 @@ export class OrdersService {
     const { items, ...updateData } = updateOrderDto;
 
     if (updateData.ClientId) {
-      const client = await this.clientRepository.findOne({ where: { Id: updateData.ClientId } });
+      const client = await this.clientRepository.findOne({
+        where: { Id: updateData.ClientId },
+      });
       if (!client) {
-        throw new NotFoundException(`Client with ID ${updateData.ClientId} not found`);
+        throw new NotFoundException(
+          `Client with ID ${updateData.ClientId} not found`,
+        );
       }
     }
 
     if (updateData.OrderEventId) {
-      const event = await this.eventRepository.findOne({ where: { Id: updateData.OrderEventId } });
+      const event = await this.eventRepository.findOne({
+        where: { Id: updateData.OrderEventId },
+      });
       if (!event) {
-        throw new NotFoundException(`Event with ID ${updateData.OrderEventId} not found`);
+        throw new NotFoundException(
+          `Event with ID ${updateData.OrderEventId} not found`,
+        );
       }
-    }
-    else {
-      updateOrderDto.OrderEventId = null
-      updateData.OrderEventId = null
+    } else {
+      updateOrderDto.OrderEventId = null;
+      updateData.OrderEventId = null;
     }
 
     if (Array.isArray(items) && items.length > 0) {
-      const productIds = items.map(item => item.ProductId);
-      const products = await this.productRepository.find({ where: { Id: In(productIds) } });
+      const productIds = items.map((item) => item.ProductId);
+      const products = await this.productRepository.find({
+        where: { Id: In(productIds) },
+      });
       if (products.length !== productIds.length) {
         throw new NotFoundException('One or more products not found');
       }
 
       const printingOptionIds = [
         ...new Set(
-          items.flatMap(item =>
+          items.flatMap((item) =>
             item.printingOptions
-              ? item.printingOptions.map(option => option.PrintingOptionId)
-              : []
-          )
-        )
+              ? item.printingOptions.map((option) => option.PrintingOptionId)
+              : [],
+          ),
+        ),
       ];
 
       if (printingOptionIds.length > 0) {
-        const printingOptions = await this.printingOptionRepository.find({ where: { Id: In(printingOptionIds) } });
+        const printingOptions = await this.printingOptionRepository.find({
+          where: { Id: In(printingOptionIds) },
+        });
         if (printingOptions.length !== printingOptionIds.length) {
           throw new NotFoundException('One or more printing options not found');
         }
       }
 
-      const existingOrderItems = await this.orderItemRepository.find({ where: { OrderId: id } });
+      const existingOrderItems = await this.orderItemRepository.find({
+        where: { OrderId: id },
+      });
       const existingOrderItemIds = existingOrderItems.map((item) => item.Id);
 
       if (existingOrderItemIds.length > 0) {
@@ -408,12 +447,16 @@ export class OrdersService {
         OrderItemPriority: item?.OrderItemPriority || 0,
       }));
 
-      const savedOrderItems = await this.orderItemRepository.save(newOrderItems);
+      const savedOrderItems =
+        await this.orderItemRepository.save(newOrderItems);
 
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
 
-        if (Array.isArray(item.printingOptions) && item.printingOptions.length > 0) {
+        if (
+          Array.isArray(item.printingOptions) &&
+          item.printingOptions.length > 0
+        ) {
           const printingOptions = item.printingOptions.map((option) => ({
             OrderItemId: savedOrderItems[i].Id,
             PrintingOptionId: option.PrintingOptionId,
@@ -468,7 +511,9 @@ export class OrdersService {
       throw new NotFoundException([`Order with ID ${id} not found`]);
     }
 
-    const orderItems = await this.orderItemRepository.find({ where: { OrderId: id } });
+    const orderItems = await this.orderItemRepository.find({
+      where: { OrderId: id },
+    });
     const orderItemIds = orderItems.map((item) => item.Id);
 
     if (orderItemIds.length > 0) {
@@ -486,13 +531,16 @@ export class OrdersService {
     await this.orderRepository.delete(id);
   }
 
-  async getOrderStatusLog(orderId: number): Promise<Omit<OrderStatusLogs, 'Id' | 'UpdatedOn'>[]> {
-    const orderStatusLogs = await this.orderStatusLogRepository.createQueryBuilder('orderStatusLog')
+  async getOrderStatusLog(
+    orderId: number,
+  ): Promise<Omit<OrderStatusLogs, 'Id' | 'UpdatedOn'>[]> {
+    const orderStatusLogs = await this.orderStatusLogRepository
+      .createQueryBuilder('orderStatusLog')
       .leftJoin('orderstatus', 'status', 'orderStatusLog.StatusId = status.Id')
       .select([
         'status.Id As StatusId',
         'status.StatusName AS StatusName',
-        'orderStatusLog.CreatedOn AS Timestamp'
+        'orderStatusLog.CreatedOn AS Timestamp',
       ])
       .where('orderStatusLog.OrderId = :orderId', { orderId })
       .getRawMany();
@@ -520,7 +568,7 @@ export class OrdersService {
           'order.OrderPriority AS OrderPriority',
           'order.OrderNumber AS OrderNumber',
           'order.OrderName AS OrderName',
-          'order.ExternalOrderId AS ExternalOrderId'
+          'order.ExternalOrderId AS ExternalOrderId',
         ])
         .where('order.Id = :id', { id })
         .getRawOne();
@@ -533,18 +581,54 @@ export class OrdersService {
       const orderItemsData = await this.orderItemRepository
         .createQueryBuilder('orderItem')
         .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
-        .leftJoin('productcategory', 'productCategory', 'product.ProductCategoryId = productCategory.Id')
-        .leftJoin('fabrictype', 'fabricType', 'product.FabricTypeId = fabricType.Id')
-        .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
-        .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
-        .leftJoin('orderitemdetails', 'orderItemDetail', 'orderItem.Id = orderItemDetail.OrderItemId')
-        .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderItemDetail.ColorOptionId = availablecoloroptions.Id')
-        .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId = colorOption.Id')
+        .leftJoin(
+          'productcategory',
+          'productCategory',
+          'product.ProductCategoryId = productCategory.Id',
+        )
+        .leftJoin(
+          'fabrictype',
+          'fabricType',
+          'product.FabricTypeId = fabricType.Id',
+        )
+        .leftJoin(
+          'orderitemsprintingoptions',
+          'printingOption',
+          'orderItem.Id = printingOption.OrderItemId',
+        )
+        .leftJoin(
+          'printingoptions',
+          'printingoptions',
+          'printingOption.PrintingOptionId = printingoptions.Id',
+        )
+        .leftJoin(
+          'orderitemdetails',
+          'orderItemDetail',
+          'orderItem.Id = orderItemDetail.OrderItemId',
+        )
+        .leftJoin(
+          'availablecoloroptions',
+          'availablecoloroptions',
+          'orderItemDetail.ColorOptionId = availablecoloroptions.Id',
+        )
+        .leftJoin(
+          'coloroption',
+          'colorOption',
+          'availablecoloroptions.colorId = colorOption.Id',
+        )
         // SizeOption joins
         // .leftJoin('availblesizeoptions', 'availableSizeOption', 'orderItemDetail.SizeOption = availableSizeOption.Id')
-        .leftJoin('sizeoptions', 'sizeOption', 'orderItemDetail.SizeOption = sizeOption.Id')
+        .leftJoin(
+          'sizeoptions',
+          'sizeOption',
+          'orderItemDetail.SizeOption = sizeOption.Id',
+        )
         // Measurement join
-        .leftJoin('sizemeasurements', 'sizeMeasurement', 'orderItemDetail.MeasurementId = sizeMeasurement.Id')
+        .leftJoin(
+          'sizemeasurements',
+          'sizeMeasurement',
+          'orderItemDetail.MeasurementId = sizeMeasurement.Id',
+        )
         .leftJoin('document', 'imageDoc', 'orderItem.ImageId = imageDoc.Id')
         .leftJoin('document', 'fileDoc', 'orderItem.FileId = fileDoc.Id')
         .leftJoin('document', 'videoDoc', 'orderItem.VideoId = videoDoc.Id')
@@ -577,11 +661,10 @@ export class OrdersService {
           'orderItemDetail.SizeOption AS SizeOptionId',
           'orderItemDetail.MeasurementId AS MeasurementId',
           'sizeOption.OptionSizeOptions AS SizeOptionName',
-          'sizeMeasurement.Measurement1 AS MeasurementName'  // added MeasurementName
+          'sizeMeasurement.Measurement1 AS MeasurementName', // added MeasurementName
         ])
         .where('orderItem.OrderId = :orderId', { orderId: id })
         .getRawMany();
-
 
       const processedItems = [];
       const itemMap = new Map();
@@ -609,8 +692,8 @@ export class OrdersService {
             VideoPath: item.VideoPath,
             printingOptions: [],
             orderItemDetails: [],
-            _printingOptionIds: new Set<number>(),      // helper sets to track
-            _orderItemDetailIds: new Set<number>()
+            _printingOptionIds: new Set<number>(), // helper sets to track
+            _orderItemDetailIds: new Set<number>(),
           };
 
           itemMap.set(item.Id, newItem);
@@ -625,8 +708,9 @@ export class OrdersService {
         ) {
           currentItem.printingOptions.push({
             PrintingOptionId: item.PrintingOptionId,
-            PrintingOptionName: item.PrintingOptionName ?? "Unknown printing option",
-            Description: item.PrintingOptionDescription
+            PrintingOptionName:
+              item.PrintingOptionName ?? 'Unknown printing option',
+            Description: item.PrintingOptionDescription,
           });
           currentItem._printingOptionIds.add(item.PrintingOptionId);
         }
@@ -644,7 +728,7 @@ export class OrdersService {
             SizeOptionId: item.SizeOptionId,
             SizeOptionName: item.SizeOptionName || 'Unknown Size',
             MeasurementId: item.MeasurementId,
-            MeasurementName: item.MeasurementName || 'Unknown Measurement'
+            MeasurementName: item.MeasurementName || 'Unknown Measurement',
           });
           currentItem._orderItemDetailIds.add(item.OrderItemDetailId);
         }
@@ -668,7 +752,7 @@ export class OrdersService {
         OrderStatusId: orderData.OrderStatusId,
         StatusName: orderData.StatusName || 'Unknown Status',
         Deadline: orderData.Deadline,
-        items: processedItems
+        items: processedItems,
       };
     } catch (error) {
       console.error('Error in getEditOrder:', error);
@@ -683,16 +767,44 @@ export class OrdersService {
       .leftJoin('document', 'imageDoc', 'orderItem.ImageId = imageDoc.Id')
       .leftJoin('document', 'fileDoc', 'orderItem.FileId = fileDoc.Id')
       .leftJoin('document', 'videoDoc', 'orderItem.VideoId = videoDoc.Id')
-      .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
-      .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
-      .leftJoin('orderitemdetails', 'orderitemdetails', 'orderItem.Id = orderitemdetails.OrderItemId')
-      .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderitemdetails.ColorOptionId = availablecoloroptions.Id')
-      .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId = colorOption.Id')
+      .leftJoin(
+        'orderitemsprintingoptions',
+        'printingOption',
+        'orderItem.Id = printingOption.OrderItemId',
+      )
+      .leftJoin(
+        'printingoptions',
+        'printingoptions',
+        'printingOption.PrintingOptionId = printingoptions.Id',
+      )
+      .leftJoin(
+        'orderitemdetails',
+        'orderitemdetails',
+        'orderItem.Id = orderitemdetails.OrderItemId',
+      )
+      .leftJoin(
+        'availablecoloroptions',
+        'availablecoloroptions',
+        'orderitemdetails.ColorOptionId = availablecoloroptions.Id',
+      )
+      .leftJoin(
+        'coloroption',
+        'colorOption',
+        'availablecoloroptions.colorId = colorOption.Id',
+      )
       // New joins for size option name
       // .leftJoin('availblesizeoptions', 'availableSizeOption', 'orderitemdetails.SizeOption = availableSizeOption.Id')
-      .leftJoin('sizeoptions', 'sizeOption', 'orderitemdetails.SizeOption = sizeOption.Id')
+      .leftJoin(
+        'sizeoptions',
+        'sizeOption',
+        'orderitemdetails.SizeOption = sizeOption.Id',
+      )
       // New join for measurement name
-      .leftJoin('sizemeasurements', 'sizeMeasurement', 'orderitemdetails.MeasurementId = sizeMeasurement.Id')
+      .leftJoin(
+        'sizemeasurements',
+        'sizeMeasurement',
+        'orderitemdetails.MeasurementId = sizeMeasurement.Id',
+      )
       .select([
         'orderItem.Id AS Id',
         'orderItem.OrderId AS OrderId',
@@ -730,10 +842,14 @@ export class OrdersService {
     }
 
     const formattedItems = orderItems.reduce((acc, item) => {
-      const existingItem = acc.find(orderItem => orderItem.Id === item.Id);
+      const existingItem = acc.find((orderItem) => orderItem.Id === item.Id);
 
       if (existingItem) {
-        if (!existingItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
+        if (
+          !existingItem.printingOptions.some(
+            (po) => po.PrintingOptionId === item.PrintingOptionId,
+          )
+        ) {
           existingItem.printingOptions.push({
             PrintingOptionId: item.PrintingOptionId,
             PrintingOptionName: item.PrintingOptionName,
@@ -741,7 +857,11 @@ export class OrdersService {
           });
         }
 
-        if (!existingItem.colors.some(c => c.ColorOptionId === item.ColorOptionId)) {
+        if (
+          !existingItem.colors.some(
+            (c) => c.ColorOptionId === item.ColorOptionId,
+          )
+        ) {
           existingItem.colors.push({
             ColorOptionId: item?.ColorOptionId ?? null,
             ColorName: item?.ColorName ?? 'Unknown color',
@@ -772,27 +892,28 @@ export class OrdersService {
           UpdatedOn: item.UpdatedOn,
           printingOptions: item.PrintingOptionId
             ? [
-              {
-                PrintingOptionId: item.PrintingOptionId,
-                PrintingOptionName: item.PrintingOptionName,
-                Description: item.PrintingOptionDescription,
-              },
-            ]
+                {
+                  PrintingOptionId: item.PrintingOptionId,
+                  PrintingOptionName: item.PrintingOptionName,
+                  Description: item.PrintingOptionDescription,
+                },
+              ]
             : [],
           colors: item?.ColorOptionId
             ? [
-              {
-                ColorOptionId: item?.ColorOptionId ?? null,
-                ColorName: item?.ColorName ?? 'Unknown color',
-                HexCode: item?.ColorHexCode ?? null,
-                Quantity: item.OrderItemDetailQuanity,
-                Priority: item.OrderItemDetailPriority,
-                SizeOptionId: item.SizeOptionId,
-                SizeOptionName: item.SizeOptionName || 'Unknown Size',
-                MeasurementId: item.MeasurementId,
-                MeasurementName: item.MeasurementName || 'Unknown Measurement',
-              },
-            ]
+                {
+                  ColorOptionId: item?.ColorOptionId ?? null,
+                  ColorName: item?.ColorName ?? 'Unknown color',
+                  HexCode: item?.ColorHexCode ?? null,
+                  Quantity: item.OrderItemDetailQuanity,
+                  Priority: item.OrderItemDetailPriority,
+                  SizeOptionId: item.SizeOptionId,
+                  SizeOptionName: item.SizeOptionName || 'Unknown Size',
+                  MeasurementId: item.MeasurementId,
+                  MeasurementName:
+                    item.MeasurementName || 'Unknown Measurement',
+                },
+              ]
             : [],
         });
       }
@@ -811,9 +932,9 @@ export class OrdersService {
 
     const OrderStatus = await this.orderStatusRepository.findOne({
       where: {
-        Id: status
-      }
-    })
+        Id: status,
+      },
+    });
 
     if (!OrderStatus) {
       throw new NotFoundException(`Order Staus ID ${status} not found`);
@@ -822,11 +943,10 @@ export class OrdersService {
 
     const statusLog = this.orderStatusLogRepository.create({
       Order: order,
-      Status: OrderStatus
-    })
-    await this.orderStatusLogRepository.save(statusLog)
+      Status: OrderStatus,
+    });
+    await this.orderStatusLogRepository.save(statusLog);
 
     return await this.orderRepository.save(order);
   }
-
 }

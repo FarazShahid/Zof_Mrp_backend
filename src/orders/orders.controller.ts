@@ -67,12 +67,12 @@ export class OrdersController {
   @CommonApiResponses('Update an order by id')
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateOrderDto: UpdateOrderDto,
-    @Req() req
+    @Body() updateOrderDto: UpdateOrderDto, @CurrentUser() currentUser: any,
+    @Req() req,
   ): Promise<any> {
     try {
       const userId = req.user.id;
-      return this.ordersService.updateOrder(id, updateOrderDto, userId);
+      return this.ordersService.updateOrder(id, updateOrderDto, currentUser.email);
     } catch (error) {
       console.error('Error updating order:', error);
       throw error;
