@@ -152,6 +152,7 @@ export class OrdersService {
     }
 
     return savedOrder;
+
   }
 
 
@@ -607,7 +608,9 @@ export class OrdersService {
             VideoId: item.VideoId,
             VideoPath: item.VideoPath,
             printingOptions: [],
-            orderItemDetails: []
+            orderItemDetails: [],
+            _printingOptionIds: new Set<number>(),      // helper sets to track
+            _orderItemDetailIds: new Set<number>()
           };
 
           itemMap.set(item.Id, newItem);
@@ -615,16 +618,23 @@ export class OrdersService {
         }
 
         const currentItem = itemMap.get(item.Id);
-
-        if (!currentItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
+        // Handle printing options
+        if (
+          item.PrintingOptionId &&
+          !currentItem._printingOptionIds.has(item.PrintingOptionId)
+        ) {
           currentItem.printingOptions.push({
-            PrintingOptionId: item.PrintingOptionId ?? null,
+            PrintingOptionId: item.PrintingOptionId,
             PrintingOptionName: item.PrintingOptionName ?? "Unknown printing option",
             Description: item.PrintingOptionDescription
           });
+          currentItem._printingOptionIds.add(item.PrintingOptionId);
         }
 
-        if (!currentItem.orderItemDetails.some(od => od.OrderItemDetailId === item.OrderItemDetailId)) {
+        if (
+          item.OrderItemDetailId &&
+          !currentItem._orderItemDetailIds.has(item.OrderItemDetailId)
+        ) {
           currentItem.orderItemDetails.push({
             ColorOptionId: item?.ColorOptionId ?? null,
             ColorOptionName: item?.ColorOptionName || 'Unknown Color',
@@ -634,9 +644,14 @@ export class OrdersService {
             SizeOptionId: item.SizeOptionId,
             SizeOptionName: item.SizeOptionName || 'Unknown Size',
             MeasurementId: item.MeasurementId,
-            MeasurementName: item.MeasurementName || 'Unknown Measurement'  // include MeasurementName
+            MeasurementName: item.MeasurementName || 'Unknown Measurement'
           });
+          currentItem._orderItemDetailIds.add(item.OrderItemDetailId);
         }
+      }
+      for (const item of processedItems) {
+        delete item._printingOptionIds;
+        delete item._orderItemDetailIds;
       }
 
       return {
