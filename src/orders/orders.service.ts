@@ -39,7 +39,7 @@ export class OrdersService {
     private orderStatusLogRepository: Repository<OrderStatusLogs>,
   ) { }
 
-  
+
 
   async createOrder(createOrderDto: CreateOrderDto, createdBy: any): Promise<Order> {
     const { ClientId, OrderEventId, Description, Deadline, OrderPriority, ExternalOrderId, OrderName, OrderNumber, items } = createOrderDto;
@@ -564,7 +564,7 @@ export class OrdersService {
           'fileDoc.CloudPath AS FilePath',
           'orderItem.VideoId AS VideoId',
           'videoDoc.CloudPath AS VideoPath',
-          'printingOption.Id AS PrintingOptionId',
+          'printingOption.PrintingOptionId AS PrintingOptionId',
           'printingOption.Description AS PrintingOptionDescription',
           'printingoptions.Type AS PrintingOptionName',
           'orderItemDetail.Id AS OrderItemDetailId',
@@ -580,6 +580,7 @@ export class OrdersService {
         ])
         .where('orderItem.OrderId = :orderId', { orderId: id })
         .getRawMany();
+
 
       const processedItems = [];
       const itemMap = new Map();
@@ -615,7 +616,7 @@ export class OrdersService {
 
         const currentItem = itemMap.get(item.Id);
 
-        if (currentItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
+        if (!currentItem.printingOptions.some(po => po.PrintingOptionId === item.PrintingOptionId)) {
           currentItem.printingOptions.push({
             PrintingOptionId: item.PrintingOptionId ?? null,
             PrintingOptionName: item.PrintingOptionName ?? "Unknown printing option",
@@ -701,7 +702,7 @@ export class OrdersService {
         'orderitemdetails.SizeOption AS SizeOptionId',
         'sizeOption.OptionSizeOptions AS SizeOptionName',
         'orderitemdetails.MeasurementId AS MeasurementId',
-        'sizeMeasurement.Measurement1 AS MeasurementName',  // added MeasurementName
+        'sizeMeasurement.Measurement1 AS MeasurementName',
         'videoDoc.CloudPath AS VideoPath',
         'imageDoc.CloudPath AS ImagePath',
         'fileDoc.CloudPath AS FilePath',

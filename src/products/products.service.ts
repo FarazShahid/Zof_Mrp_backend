@@ -542,7 +542,7 @@ export class ProductsService {
         .createQueryBuilder('product')
         .leftJoin('productprintingoptions', 'ppo', 'ppo.ProductId = product.Id')
         .leftJoin('printingoptions', 'po', 'po.Id = ppo.PrintingOptionId')
-        .select(['ppo.Id AS Id', 'po.Type AS Type'])
+        .select(['ppo.Id AS Id', 'po.Type AS Type', 'ppo.PrintingOptionId AS PrintingOptionId'])
         .where('product.Id = :productId', { productId })
         .andWhere('ppo.Id IS NOT NULL')
         .getRawMany();
@@ -552,7 +552,7 @@ export class ProductsService {
       }
 
       return availablePrintingOptions.map((printingOption) => ({
-        Id: printingOption.Id,
+        Id: printingOption.PrintingOptionId,
         Type: printingOption.Type,
       }));
     } catch (error) {
