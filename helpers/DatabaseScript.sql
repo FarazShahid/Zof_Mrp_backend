@@ -1408,3 +1408,11 @@ MODIFY COLUMN `ProductCutOptionId` INT(11) NULL DEFAULT NULL;
 ALTER TABLE `sizemeasurements`
 ADD COLUMN `t_left_sleeve`  DECIMAL(5,2) NULL,
 ADD COLUMN `t_right_sleeve` DECIMAL(5,2) NULL;
+
+
+ALTER TABLE ShipmentBox
+MODIFY COLUMN OrderItemDescription VARCHAR(1000) NULL;
+
+ALTER TABLE ShipmentBox
+MODIFY COLUMN BoxNumber VARCHAR(100) NOT NULL;
+

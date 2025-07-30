@@ -16,8 +16,8 @@ export class ShipmentBox {
     @Column({ type: 'float' })
     Weight: number;
 
-    @Column()
-    BoxNumber: number;
+    @Column({ type: 'varchar' })
+    BoxNumber: string;
 
     @Column()
     Quantity: number;

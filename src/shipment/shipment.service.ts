@@ -50,30 +50,11 @@ export class ShipmentService {
       boxes,
     } = createShipmentDto;
 
-    // Validate order
-    // const order = await this.orderRepository.findOne({ where: { Id: OrderId } });
-    // if (!order) {
-    //   throw new NotFoundException(`Order with ID ${OrderId} not found`);
-    // }
 
-    // Validate carrier
     const carrier = await this.shipmentCarrierRepository.findOne({ where: { Id: ShipmentCarrierId } });
     if (!carrier) {
       throw new NotFoundException(`Shipment Carrier with ID ${ShipmentCarrierId} not found`);
     }
-
-    // Validate order items
-    // const orderItemIds = ShipmentDetails.map(detail => detail.OrderItemId);
-
-    // const foundOrderItems = await this.orderItemRepository.findBy({ Id: In(orderItemIds) });
-
-    // const validItemIds = new Set(foundOrderItems.map(item => item.Id));
-
-    // for (const detail of ShipmentDetails) {
-    //   if (!validItemIds.has(detail.OrderItemId)) {
-    //     throw new NotFoundException(`Order Item with ID ${detail.OrderItemId} not found`);
-    //   }
-    // }
 
     const shipment = this.shipmentRepository.create({
       ShipmentCode,
@@ -92,17 +73,6 @@ export class ShipmentService {
     });
 
     const savedShipment = await this.shipmentRepository.save(shipment);
-
-    // const shipmentDetailEntities = ShipmentDetails.map(detail =>
-    //   this.shipmentDetailRepository.create({
-    //     ShipmentId: savedShipment.Id,
-    //     OrderItemId: detail.OrderItemId,
-    //     Quantity: detail.Quantity,
-    //     Size: detail.Size,
-    //     ItemDetails: detail.ItemDetails,
-    //   }),
-    // );
-    // await this.shipmentDetailRepository.save(shipmentDetailEntities);
 
     const boxEntities = boxes.map(box =>
       this.shipmentBoxRepository.create({
@@ -141,6 +111,7 @@ export class ShipmentService {
       TotalWeight: shipmentItem.TotalWeight,
       NumberOfBoxes: shipmentItem.NumberOfBoxes,
       ReceivedTime: shipmentItem.ReceivedTime,
+      Boxes: [...shipmentItem.Boxes],
       Status: shipmentItem.Status,
       ShipmentCarrierId: shipmentItem.ShipmentCarrier.Id,
       ShipmentCarrierName: shipmentItem.ShipmentCarrier.Name,

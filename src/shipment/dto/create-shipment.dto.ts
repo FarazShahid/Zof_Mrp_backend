@@ -37,10 +37,9 @@ import { CommonApiProperty } from 'src/common/decorators/common-api-response.dec
 // }
 
 export class ShipmentBoxDto {
-  @CommonApiProperty('Box Number', 1)
-  @IsNumber()
-  @Min(1)
-  BoxNumber: number;
+  @CommonApiProperty('Box Number', "ASDSA787ASDAS78")
+  @IsString()
+  BoxNumber: string;
 
   @CommonApiProperty('Box Number', 1)
   @IsNumber()
@@ -72,7 +71,7 @@ export class CreateShipmentDto {
   @CommonApiProperty('Tracking Id', 'TD-534-T534')
   @IsString()
   @IsNotEmpty()
-  TrackingId:  string;
+  TrackingId: string;
 
   @CommonApiProperty('Order Number', 'CTA-158')
   @IsString()
@@ -108,7 +107,7 @@ export class CreateShipmentDto {
   WeightUnit: string;
 
   @CommonApiProperty('Received Time (optional)', '2025-07-06T16:00:00Z')
-  @IsDateString()
+  @IsString()
   @IsOptional()
   ReceivedTime?: string;
 
