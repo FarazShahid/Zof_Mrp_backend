@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, HttpException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { SizeMeasurement } from './entities/size-measurement.entity';

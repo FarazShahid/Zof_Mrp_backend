@@ -127,3 +127,11 @@ CREATE TABLE `productprintingoptions` (
 
 ALTER TABLE `Shipment`
 ADD COLUMN `TrackingId` VARCHAR(255) NOT NULL DEFAULT 'TEMP_TRACKING';
+
+
+-------------------------
+
+-- 01/08/2025
+
+ALTER TABLE sizemeasurements ADD COLUMN t_left_sleeve VARCHAR(255);
+ALTER TABLE sizemeasurements ADD COLUMN t_right_sleeve VARCHAR(255);

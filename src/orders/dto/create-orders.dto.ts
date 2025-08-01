@@ -32,9 +32,10 @@ export class OrderItemDetailDto {
 
   @CommonApiProperty('MeasurementId', 1)
   @IsNumber()
+  @IsOptional()
   @IsInt()
-  @Min(1)
-  MeasurementId: number;
+  // @Min(1)
+  MeasurementId?: number;
 
   @CommonApiProperty('Quantity', '1')
   @IsNumber()

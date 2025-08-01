@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -16,6 +17,7 @@ import { ClientEvent } from '../events/entities/clientevent.entity';
 import { Product } from '../products/entities/product.entity';
 import { PrintingOptions } from '../printingoptions/entities/printingoptions.entity';
 import { OrderStatus } from 'src/orderstatus/entities/orderstatus.entity';
+import { SizeMeasurement } from 'src/size-measurements/entities/size-measurement.entity';
 import { OrderStatusLogs } from './entities/order-status-log';
 
 @Injectable()
@@ -41,6 +43,8 @@ export class OrdersService {
     private orderStatusRepository: Repository<OrderStatus>,
     @InjectRepository(OrderStatusLogs)
     private orderStatusLogRepository: Repository<OrderStatusLogs>,
+    @InjectRepository(SizeMeasurement)
+    private sizeMeasurementRepository: Repository<SizeMeasurement>,
   ) {}
 
   async createOrder(
@@ -146,20 +150,7 @@ export class OrdersService {
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
 
-        if (Array.isArray(item.orderItemDetails) && item.ProductId) {
-          const orderItemDetails = item.orderItemDetails.map((option) => ({
-            OrderItemId: savedOrderItems[i].Id,
-            ColorOptionId: option?.ColorOptionId ?? null,
-            Quantity: option.Quantity,
-            Priority: option.Priority,
-            SizeOption: option.SizeOption,
-            MeasurementId: option.MeasurementId,
-            CreatedBy: createdBy,
-            UpdatedBy: createdBy,
-          }));
-          await this.orderItemDetailRepository.save(orderItemDetails);
-        }
-
+        // printing options
         if (
           Array.isArray(item.printingOptions) &&
           item.printingOptions.length > 0
@@ -172,6 +163,56 @@ export class OrdersService {
 
           await this.orderItemsPrintingOptionRepository.save(printingOptions);
         }
+
+        // order item deatils
+
+        if (Array.isArray(item.orderItemDetails) && item.ProductId) {
+          const orderItemDetailsToSave = [];
+
+          for (const option of item.orderItemDetails) {
+            // Require SizeOption to resolve measurement
+            if (!option.SizeOption) {
+              throw new BadRequestException(
+                `Order item detail at index ${i} must include SizeOption to resolve its MeasurementId`,
+              );
+            }
+
+            // Lookup associated SizeMeasurement
+            const sizeMeasurement = await this.sizeMeasurementRepository.findOne({
+              where: { SizeOptionId: option.SizeOption },
+            });
+            if (!sizeMeasurement) {
+              throw new BadRequestException(
+                `SizeOption with id ${option.SizeOption} has no associated measurement`,
+              );
+            }
+
+            orderItemDetailsToSave.push({
+              OrderItemId: savedOrderItems[i].Id,
+              ColorOptionId: option?.ColorOptionId ?? null,
+              Quantity: option.Quantity,
+              Priority: option.Priority,
+              SizeOption: option.SizeOption,
+              MeasurementId: sizeMeasurement.Id,
+              CreatedBy: createdBy,
+              UpdatedBy: createdBy,
+            });
+          }
+
+          // const orderItemDetails = item.orderItemDetails.map((option) => ({
+          //   OrderItemId: savedOrderItems[i].Id,
+          //   ColorOptionId: option?.ColorOptionId ?? null,
+          //   Quantity: option.Quantity,
+          //   Priority: option.Priority,
+          //   SizeOption: option.SizeOption,
+          //   MeasurementId: option.MeasurementId,
+          //   CreatedBy: createdBy,
+          //   UpdatedBy: createdBy,
+          // }));
+          await this.orderItemDetailRepository.save(orderItemDetailsToSave);
+        }
+
+        
       }
     }
 
@@ -636,6 +677,7 @@ export class OrdersService {
           'orderItem.Id AS Id',
           'orderItem.ProductId AS ProductId',
           'product.ProductCategoryId AS ProductCategoryId',
+          'product.Name AS ProductName',
           'productCategory.Type AS ProductCategoryName',
           'product.FabricTypeId AS FabricTypeId',
           'fabricType.Type AS ProductFabricType',
@@ -674,6 +716,7 @@ export class OrdersService {
           const newItem = {
             Id: item.Id,
             ProductId: item.ProductId,
+            ProductName: item.ProductName || '',
             ProductCategoryId: item.ProductCategoryId,
             ProductCategoryName: item.ProductCategoryName,
             ProductFabricType: item.ProductFabricType,
