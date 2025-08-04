@@ -45,6 +45,7 @@ export class OrdersService {
     private orderStatusLogRepository: Repository<OrderStatusLogs>,
     @InjectRepository(SizeMeasurement)
     private sizeMeasurementRepository: Repository<SizeMeasurement>,
+    private dataSource: DataSource,
   ) {}
 
   async createOrder(
@@ -178,9 +179,10 @@ export class OrdersService {
             }
 
             // Lookup associated SizeMeasurement
-            const sizeMeasurement = await this.sizeMeasurementRepository.findOne({
-              where: { SizeOptionId: option.SizeOption },
-            });
+            const sizeMeasurement =
+              await this.sizeMeasurementRepository.findOne({
+                where: { SizeOptionId: option.SizeOption },
+              });
             if (!sizeMeasurement) {
               throw new BadRequestException(
                 `SizeOption with id ${option.SizeOption} has no associated measurement`,
@@ -211,8 +213,6 @@ export class OrdersService {
           // }));
           await this.orderItemDetailRepository.save(orderItemDetailsToSave);
         }
-
-        
       }
     }
 
@@ -396,154 +396,385 @@ export class OrdersService {
     updateOrderDto: any,
     updatedBy: any,
   ): Promise<Order> {
-    
-    const order = await this.orderRepository.findOne({ where: { Id: id } });
-    if (!order) {
-      throw new NotFoundException(`Order with ID ${id} not found`);
-    }
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    const { items, ...updateData } = updateOrderDto;
-
-    if (updateData.ClientId) {
-      const client = await this.clientRepository.findOne({
-        where: { Id: updateData.ClientId },
+    try {
+      const order = await queryRunner.manager.findOne(Order, {
+        where: { Id: id },
       });
-      if (!client) {
-        throw new NotFoundException(
-          `Client with ID ${updateData.ClientId} not found`,
-        );
-      }
-    }
-
-    if (updateData.OrderEventId) {
-      const event = await this.eventRepository.findOne({
-        where: { Id: updateData.OrderEventId },
-      });
-      if (!event) {
-        throw new NotFoundException(
-          `Event with ID ${updateData.OrderEventId} not found`,
-        );
-      }
-    } else {
-      updateOrderDto.OrderEventId = null;
-      updateData.OrderEventId = null;
-    }
-
-    if (Array.isArray(items) && items.length > 0) {
-      const productIds = items.map((item) => item.ProductId);
-      const products = await this.productRepository.find({
-        where: { Id: In(productIds) },
-      });
-      if (products.length !== productIds.length) {
-        throw new NotFoundException('One or more products not found');
+      if (!order) {
+        throw new NotFoundException(`Order with ID ${id} not found`);
       }
 
-      const printingOptionIds = [
-        ...new Set(
-          items.flatMap((item) =>
-            item.printingOptions
-              ? item.printingOptions.map((option) => option.PrintingOptionId)
-              : [],
+      const { items, ...updateData } = updateOrderDto;
+
+      // Validate client if provided
+      if (updateData.ClientId) {
+        const client = await queryRunner.manager.findOne(Client, {
+          where: { Id: updateData.ClientId },
+        });
+        if (!client) {
+          throw new NotFoundException(
+            `Client with ID ${updateData.ClientId} not found`,
+          );
+        }
+      }
+
+      // Validate event (allow null)
+      if (updateData.OrderEventId) {
+        const event = await queryRunner.manager.findOne(ClientEvent, {
+          where: { Id: updateData.OrderEventId },
+        });
+        if (!event) {
+          throw new NotFoundException(
+            `Event with ID ${updateData.OrderEventId} not found`,
+          );
+        }
+      } else {
+        updateData.OrderEventId = null;
+      }
+
+      // Handle items if provided
+      if (Array.isArray(items) && items.length > 0) {
+        // Validate products
+        const productIds = items.map((item) => item.ProductId);
+        const products = await queryRunner.manager.find(Product, {
+          where: { Id: In(productIds) },
+        });
+        if (products.length !== productIds.length) {
+          throw new NotFoundException('One or more products not found');
+        }
+
+        // Validate printing options
+        const printingOptionIds = [
+          ...new Set(
+            items.flatMap((item) =>
+              item.printingOptions
+                ? item.printingOptions.map((option) => option.PrintingOptionId)
+                : [],
+            ),
           ),
-        ),
-      ];
+        ];
 
-      if (printingOptionIds.length > 0) {
-        const printingOptions = await this.printingOptionRepository.find({
-          where: { Id: In(printingOptionIds) },
-        });
-        if (printingOptions.length !== printingOptionIds.length) {
-          throw new NotFoundException('One or more printing options not found');
-        }
-      }
-
-      const existingOrderItems = await this.orderItemRepository.find({
-        where: { OrderId: id },
-      });
-      const existingOrderItemIds = existingOrderItems.map((item) => item.Id);
-
-      if (existingOrderItemIds.length > 0) {
-        await this.orderItemsPrintingOptionRepository.delete({
-          OrderItemId: In(existingOrderItemIds),
-        });
-
-        await this.orderItemDetailRepository.delete({
-          OrderItemId: In(existingOrderItemIds),
-        });
-      }
-
-      await this.orderItemRepository.delete({ OrderId: id });
-
-      const newOrderItems = items.map((item) => ({
-        OrderId: id,
-        ProductId: item.ProductId,
-        Description: item?.Description ?? null,
-        ImageId: item.ImageId,
-        FileId: item.FileId,
-        VideoId: item.VideoId,
-        CreatedBy: updatedBy,
-        UpdatedBy: updatedBy,
-        CreatedOn: new Date(),
-        UpdatedOn: new Date(),
-        OrderItemPriority: item?.OrderItemPriority || 0,
-      }));
-
-      const savedOrderItems =
-        await this.orderItemRepository.save(newOrderItems);
-
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-
-        if (
-          Array.isArray(item.printingOptions) &&
-          item.printingOptions.length > 0
-        ) {
-          const printingOptions = item.printingOptions.map((option) => ({
-            OrderItemId: savedOrderItems[i].Id,
-            PrintingOptionId: option.PrintingOptionId,
-            Description: option.Description,
-          }));
-
-          await this.orderItemsPrintingOptionRepository.save(printingOptions);
+        if (printingOptionIds.length > 0) {
+          const printingOptions = await queryRunner.manager.find(
+            PrintingOptions,
+            {
+              where: { Id: In(printingOptionIds) },
+            },
+          );
+          if (printingOptions.length !== printingOptionIds.length) {
+            throw new NotFoundException(
+              'One or more printing options not found',
+            );
+          }
         }
 
-        if (Array.isArray(item.orderItemDetails) && item.ProductId) {
-          const orderItemDetails = item.orderItemDetails.map((option) => ({
-            OrderItemId: savedOrderItems[i].Id,
-            ColorOptionId: option?.ColorOptionId ?? null,
-            Quantity: option.Quantity,
-            Priority: option.Priority,
-            SizeOption: option.SizeOption,
-            MeasurementId: option.MeasurementId,
-            CreatedBy: updatedBy,
-            UpdatedBy: updatedBy,
-            CreatedOn: new Date(),
-            UpdatedOn: new Date(),
-          }));
-          try {
-            await this.orderItemDetailRepository.save(orderItemDetails);
-          } catch (error) {
-            console.error('Error saving color option:', error);
-            throw new Error('Failed to save color options for order item');
+        // Delete existing related data
+        const existingOrderItems = await queryRunner.manager.find(OrderItem, {
+          where: { OrderId: id },
+        });
+        const existingOrderItemIds = existingOrderItems.map((oi) => oi.Id);
+
+        if (existingOrderItemIds.length > 0) {
+          await queryRunner.manager.delete(OrderItemsPrintingOption, {
+            OrderItemId: In(existingOrderItemIds),
+          });
+          await queryRunner.manager.delete(OrderItemDetails, {
+            OrderItemId: In(existingOrderItemIds),
+          });
+        }
+
+        await queryRunner.manager.delete(OrderItem, { OrderId: id });
+
+        // Create new order items
+        const newOrderItems = items.map((item) => ({
+          OrderId: id,
+          ProductId: item.ProductId,
+          Description: item?.Description ?? null,
+          ImageId: item.ImageId,
+          FileId: item.FileId,
+          VideoId: item.VideoId,
+          CreatedBy: updatedBy,
+          UpdatedBy: updatedBy,
+          CreatedOn: new Date(),
+          UpdatedOn: new Date(),
+          OrderItemPriority: item?.OrderItemPriority || 0,
+        }));
+
+        const savedOrderItems = await queryRunner.manager.save(
+          OrderItem,
+          newOrderItems,
+        );
+
+        // For each item, insert printing options and details
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          const savedItem = savedOrderItems[i];
+
+          // printing options
+          if (
+            Array.isArray(item.printingOptions) &&
+            item.printingOptions.length > 0
+          ) {
+            const printingOptionsToSave = item.printingOptions.map(
+              (option) => ({
+                OrderItemId: savedItem.Id,
+                PrintingOptionId: option.PrintingOptionId,
+                Description: option.Description,
+              }),
+            );
+
+            await queryRunner.manager.save(
+              OrderItemsPrintingOption,
+              printingOptionsToSave,
+            );
+          }
+
+          // order item details with measurement resolution
+          if (Array.isArray(item.orderItemDetails) && item.ProductId) {
+            const orderItemDetailsToSave: any[] = [];
+
+            for (const option of item.orderItemDetails) {
+              if (!option.SizeOption) {
+                throw new BadRequestException(
+                  `Order item detail for OrderItem index ${i} must include SizeOption to resolve its MeasurementId`,
+                );
+              }
+
+              const sizeMeasurement = await queryRunner.manager.findOne(
+                SizeMeasurement,
+                {
+                  where: { SizeOptionId: option.SizeOption },
+                },
+              );
+              if (!sizeMeasurement) {
+                throw new BadRequestException(
+                  `SizeOption with id ${option.SizeOption} has no associated measurement`,
+                );
+              }
+
+              orderItemDetailsToSave.push({
+                OrderItemId: savedItem.Id,
+                ColorOptionId: option?.ColorOptionId ?? null,
+                Quantity: option.Quantity,
+                Priority: option.Priority,
+                SizeOption: option.SizeOption,
+                MeasurementId: sizeMeasurement.Id,
+                CreatedBy: updatedBy,
+                UpdatedBy: updatedBy,
+                CreatedOn: new Date(),
+                UpdatedOn: new Date(),
+              });
+            }
+
+            await queryRunner.manager.save(
+              OrderItemDetails,
+              orderItemDetailsToSave,
+            );
           }
         }
       }
+
+      // Prepare update payload for order (only override if provided)
+      const orderPayload: any = {
+        ...order,
+        UpdatedBy: updatedBy,
+        UpdatedOn: new Date(),
+      };
+      if (updateData.ClientId !== undefined) {
+        orderPayload.ClientId = updateData.ClientId;
+      }
+      if (updateData.OrderEventId !== undefined) {
+        orderPayload.OrderEventId = updateData.OrderEventId ?? null;
+      }
+      if (updateData.Description !== undefined) {
+        orderPayload.Description = updateData.Description;
+      }
+      if (updateData.Deadline !== undefined) {
+        orderPayload.Deadline = updateData.Deadline;
+      }
+      if (updateData.OrderPriority !== undefined) {
+        orderPayload.OrderPriority = updateData.OrderPriority;
+      }
+      if (updateData.ExternalOrderId !== undefined) {
+        orderPayload.ExternalOrderId = updateData.ExternalOrderId;
+      }
+      if (updateData.OrderNumber !== undefined) {
+        orderPayload.OrderNumber = updateData.OrderNumber;
+      }
+      if (updateData.OrderName !== undefined) {
+        orderPayload.OrderName = updateData.OrderName;
+      }
+
+      const updatedOrder = await queryRunner.manager.save(Order, orderPayload);
+
+      await queryRunner.commitTransaction();
+      return updatedOrder;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error('Error in updateOrder:', error);
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
-
-    const updatedOrder = await this.orderRepository.save({
-      ...order,
-      ClientId: updateData.ClientId,
-      OrderEventId: updateData?.OrderEventId ?? null,
-      Description: updateData.Description,
-      Deadline: updateData.Deadline,
-      OrderPriority: updateData.OrderPriority,
-      ExternalOrderId: updateData.ExternalOrderId,
-      UpdatedBy: updatedBy,
-      UpdatedOn: new Date(),
-    });
-
-    return updatedOrder;
   }
+
+  // async updateOrder(
+  //   id: number,
+  //   updateOrderDto: any,
+  //   updatedBy: any,
+  // ): Promise<Order> {
+
+  //   const order = await this.orderRepository.findOne({ where: { Id: id } });
+  //   if (!order) {
+  //     throw new NotFoundException(`Order with ID ${id} not found`);
+  //   }
+
+  //   const { items, ...updateData } = updateOrderDto;
+
+  //   if (updateData.ClientId) {
+  //     const client = await this.clientRepository.findOne({
+  //       where: { Id: updateData.ClientId },
+  //     });
+  //     if (!client) {
+  //       throw new NotFoundException(
+  //         `Client with ID ${updateData.ClientId} not found`,
+  //       );
+  //     }
+  //   }
+
+  //   if (updateData.OrderEventId) {
+  //     const event = await this.eventRepository.findOne({
+  //       where: { Id: updateData.OrderEventId },
+  //     });
+  //     if (!event) {
+  //       throw new NotFoundException(
+  //         `Event with ID ${updateData.OrderEventId} not found`,
+  //       );
+  //     }
+  //   } else {
+  //     updateOrderDto.OrderEventId = null;
+  //     updateData.OrderEventId = null;
+  //   }
+
+  //   if (Array.isArray(items) && items.length > 0) {
+  //     const productIds = items.map((item) => item.ProductId);
+  //     const products = await this.productRepository.find({
+  //       where: { Id: In(productIds) },
+  //     });
+  //     if (products.length !== productIds.length) {
+  //       throw new NotFoundException('One or more products not found');
+  //     }
+
+  //     const printingOptionIds = [
+  //       ...new Set(
+  //         items.flatMap((item) =>
+  //           item.printingOptions
+  //             ? item.printingOptions.map((option) => option.PrintingOptionId)
+  //             : [],
+  //         ),
+  //       ),
+  //     ];
+
+  //     if (printingOptionIds.length > 0) {
+  //       const printingOptions = await this.printingOptionRepository.find({
+  //         where: { Id: In(printingOptionIds) },
+  //       });
+  //       if (printingOptions.length !== printingOptionIds.length) {
+  //         throw new NotFoundException('One or more printing options not found');
+  //       }
+  //     }
+
+  //     const existingOrderItems = await this.orderItemRepository.find({
+  //       where: { OrderId: id },
+  //     });
+  //     const existingOrderItemIds = existingOrderItems.map((item) => item.Id);
+
+  //     if (existingOrderItemIds.length > 0) {
+  //       await this.orderItemsPrintingOptionRepository.delete({
+  //         OrderItemId: In(existingOrderItemIds),
+  //       });
+
+  //       await this.orderItemDetailRepository.delete({
+  //         OrderItemId: In(existingOrderItemIds),
+  //       });
+  //     }
+
+  //     await this.orderItemRepository.delete({ OrderId: id });
+
+  //     const newOrderItems = items.map((item) => ({
+  //       OrderId: id,
+  //       ProductId: item.ProductId,
+  //       Description: item?.Description ?? null,
+  //       ImageId: item.ImageId,
+  //       FileId: item.FileId,
+  //       VideoId: item.VideoId,
+  //       CreatedBy: updatedBy,
+  //       UpdatedBy: updatedBy,
+  //       CreatedOn: new Date(),
+  //       UpdatedOn: new Date(),
+  //       OrderItemPriority: item?.OrderItemPriority || 0,
+  //     }));
+
+  //     const savedOrderItems =
+  //       await this.orderItemRepository.save(newOrderItems);
+
+  //     for (let i = 0; i < items.length; i++) {
+  //       const item = items[i];
+
+  //       if (
+  //         Array.isArray(item.printingOptions) &&
+  //         item.printingOptions.length > 0
+  //       ) {
+  //         const printingOptions = item.printingOptions.map((option) => ({
+  //           OrderItemId: savedOrderItems[i].Id,
+  //           PrintingOptionId: option.PrintingOptionId,
+  //           Description: option.Description,
+  //         }));
+
+  //         await this.orderItemsPrintingOptionRepository.save(printingOptions);
+  //       }
+
+  //       if (Array.isArray(item.orderItemDetails) && item.ProductId) {
+  //         const orderItemDetails = item.orderItemDetails.map((option) => ({
+  //           OrderItemId: savedOrderItems[i].Id,
+  //           ColorOptionId: option?.ColorOptionId ?? null,
+  //           Quantity: option.Quantity,
+  //           Priority: option.Priority,
+  //           SizeOption: option.SizeOption,
+  //           MeasurementId: option.MeasurementId,
+  //           CreatedBy: updatedBy,
+  //           UpdatedBy: updatedBy,
+  //           CreatedOn: new Date(),
+  //           UpdatedOn: new Date(),
+  //         }));
+  //         try {
+  //           await this.orderItemDetailRepository.save(orderItemDetails);
+  //         } catch (error) {
+  //           console.error('Error saving color option:', error);
+  //           throw new Error('Failed to save color options for order item');
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   const updatedOrder = await this.orderRepository.save({
+  //     ...order,
+  //     ClientId: updateData.ClientId,
+  //     OrderEventId: updateData?.OrderEventId ?? null,
+  //     Description: updateData.Description,
+  //     Deadline: updateData.Deadline,
+  //     OrderPriority: updateData.OrderPriority,
+  //     ExternalOrderId: updateData.ExternalOrderId,
+  //     UpdatedBy: updatedBy,
+  //     UpdatedOn: new Date(),
+  //   });
+
+  //   return updatedOrder;
+  // }
 
   async deleteOrder(id: number): Promise<void> {
     const order = await this.orderRepository.findOne({ where: { Id: id } });
