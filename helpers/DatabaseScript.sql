@@ -1416,3 +1416,6 @@ MODIFY COLUMN OrderItemDescription VARCHAR(1000) NULL;
 ALTER TABLE ShipmentBox
 MODIFY COLUMN BoxNumber VARCHAR(100) NOT NULL;
 
+-- remove order name and number generation on inserting
+DROP TRIGGER IF EXISTS GenerateOrderName;
+DROP TRIGGER IF EXISTS GenerateOrderNumber;
