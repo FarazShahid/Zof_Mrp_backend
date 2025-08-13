@@ -1017,7 +1017,7 @@ export class OrdersService {
         ClientId: orderData.ClientId,
         ClientName: orderData.ClientName || 'Unknown Client',
         OrderEventId: orderData?.OrderEventId ?? null,
-        EventName: orderData.EventName || 'Unknown Event',
+        EventName: orderData.EventName || '---',
         OrderPriority: orderData.OrderPriority,
         Description: orderData.Description,
         OrderNumber: orderData.OrderNumber,

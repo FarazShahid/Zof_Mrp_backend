@@ -298,6 +298,8 @@ export class inventoryItemService {
         ReorderLevel: data.ReorderLevel ?? inventoryItem.ReorderLevel,
         CategoryId: data.CategoryId,
         SubCategoryId: data?.SubCategoryId ?? null,
+        UnitOfMeasureId: data.UnitOfMeasureId ?? inventoryItem.UnitOfMeasureId,
+        SupplierId: data.SupplierId ?? inventoryItem.SupplierId,
         UpdatedBy: updatedBy,
         UpdatedOn: new Date(),
       };
