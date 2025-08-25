@@ -4,7 +4,6 @@ import {
   IsString,
   IsNumber,
   IsNotEmpty,
-  IsDateString,
   ValidateNested,
   Min,
   IsInt,
@@ -15,26 +14,28 @@ import {
 import { Type } from 'class-transformer';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 
 export class OrderItemDetailDto {
   @CommonApiProperty('Color Option Id', 'Color Option Id')
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   @IsInt()
   @Min(1)
   ColorOptionId: number;
 
   @CommonApiProperty('SizeOption', '1')
+  @Transform(({ value }) => (value === 0 || value === '0' || !value ? null : Number(value)))
+  @IsOptional()
   @IsNumber()
   @IsInt()
-  @Min(1)
   SizeOption: number;
 
   @CommonApiProperty('MeasurementId', 1)
-  @IsNumber()
+  @Transform(({ value }) => (value === 0 || value === '0' || !value ? null : Number(value)))
   @IsOptional()
+  @IsNumber()
   @IsInt()
-  // @Min(1)
   MeasurementId?: number;
 
   @CommonApiProperty('Quantity', '1')

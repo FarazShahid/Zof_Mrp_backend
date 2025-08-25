@@ -1,6 +1,7 @@
 import { Client } from "src/clients/entities/client.entity";
 import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn, CreateDateColumn, ManyToOne, JoinColumn, OneToMany } from "typeorm";
 import { ProductPrintingOptions } from "./product-printing-options.entity";
+import { ProductCategory } from "src/product-category/entities/product-category.entity";
 
 @Entity('product')
 export class Product {
@@ -20,9 +21,13 @@ export class Product {
 
     @OneToMany(() => ProductPrintingOptions, ppo => ppo.Product)
     ProductPrintingOptions: ProductPrintingOptions[];
-    
-    @Column()
+
+    @Column({ name: 'ProductCategoryId', type: 'int' })
     ProductCategoryId: number;
+
+    @ManyToOne(() => ProductCategory, { onDelete: 'RESTRICT', onUpdate: 'CASCADE' })
+    @JoinColumn({ name: 'ProductCategoryId' })
+    ProductCategory: ProductCategory;
 
     @Column()
     isArchived: boolean;

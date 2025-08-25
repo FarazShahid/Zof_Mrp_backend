@@ -8,13 +8,13 @@ export class ProductCategory {
   @Column({ type: 'varchar', length: 255 })
   type: string;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: false, nullable: true })
   IsTopUnit: boolean;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: false, nullable: true })
   IsBottomUnit: boolean;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: false, nullable: true })
   SupportsLogo: boolean;
 
   @CreateDateColumn({ type: 'timestamp' })
@@ -28,5 +28,5 @@ export class ProductCategory {
 
   @Column({ type: 'varchar', length: 100 })
   updatedBy: string;
-  
+
 }

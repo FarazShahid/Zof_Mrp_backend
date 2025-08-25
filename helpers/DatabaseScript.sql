@@ -1419,3 +1419,14 @@ MODIFY COLUMN BoxNumber VARCHAR(100) NOT NULL;
 -- remove order name and number generation on inserting
 DROP TRIGGER IF EXISTS GenerateOrderName;
 DROP TRIGGER IF EXISTS GenerateOrderNumber;
+
+ALTER TABLE `product`
+ADD CONSTRAINT `FK_product_category`
+FOREIGN KEY (`ProductCategoryId`) REFERENCES `productcategory`(`Id`)
+ON DELETE RESTRICT
+ON UPDATE CASCADE;
+
+
+ALTER TABLE orderitemdetails
+  MODIFY COLUMN SizeOption INT NULL DEFAULT NULL,
+  MODIFY COLUMN MeasurementId INT NULL DEFAULT NULL;
