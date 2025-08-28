@@ -211,9 +211,52 @@ export class SizeMeasurement {
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   t_left_sleeve: number;
-  
+
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
-  t_right_sleeve: number
+  t_right_sleeve: number;
+
+  // Hat / Cap Measurement Columns
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  H_VisorLength: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  H_VisorWidth: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  H_CrownCircumference: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  H_FrontSeamLength: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  H_BackSeamLength: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  H_RightCenterSeamLength: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  H_LeftCenterSeamLength: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  H_ClosureHeightIncludingStrapWidth: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  H_StrapWidth: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  H_StrapbackLength: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  H_SweatBandWidth: number;
+
+  @Column({ type: 'boolean', default: false, nullable: true })
+  H_FusionInside: boolean;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  H_PatchSize: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  H_PatchPlacement: number;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;

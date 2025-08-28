@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { SizeMeasurement } from './entities/size-measurement.entity';
-import { CreateSizeMeasurementDto } from './dto/create-size-measurement.dto';
+import { CreateSizeMeasurementDto, HatFusion } from './dto/create-size-measurement.dto';
 import { UpdateSizeMeasurementDto } from './dto/update-size-measurement.dto';
 import { ProductCutOption } from 'src/productcutoptions/entity/productcutoptions.entity';
 import { ProductCategory } from 'src/product-category/entities/product-category.entity';
@@ -110,6 +110,7 @@ export class SizeMeasurementsService {
 
       return items.map(e => ({
         ...e,
+        H_FusionInside: e?.H_FusionInside ? HatFusion.YES : HatFusion.NO ?? HatFusion.NO,
         cutOptionName: cutOptionsMap.get(e.CutOptionId)?.OptionProductCutOptions || null
       }));
 
@@ -155,6 +156,7 @@ export class SizeMeasurementsService {
       // Step 3: Return the result, adding cutOptionName
       return {
         ...sizeMeasurement,
+        H_FusionInside: sizeMeasurement?.H_FusionInside ? HatFusion.YES : HatFusion.NO ?? HatFusion.NO,
         cutOptionName
       };
 
@@ -273,6 +275,7 @@ export class SizeMeasurementsService {
 
       return items.map(e => ({
         ...e,
+        H_FusionInside: e?.H_FusionInside ? HatFusion.YES : HatFusion.NO ?? HatFusion.NO,
         cutOptionName: cutOptionsMap.get(e.CutOptionId)?.OptionProductCutOptions || null
       }));
 

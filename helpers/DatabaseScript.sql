@@ -1428,9 +1428,40 @@ ON UPDATE CASCADE;
 
 
 ALTER TABLE orderitemdetails
+<<<<<<< Updated upstream
   MODIFY COLUMN SizeOption INT NULL DEFAULT NULL,
   MODIFY COLUMN MeasurementId INT NULL DEFAULT NULL;
 
 
 ALTER TABLE `InventoryTransactions`
 MODIFY `CurrentStock` DECIMAL(10,2) NULL;
+=======
+MODIFY COLUMN SizeOption INT NULL DEFAULT NULL,
+MODIFY COLUMN MeasurementId INT NULL DEFAULT NULL;
+
+ALTER TABLE `InventoryTransactions`
+MODIFY `CurrentStock` DECIMAL(10,2) NULL;
+
+-- Add new columns for product category  8 Aug 2025
+ALTER TABLE `productcategory`
+ADD COLUMN IsHat BOOLEAN DEFAULT false,
+ADD COLUMN IsBag BOOLEAN DEFAULT false,
+ADD COLUMN IsSocks BOOLEAN DEFAULT false;
+
+-- Add new columns for size measurements 8 Aug 2025
+ALTER TABLE `sizemeasurements`
+ADD COLUMN H_VisorLength DECIMAL(5,2) NULL,
+ADD COLUMN H_VisorWidth DECIMAL(5,2) NULL,
+ADD COLUMN H_CrownCircumference DECIMAL(5,2) NULL,
+ADD COLUMN H_FrontSeamLength DECIMAL(5,2) NULL,
+ADD COLUMN H_BackSeamLength DECIMAL(5,2) NULL,
+ADD COLUMN H_RightCenterSeamLength DECIMAL(5,2) NULL,
+ADD COLUMN H_LeftCenterSeamLength DECIMAL(5,2) NULL,
+ADD COLUMN H_ClosureHeightIncludingStrapWidth DECIMAL(5,2) NULL,
+ADD COLUMN H_StrapWidth DECIMAL(5,2) NULL,
+ADD COLUMN H_StrapbackLength DECIMAL(5,2) NULL,
+ADD COLUMN H_SweatBandWidth DECIMAL(5,2) NULL,
+ADD COLUMN H_FusionInside BOOLEAN DEFAULT false,
+ADD COLUMN H_PatchSize DECIMAL(5,2) NULL,
+ADD COLUMN H_PatchPlacement DECIMAL(5,2) NULL;
+>>>>>>> Stashed changes

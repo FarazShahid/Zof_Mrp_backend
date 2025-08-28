@@ -8,7 +8,7 @@ export class ProductCategoryService {
   constructor(
     @InjectRepository(ProductCategory)
     private categoryRepository: Repository<ProductCategory>,
-  ) {}
+  ) { }
 
   async create(data: Partial<ProductCategory>, userEmail: string): Promise<ProductCategory> {
     const existingCategory = await this.categoryRepository.findOne({
@@ -41,7 +41,6 @@ export class ProductCategoryService {
   }
 
   async update(id: number, data: Partial<ProductCategory>, userEmail: string): Promise<ProductCategory> {
-    const category = await this.findOne(id);
     if (data.type) {
       const existingCategory = await this.categoryRepository.findOne({
         where: { type: data.type },
@@ -56,17 +55,17 @@ export class ProductCategoryService {
       updatedBy: userEmail
     });
     return this.findOne(id);
-}
+  }
 
 
-async remove(id: number): Promise<{ message: string }> {
+  async remove(id: number): Promise<{ message: string }> {
     const deleteResult = await this.categoryRepository.delete(id);
 
     if (!deleteResult.affected) {
-        throw new NotFoundException(`Category not found.`);
+      throw new NotFoundException(`Category not found.`);
     }
 
     return { message: `Category has been deleted.` };
-}
+  }
 
 }

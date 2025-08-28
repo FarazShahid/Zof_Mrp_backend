@@ -18,4 +18,17 @@ export class CreateProductCategoryDto {
   @CommonApiProperty('SupportsLogo?', true)
   @IsBoolean()
   SupportsLogo: boolean = false;
+
+  @CommonApiProperty('IsHat?', true)
+  @IsBoolean()
+  IsHat: boolean = false;
+
+  @CommonApiProperty('IsBag?', true)
+  @IsBoolean()
+  IsBag: boolean = false;
+
+  @CommonApiProperty('IsSocks?', true)
+  @IsBoolean()
+  IsSocks: boolean = false;
+
 }

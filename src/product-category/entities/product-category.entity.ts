@@ -17,6 +17,15 @@ export class ProductCategory {
   @Column({ type: 'boolean', default: false, nullable: true })
   SupportsLogo: boolean;
 
+  @Column({ type: 'boolean', default: false, nullable: true })
+  IsHat: boolean;
+
+  @Column({ type: 'boolean', default: false, nullable: true })
+  IsBag: boolean;
+
+  @Column({ type: 'boolean', default: false, nullable: true })
+  IsSocks: boolean;
+
   @CreateDateColumn({ type: 'timestamp' })
   createdOn: Date;
 

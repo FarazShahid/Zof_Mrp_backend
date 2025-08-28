@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsString,
   IsNumber,
@@ -6,8 +7,14 @@ import {
   Max,
   IsNotEmpty,
   IsInt,
+  IsEnum,
 } from 'class-validator';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
+
+export enum HatFusion {
+  YES = 'Yes',
+  NO = 'No'
+}
 
 export class CreateSizeMeasurementDto {
   @CommonApiProperty('Client Id', '1')
@@ -451,7 +458,7 @@ export class CreateSizeMeasurementDto {
   @Min(0)
   @Max(999.99)
   t_right_sleeve: number
-  
+
   @CommonApiProperty('Bottom Unit, Top Right Logo size', '1')
   @IsNumber()
   @IsOptional()
@@ -479,5 +486,106 @@ export class CreateSizeMeasurementDto {
   @Min(0)
   @Max(999.99)
   b_BottomLeft?: number;
+
+  //Hat / Cap Measurement Columns
+  @CommonApiProperty('Hat, Visor Length', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  H_VisorLength: number;
+
+  @CommonApiProperty('Hat, Visor Width', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  H_VisorWidth: number;
+
+  @CommonApiProperty('Hat, Crown Circumference', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  H_CrownCircumference: number;
+
+  @CommonApiProperty('Hat, Front Seam Length', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  H_FrontSeamLength: number;
+
+  @CommonApiProperty('Hat, Back Seam Length', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  H_BackSeamLength: number;
+
+  @CommonApiProperty('Hat, Right Center Seam Length', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  H_RightCenterSeamLength: number;
+
+  @CommonApiProperty('Hat, Left Center Seam Length', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  H_LeftCenterSeamLength: number;
+
+  @CommonApiProperty('Hat, Closure Height Including Strap Width', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  H_ClosureHeightIncludingStrapWidth: number;
+
+  @CommonApiProperty('Hat, Strap Width', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  H_StrapWidth: number;
+
+  @CommonApiProperty('Hat, Strapback Length', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  H_StrapbackLength: number;
+
+  @CommonApiProperty('Hat, Sweat Band Width', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  H_SweatBandWidth: number;
+
+  @CommonApiProperty('Hat, Fusion Inside', '1')
+  @IsEnum(HatFusion)
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null) return false;
+    return value === HatFusion.YES;
+  })
+  H_FusionInside: boolean;
+
+  @CommonApiProperty('Hat, Hat Patch Size', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  H_PatchSize: number;
+
+  @CommonApiProperty('Hat, Hat Patch Placement', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  H_PatchPlacement: number;
 
 }
