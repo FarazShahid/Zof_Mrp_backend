@@ -8,6 +8,7 @@ import {
   IsNotEmpty,
   IsInt,
   IsEnum,
+  IsBoolean,
 } from 'class-validator';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 
@@ -565,13 +566,13 @@ export class CreateSizeMeasurementDto {
   @Max(999.99)
   H_SweatBandWidth: number;
 
-  @CommonApiProperty('Hat, Fusion Inside', '1')
-  @IsEnum(HatFusion)
+  @CommonApiProperty('Hat, Fusion Inside', 'Yes')
   @IsOptional()
+  @IsBoolean()
   @Transform(({ value }) => {
     if (value === undefined || value === null) return false;
     return value === HatFusion.YES;
-  })
+  }, { toClassOnly: true })
   H_FusionInside: boolean;
 
   @CommonApiProperty('Hat, Hat Patch Size', '1')
