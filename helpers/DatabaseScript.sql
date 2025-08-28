@@ -1428,14 +1428,12 @@ ON UPDATE CASCADE;
 
 
 ALTER TABLE orderitemdetails
-<<<<<<< Updated upstream
   MODIFY COLUMN SizeOption INT NULL DEFAULT NULL,
   MODIFY COLUMN MeasurementId INT NULL DEFAULT NULL;
 
 
 ALTER TABLE `InventoryTransactions`
 MODIFY `CurrentStock` DECIMAL(10,2) NULL;
-=======
 MODIFY COLUMN SizeOption INT NULL DEFAULT NULL,
 MODIFY COLUMN MeasurementId INT NULL DEFAULT NULL;
 
@@ -1464,4 +1462,3 @@ ADD COLUMN H_SweatBandWidth DECIMAL(5,2) NULL,
 ADD COLUMN H_FusionInside BOOLEAN DEFAULT false,
 ADD COLUMN H_PatchSize DECIMAL(5,2) NULL,
 ADD COLUMN H_PatchPlacement DECIMAL(5,2) NULL;
->>>>>>> Stashed changes
