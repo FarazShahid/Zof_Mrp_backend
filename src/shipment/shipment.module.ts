@@ -8,9 +8,10 @@ import { Shipment } from './entities/shipment.entity';
 import { ShipmentBox } from './entities/shipment-box.entity';
 import { Order } from 'src/orders/entities/orders.entity';
 import { OrderItem } from 'src/orders/entities/order-item.entity';
+import { ShipmentOrder } from './entities/shipment-order.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ShipmentCarrier, Shipment, ShipmentBox, Order, OrderItem ])],
+  imports: [TypeOrmModule.forFeature([ShipmentCarrier, Shipment, ShipmentBox, Order, OrderItem, ShipmentOrder])],
   controllers: [ShipmentController],
   providers: [ShipmentService],
 })

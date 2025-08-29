@@ -632,7 +632,6 @@ export class OrdersService {
     }
   }
 
-
   async deleteOrder(id: number): Promise<void> {
     const order = await this.orderRepository.findOne({ where: { Id: id } });
 
@@ -898,44 +897,16 @@ export class OrdersService {
       .leftJoin('document', 'imageDoc', 'orderItem.ImageId = imageDoc.Id')
       .leftJoin('document', 'fileDoc', 'orderItem.FileId = fileDoc.Id')
       .leftJoin('document', 'videoDoc', 'orderItem.VideoId = videoDoc.Id')
-      .leftJoin(
-        'orderitemsprintingoptions',
-        'printingOption',
-        'orderItem.Id = printingOption.OrderItemId',
-      )
-      .leftJoin(
-        'printingoptions',
-        'printingoptions',
-        'printingOption.PrintingOptionId = printingoptions.Id',
-      )
-      .leftJoin(
-        'orderitemdetails',
-        'orderitemdetails',
-        'orderItem.Id = orderitemdetails.OrderItemId',
-      )
-      .leftJoin(
-        'availablecoloroptions',
-        'availablecoloroptions',
-        'orderitemdetails.ColorOptionId = availablecoloroptions.Id',
-      )
-      .leftJoin(
-        'coloroption',
-        'colorOption',
-        'availablecoloroptions.colorId = colorOption.Id',
-      )
+      .leftJoin('orderitemsprintingoptions', 'printingOption', 'orderItem.Id = printingOption.OrderItemId')
+      .leftJoin('printingoptions', 'printingoptions', 'printingOption.PrintingOptionId = printingoptions.Id')
+      .leftJoin('orderitemdetails', 'orderitemdetails', 'orderItem.Id = orderitemdetails.OrderItemId')
+      .leftJoin('availablecoloroptions', 'availablecoloroptions', 'orderitemdetails.ColorOptionId = availablecoloroptions.Id')
+      .leftJoin('coloroption', 'colorOption', 'availablecoloroptions.colorId = colorOption.Id',)
       // New joins for size option name
       // .leftJoin('availblesizeoptions', 'availableSizeOption', 'orderitemdetails.SizeOption = availableSizeOption.Id')
-      .leftJoin(
-        'sizeoptions',
-        'sizeOption',
-        'orderitemdetails.SizeOption = sizeOption.Id',
-      )
+      .leftJoin('sizeoptions', 'sizeOption', 'orderitemdetails.SizeOption = sizeOption.Id')
       // New join for measurement name
-      .leftJoin(
-        'sizemeasurements',
-        'sizeMeasurement',
-        'orderitemdetails.MeasurementId = sizeMeasurement.Id',
-      )
+      .leftJoin('sizemeasurements', 'sizeMeasurement', 'orderitemdetails.MeasurementId = sizeMeasurement.Id')
       .select([
         'orderItem.Id AS Id',
         'orderItem.OrderId AS OrderId',
@@ -1079,5 +1050,18 @@ export class OrdersService {
     await this.orderStatusLogRepository.save(statusLog);
 
     return await this.orderRepository.save(order);
+  }
+
+  async getOrderItemsByOrderIds(orderIds: number[]): Promise<any[]> {
+    const items = await this.orderItemRepository.find({
+      where: { OrderId: In(orderIds) },
+      relations: ['product'],
+      order: { CreatedOn: 'DESC' },
+    });
+
+    return items.map(item => ({
+      Id: item.Id,
+      Name: item.product.Name,
+    }));
   }
 }

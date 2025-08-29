@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Shipment } from "./shipment.entity";
+import { OrderItem } from "src/orders/entities/order-item.entity";
 
 @Entity('ShipmentBox')
 export class ShipmentBox {
@@ -22,8 +23,15 @@ export class ShipmentBox {
     @Column()
     Quantity: number;
 
-    @Column()
-    OrderItem: string;
+    @Column({ type: 'varchar', length: 255, nullable: false })
+    OrderItemName: string;
+
+    @Column({ type: 'int', nullable: true })
+    OrderItemId: number;
+
+    @ManyToOne(() => OrderItem, orderItem => orderItem.Boxes, { cascade: true })
+    @JoinColumn({ name: "OrderItemId" })
+    OrderItem: OrderItem;
 
     @Column()
     OrderItemDescription: string

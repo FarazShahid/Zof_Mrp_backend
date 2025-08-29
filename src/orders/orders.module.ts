@@ -15,6 +15,7 @@ import { ColorOption } from '../coloroption/_/color-option.entity';
 import { PrintingOptions } from '../printingoptions/entities/printingoptions.entity';
 import { OrderStatusLogs } from './entities/order-status-log';
 import { SizeMeasurement } from 'src/size-measurements/entities/size-measurement.entity';
+import { ShipmentOrder } from 'src/shipment/entities/shipment-order.entity';
 
 @Module({
   imports: [
@@ -30,7 +31,8 @@ import { SizeMeasurement } from 'src/size-measurements/entities/size-measurement
       Product,
       ColorOption,
       PrintingOptions,
-      SizeMeasurement
+      SizeMeasurement,
+      ShipmentOrder
     ]),
     UserModule,
   ],

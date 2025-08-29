@@ -11,7 +11,7 @@ import {
   HttpCode
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
-import { CreateOrderDto } from './dto/create-orders.dto';
+import { CreateOrderDto, GetOrdersItemsDto } from './dto/create-orders.dto';
 import { UpdateOrderDto } from './dto/update-orders.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
@@ -45,6 +45,22 @@ export class OrdersController {
       return this.ordersService.getAllOrders();
     } catch (error) {
       console.error('Error fetching orders:', error);
+      throw error;
+    }
+  }
+
+
+  @Post('orders-items')
+  @ApiBody({ type: GetOrdersItemsDto })
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get multiple order items by order ids')
+  async getOrderItemsByOrderIds(
+    @Body() getOrdersItemsDto: GetOrdersItemsDto,
+  ): Promise<any> {
+    try {
+      return this.ordersService.getOrderItemsByOrderIds(getOrdersItemsDto.orderIds);
+    } catch (error) {
+      console.error('Error fetching order items:', error);
       throw error;
     }
   }

@@ -41,10 +41,10 @@ import { ShipmentModule } from './shipment/shipment.module';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD') === '""' ? '' : configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
-        entities: [],
-        // Make Sync False for Prod
-        synchronize: configService.get('false'),
-        logging: false,
+        // entities: [],
+        // Make Sync False for Production
+        synchronize: configService.get('DB_FIRST_TECHNIQUE') === 'true',
+        logging: true,
         autoLoadEntities: true,
         keepConnectionAlive: true,
         extra: {

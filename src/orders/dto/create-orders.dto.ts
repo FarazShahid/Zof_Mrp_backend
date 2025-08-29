@@ -53,6 +53,19 @@ export class OrderItemDetailDto {
   Priority: number;
 }
 
+export class GetOrdersItemsDto {
+  @ApiProperty({
+    description: 'Order IDs',
+    example: [24, 25, 26],
+    type: [Number],
+  })
+  @IsArray({ message: 'orderIds must be an array' })
+  @ArrayMinSize(1, { message: 'At least one order id is required' })
+  @IsInt({ each: true, message: 'Each order id must be an integer' })
+  @Type(() => Number)            // converts ["24","25"] -> [24,25]
+  orderIds: number[];
+}
+
 export class PrintingOptionDto {
   @CommonApiProperty('Printing Option Id', '1')
   @IsNumber()

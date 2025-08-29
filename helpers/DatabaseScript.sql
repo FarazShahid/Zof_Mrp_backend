@@ -1462,3 +1462,32 @@ ADD COLUMN H_SweatBandWidth DECIMAL(5,2) NULL,
 ADD COLUMN H_FusionInside BOOLEAN DEFAULT false,
 ADD COLUMN H_PatchSize DECIMAL(5,2) NULL,
 ADD COLUMN H_PatchPlacement DECIMAL(5,2) NULL;
+
+
+
+-- Shipment Order Entity
+
+CREATE TABLE `shipmentOrders` (
+  `Id` int NOT NULL AUTO_INCREMENT,
+  `ShipmentId` int NOT NULL,
+  `OrderId` int NOT NULL,
+  PRIMARY KEY (`Id`),
+  CONSTRAINT `FK_ShipmentOrder_Shipment` FOREIGN KEY (`ShipmentId`) 
+    REFERENCES `Shipment` (`Id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_ShipmentOrder_Order` FOREIGN KEY (`OrderId`) 
+    REFERENCES `orders` (`Id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+ALTER TABLE ShipmentBox CHANGE COLUMN OrderItem OrderItemName VARCHAR(255) NOT NULL;
+
+ALTER TABLE ShipmentBox ADD COLUMN OrderItemId INT NULL;
+
+ALTER TABLE ShipmentBox 
+ADD CONSTRAINT FK_ShipmentBox_OrderItems FOREIGN KEY (OrderItemId) REFERENCES orderItems(Id);
+
+
+ALTER TABLE orderitems 
+ADD COLUMN itemShipmentStatus ENUM('Pending', 'Shipped', 'Partially Shipped') 
+NOT NULL DEFAULT 'Pending';
+

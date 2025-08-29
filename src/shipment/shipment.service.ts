@@ -10,11 +10,14 @@ import { ShipmentCarrier } from 'src/shipment-carrier/entities/shipment-carrier.
 import { Shipment } from './entities/shipment.entity';
 // import { ShipmentDetail } from './entities/shipment-details';
 import { ShipmentBox } from './entities/shipment-box.entity';
+import { Order } from 'src/orders/entities/orders.entity';
+import { ShipmentOrder } from './entities/shipment-order.entity';
+import { OrderItem } from 'src/orders/entities/order-item.entity';
 @Injectable()
 export class ShipmentService {
   constructor(
-    // @InjectRepository(Order)
-    // private readonly orderRepository: Repository<Order>,
+    @InjectRepository(Order)
+    private readonly orderRepository: Repository<Order>,
 
     @InjectRepository(ShipmentCarrier)
     private readonly shipmentCarrierRepository: Repository<ShipmentCarrier>,
@@ -22,14 +25,17 @@ export class ShipmentService {
     // @InjectRepository(OrderItem)
     // private readonly orderItemRepository: Repository<OrderItem>,
 
-    @InjectRepository(ShipmentBox)
-    private readonly shipmentBoxRepository: Repository<ShipmentBox>,
+    // @InjectRepository(ShipmentBox)
+    // private readonly shipmentBoxRepository: Repository<ShipmentBox>,
 
-    // @InjectRepository(ShipmentDetail)
-    // private readonly shipmentDetailRepository: Repository<ShipmentDetail>,
+    @InjectRepository(OrderItem)
+    private readonly orderItemRepository: Repository<OrderItem>,
 
     @InjectRepository(Shipment)
     private readonly shipmentRepository: Repository<Shipment>,
+
+    @InjectRepository(ShipmentOrder)
+    private readonly shipmentOrderRepository: Repository<ShipmentOrder>,
 
     private dataSource: DataSource
 
@@ -50,51 +56,90 @@ export class ShipmentService {
       boxes,
     } = createShipmentDto;
 
+    if (boxes.length !== NumberOfBoxes) {
+      throw new BadRequestException('NumberOfBoxes does not match boxes length.');
+    }
 
     const carrier = await this.shipmentCarrierRepository.findOne({ where: { Id: ShipmentCarrierId } });
     if (!carrier) {
       throw new NotFoundException(`Shipment Carrier with ID ${ShipmentCarrierId} not found`);
     }
 
-    const shipment = this.shipmentRepository.create({
-      ShipmentCode,
-      TrackingId,
-      ShipmentCost,
-      TotalWeight,
-      OrderNumber,
-      ShipmentCarrierId,
-      ShipmentDate: new Date(ShipmentDate),
-      NumberOfBoxes,
-      WeightUnit,
-      ReceivedTime: new Date(ReceivedTime) || null,
-      Status,
-      CreatedBy: createdBy,
-      UpdatedBy: createdBy,
+    const orderIds = new Set(createShipmentDto.OrderIds);
+    const verifiedOrder = await this.orderRepository.findBy({ Id: In(Array.from(orderIds)) });
+    if (verifiedOrder.length !== Array.from(orderIds).length) {
+      throw new BadRequestException('Some Orders are invalid.');
+    }
+
+    const orderItemIds = new Set(boxes.map(box => box?.OrderItemId));
+    const verifiedOrderItems = await this.orderItemRepository.findBy({ Id: In(Array.from(orderItemIds)) });
+    if (verifiedOrderItems.length !== Array.from(orderItemIds).length) {
+      throw new BadRequestException('Some Order Items are invalid.');
+    }
+
+    const verifiedOrderIds = new Set(verifiedOrder.map(o => o.Id));
+    const badItem = verifiedOrderItems.find(orderItem => !verifiedOrderIds.has(orderItem.OrderId));
+    if (badItem) {
+      throw new BadRequestException(`OrderItem ${badItem.Id} does not belong to the provided orders.`);
+    }
+
+    return await this.dataSource.transaction(async (manager) => {
+      const shipment = manager.getRepository(Shipment).create({
+        ShipmentCode,
+        TrackingId,
+        ShipmentCost,
+        TotalWeight,
+        OrderNumber,
+        ShipmentCarrierId,
+        ShipmentDate: new Date(ShipmentDate),
+        NumberOfBoxes,
+        WeightUnit,
+        ReceivedTime: createShipmentDto.ReceivedTime
+          ? new Date(createShipmentDto.ReceivedTime)
+          : null,
+        Status,
+        CreatedBy: createdBy,
+        UpdatedBy: createdBy,
+      });
+
+      const savedShipment = await manager.getRepository(Shipment).save(shipment);
+      if (!savedShipment) {
+        throw new InternalServerErrorException('Failed to create shipment');
+      }
+
+      if (verifiedOrder.length > 0) {
+        const shipmentOrder = manager.getRepository(ShipmentOrder).create(
+          verifiedOrder.map(order => ({
+            ShipmentId: savedShipment.Id,
+            OrderId: order.Id
+          }))
+        );
+        await manager.getRepository(ShipmentOrder).save(shipmentOrder);
+      }
+
+      const boxEntities = boxes.map(box =>
+        manager.getRepository(ShipmentBox).create({
+          OrderItemId: box.OrderItemId,
+          ShipmentId: savedShipment.Id,
+          BoxNumber: box.BoxNumber,
+          Weight: box.Weight,
+          Quantity: box.Quantity,
+          OrderItemName: box.OrderItemName,
+          OrderItemDescription: box.OrderItemDescription
+        }),
+      );
+
+      await manager.getRepository(ShipmentBox).save(boxEntities);
+      return { id: shipment.Id };
     });
-
-    const savedShipment = await this.shipmentRepository.save(shipment);
-
-    const boxEntities = boxes.map(box =>
-      this.shipmentBoxRepository.create({
-        ShipmentId: savedShipment.Id,
-        BoxNumber: box.BoxNumber,
-        Weight: box.Weight,
-        Quantity: box.Quantity,
-        OrderItem: box.OrderItem,
-        OrderItemDescription: box.OrderItemDescription
-      }),
-    );
-    await this.shipmentBoxRepository.save(boxEntities);
-    return {
-      id: shipment.Id
-    };
   }
 
   async findAll(): Promise<ShipmentResponseDto[]> {
     const shipments = await this.shipmentRepository.find({
       relations: [
         'ShipmentCarrier',
-        'Boxes'
+        'Boxes',
+        'Boxes.OrderItem'
       ],
       order: {
         ShipmentDate: 'DESC',
@@ -128,7 +173,8 @@ export class ShipmentService {
       where: { Id: id },
       relations: [
         'ShipmentCarrier',
-        'Boxes'
+        'Boxes',
+        'Boxes.OrderItem'
       ],
       order: {
         ShipmentDate: 'DESC',
@@ -143,6 +189,11 @@ export class ShipmentService {
     if (!existingShipment) throw new NotFoundException(`Shipment with ID ${id} not found`);
 
     return await this.dataSource.transaction(async manager => {
+      const shipmentRepo = manager.getRepository(Shipment);
+      const shipmentBoxRepo = manager.getRepository(ShipmentBox);
+      const orderItemRepo = manager.getRepository(OrderItem);
+      const shipmentOrderRepo = manager.getRepository(ShipmentOrder);
+
       const {
         ShipmentCode,
         TrackingId,
@@ -155,29 +206,45 @@ export class ShipmentService {
         WeightUnit,
         ReceivedTime,
         Status,
-        boxes,
+        boxes, // expects [{ BoxNumber, Weight, Quantity, OrderItemId?, OrderItemName, OrderItemDescription? }]
       } = updateShipmentDto;
 
-      const shipmentRepo = manager.getRepository(Shipment);
-      // const shipmentDetailRepo = manager.getRepository(ShipmentDetail);
-      const shipmentBoxRepo = manager.getRepository(ShipmentBox);
-      // const orderItemRepo = manager.getRepository(OrderItem);
+      // If boxes are provided, optionally ensure count matches NumberOfBoxes (when provided)
+      if (boxes && Array.isArray(boxes) && NumberOfBoxes !== undefined && boxes.length !== NumberOfBoxes) {
+        throw new BadRequestException('NumberOfBoxes does not match boxes length.');
+      }
 
-      // Validate new OrderId
-      // if (OrderId && OrderId !== existingShipment.OrderId) {
-      //   const order = await this.orderRepository.findOne({ where: { Id: OrderId } });
-      //   if (!order) throw new NotFoundException(`Order with ID ${OrderId} not found`);
-      //   existingShipment.OrderId = OrderId;
-      // }
-
-      // Validate new CarrierId
+      // If carrier changed, validate new carrier
       if (ShipmentCarrierId && ShipmentCarrierId !== existingShipment.ShipmentCarrierId) {
         const carrier = await this.shipmentCarrierRepository.findOne({ where: { Id: ShipmentCarrierId } });
         if (!carrier) throw new NotFoundException(`Carrier with ID ${ShipmentCarrierId} not found`);
         existingShipment.ShipmentCarrierId = ShipmentCarrierId;
       }
 
-      // Update simple fields
+      // Validate OrderItemIds (when boxes provided)
+      if (boxes && Array.isArray(boxes) && boxes.length > 0) {
+        const orderItemIds = new Set<number>(
+          boxes.filter(b => b?.OrderItemId != null).map(b => Number(b.OrderItemId))
+        );
+
+        if (orderItemIds.size > 0) {
+          const verifiedOrderItems = await orderItemRepo.findBy({ Id: In([...orderItemIds]) });
+          if (verifiedOrderItems.length !== orderItemIds.size) {
+            throw new BadRequestException('Some Order Items are invalid.');
+          }
+
+          // Optional consistency check: each OrderItem must belong to an Order already linked to this Shipment
+          // (assumes OrderItem has OrderId)
+          const shipmentOrders = await shipmentOrderRepo.findBy({ ShipmentId: id });
+          const shipmentOrderIds = new Set<number>(shipmentOrders.map(so => so.OrderId));
+          const badItem = verifiedOrderItems.find(oi => !shipmentOrderIds.has(oi.OrderId));
+          if (badItem) {
+            throw new BadRequestException(`OrderItem ${badItem.Id} does not belong to an order in this shipment.`);
+          }
+        }
+      }
+
+      // Apply field updates
       if (OrderNumber !== undefined) existingShipment.OrderNumber = OrderNumber;
       if (ShipmentCode !== undefined) existingShipment.ShipmentCode = ShipmentCode;
       if (TrackingId !== undefined) existingShipment.TrackingId = TrackingId;
@@ -186,67 +253,48 @@ export class ShipmentService {
       if (TotalWeight !== undefined) existingShipment.TotalWeight = TotalWeight;
       if (NumberOfBoxes !== undefined) existingShipment.NumberOfBoxes = NumberOfBoxes;
       if (WeightUnit !== undefined) existingShipment.WeightUnit = WeightUnit;
-      if (ReceivedTime !== undefined) existingShipment.ReceivedTime = ReceivedTime ? new Date(ReceivedTime) : null;
+      if (ReceivedTime !== undefined) {
+        existingShipment.ReceivedTime = ReceivedTime ? new Date(ReceivedTime) : null;
+      }
       if (Status !== undefined) existingShipment.Status = Status;
       existingShipment.UpdatedBy = updatedBy;
 
       await shipmentRepo.save(existingShipment);
 
-      // Validate and Replace ShipmentDetails
-      // if (ShipmentDetails && Array.isArray(ShipmentDetails)) {
-      //   const orderItemIds = ShipmentDetails.map(d => d.OrderItemId);
-      //   const foundItems = await orderItemRepo.findBy({ Id: In(orderItemIds) });
-
-      //   if (foundItems.length !== orderItemIds.length) {
-      //     throw new BadRequestException('Some OrderItemIds are invalid.');
-      //   }
-
-      //   const invalidItems = foundItems.filter(i => i.OrderId !== existingShipment.OrderId);
-      //   if (invalidItems.length) {
-      //     throw new BadRequestException(
-      //       `OrderItemIds [${invalidItems.map(i => i.Id).join(', ')}] do not belong to Order ID ${existingShipment.OrderId}`
-      //     );
-      //   }
-
-      //   await shipmentDetailRepo.delete({ ShipmentId: existingShipment.Id });
-
-      //   const newDetails = ShipmentDetails.map(detail =>
-      //     shipmentDetailRepo.create({
-      //       ShipmentId: existingShipment.Id,
-      //       OrderItemId: detail.OrderItemId,
-      //       Quantity: detail.Quantity,
-      //       Size: detail.Size,
-      //       ItemDetails: detail.ItemDetails,
-      //     })
-      //   );
-      //   await shipmentDetailRepo.save(newDetails);
-      // }
-
-      // Replace Boxes
+      // Replace boxes if provided
       if (boxes && Array.isArray(boxes)) {
+        // Remove old boxes for this shipment
         await shipmentBoxRepo.delete({ ShipmentId: existingShipment.Id });
-        const newBoxes = boxes.map(box =>
-          shipmentBoxRepo.create({
+
+        // Insert new boxes (fast path). Use save([...]) instead if you need entity hooks.
+        await shipmentBoxRepo.insert(
+          boxes.map(box => ({
             ShipmentId: existingShipment.Id,
             BoxNumber: box.BoxNumber,
             Weight: box.Weight,
-            OrderItem: box.OrderItem,
             Quantity: box.Quantity,
-            OrderItemDescription: box.OrderItemDescription,
-          })
+            OrderItemId: box.OrderItemId ?? null,
+            OrderItemName: box.OrderItemName,              // renamed column
+            OrderItemDescription: box.OrderItemDescription ?? null,
+          }))
         );
-        await shipmentBoxRepo.save(newBoxes);
       }
-      return {
-        id: existingShipment.Id
-      };
+
+      return { id: existingShipment.Id };
     });
   }
 
   async remove(id: number) {
-    await this.findOne(id)
-    const deletedShipment = await this.shipmentRepository.delete(id)
-    if (!deletedShipment) throw new InternalServerErrorException()
-    return { message: 'Deleted successfully' }
+    await this.findOne(id);
+
+    await this.dataSource.transaction(async manager => {
+      await manager.getRepository(ShipmentOrder).delete({ ShipmentId: id });
+      await manager.getRepository(ShipmentBox).delete({ ShipmentId: id });
+
+      const res = await manager.getRepository(Shipment).delete(id);
+      if (!res.affected) throw new InternalServerErrorException('Failed to delete shipment');
+    });
+
+    return { message: 'Deleted successfully' };
   }
 }

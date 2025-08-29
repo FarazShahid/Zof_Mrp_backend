@@ -8,7 +8,9 @@ import {
   IsArray,
   ArrayMinSize,
   Min,
-  IsOptional
+  IsOptional,
+  ArrayNotEmpty,
+  IsInt
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -54,7 +56,12 @@ export class ShipmentBoxDto {
   @CommonApiProperty('Order Item Name', 'Green Jersey')
   @IsOptional()
   @IsString()
-  OrderItem: string;
+  OrderItemName: string;
+
+  @CommonApiProperty('Order Item ID', 1)
+  @IsOptional()
+  @IsNumber()
+  OrderItemId: number;
 
   @CommonApiProperty('Item Description', 'Information about item')
   @IsString()
@@ -76,6 +83,13 @@ export class CreateShipmentDto {
   @CommonApiProperty('Order Number', 'CTA-158')
   @IsString()
   OrderNumber: string;
+
+  @ApiProperty({ description: "Order IDs", example: [1, 2, 3] })
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsInt({ each: true })
+  @Type(() => Number)
+  OrderIds: number[];
 
   @CommonApiProperty('Shipment Carrier ID', 1)
   @IsNumber()
@@ -114,13 +128,6 @@ export class CreateShipmentDto {
   @CommonApiProperty('Status', 'Pending')
   @IsEnum(ShipmentStatus)
   Status: ShipmentStatus;
-
-  // @ApiProperty({ type: [ShipmentDetailDto] })
-  // @IsArray()
-  // @ValidateNested({ each: true })
-  // @ArrayMinSize(1)
-  // @Type(() => ShipmentDetailDto)
-  // ShipmentDetails: ShipmentDetailDto[];
 
   @ApiProperty({ type: [ShipmentBoxDto] })
   @IsArray()

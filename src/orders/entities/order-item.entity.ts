@@ -4,7 +4,14 @@ import { Order } from './orders.entity';
 import { Product } from '../../products/entities/product.entity';
 import { OrderItemsPrintingOption } from './order-item-printiing.option.entity';
 import { OrderItemDetails } from './order-item-details';
-// import { ShipmentDetail } from 'src/shipment/entities/shipment-details';
+import { ShipmentBox } from 'src/shipment/entities/shipment-box.entity';
+
+
+export enum OrderItemShipmentEnum {
+  PENDING = 'Pending',
+  SHIPPED = 'Shipped',
+  PARTIALLY_SHIPPED = 'Partially Shipped',
+}
 
 @Entity('orderitems')
 export class OrderItem extends BaseEntity {
@@ -44,7 +51,10 @@ export class OrderItem extends BaseEntity {
   @OneToMany(() => OrderItemDetails, orderItemDetail => orderItemDetail.orderItem)
   orderItemDetails: OrderItemDetails[];
 
-  //New COlumn
-  // @OneToMany(() => ShipmentDetail, detail => detail.OrderItem)
-  // ShipmentDetails: ShipmentDetail[];
-  }
+  @OneToMany(() => ShipmentBox, box => box.OrderItem)
+  Boxes: ShipmentBox[];
+
+  @Column({ type: 'enum', enum: OrderItemShipmentEnum, default: OrderItemShipmentEnum.PENDING })
+  itemShipmentStatus: OrderItemShipmentEnum;
+
+}
