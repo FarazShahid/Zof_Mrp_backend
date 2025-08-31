@@ -16,6 +16,7 @@ import { PrintingOptions } from '../printingoptions/entities/printingoptions.ent
 import { OrderStatusLogs } from './entities/order-status-log';
 import { SizeMeasurement } from 'src/size-measurements/entities/size-measurement.entity';
 import { ShipmentOrder } from 'src/shipment/entities/shipment-order.entity';
+import { OrderPdfService } from './order.pdf.service';
 
 @Module({
   imports: [
@@ -37,7 +38,7 @@ import { ShipmentOrder } from 'src/shipment/entities/shipment-order.entity';
     UserModule,
   ],
   controllers: [OrdersController],
-  providers: [OrdersService],
+  providers: [OrdersService , OrderPdfService],
   exports: [OrdersService]
 })
 export class OrderModule {}

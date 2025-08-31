@@ -212,6 +212,8 @@ export class ShipmentService {
         Quantity: box?.Quantity,
         Weight: box?.Weight,
         OrderItemName: box?.OrderItemName ?? '',
+        OrderItemId: box?.OrderItemId ?? null,
+        OrderItemDescription: box?.OrderItemDescription ?? '',
       })) ?? []
     }
   }

@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>
+      {{#if isSpec}}Order Specification Sheet{{else}}Order Summary{{/if}}
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --text: #1f2937;
+        --sub: #4b5563;
+        --line: #e5e7eb;
+        --hdr: #0b1220;
+        --brand: #1d4ed8;
+        --chip-green-bg: #d1fae5;
+        --chip-green: #065f46;
+        --chip-orange-bg: #ffedd5;
+        --chip-orange: #9a3412;
+        --chip-red-bg: #fee2e2;
+        --chip-red: #7f1d1d;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family:
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Inter,
+          Arial,
+          sans-serif;
+        color: var(--text);
+      }
+      .page {
+        padding: 30px 32px 40px;
+      }
+      .flex {
+        display: flex;
+      }
+      .space-between {
+        justify-content: space-between;
+      }
+      .items-center {
+        align-items: center;
+      }
+      .hdr-row {
+        margin-bottom: 14px;
+      }
+      .logo-box {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+        background: var(--brand);
+        margin-right: 6px;
+      }
+      .company {
+        font-size: 11px;
+        color: var(--hdr);
+        font-weight: 700;
+      }
+      .title {
+        font-size: 18px;
+        color: var(--hdr);
+        font-weight: 700;
+      }
+      .meta {
+        margin-top: 2px;
+        color: var(--sub);
+        font-size: 10px;
+      }
+      .pill-row {
+        margin-top: 6px;
+      }
+      .chip {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 9px;
+        font-weight: 700;
+      }
+      /* Provide the class from server (e.g., chip-warn, chip-bad, chip-ok) */
+      .chip-ok {
+        background: var(--chip-green-bg);
+        color: var(--chip-green);
+      }
+      .chip-warn {
+        background: var(--chip-orange-bg);
+        color: var(--chip-orange);
+      }
+      .chip-bad {
+        background: var(--chip-red-bg);
+        color: var(--chip-red);
+      }
+
+      .infobar {
+        margin-top: 8px;
+        background: #f3f4f6;
+        border-radius: 6px;
+        padding: 10px;
+      }
+      .grid {
+        display: flex;
+        flex-wrap: wrap;
+      }
+      .cell {
+        width: 25%;
+        padding: 6px 8px 6px 0;
+      }
+      .label {
+        color: var(--sub);
+        margin-bottom: 2px;
+        font-weight: 700;
+        font-size: 10px;
+      }
+      .value {
+        color: var(--text);
+        font-size: 10px;
+      }
+
+      .section-title {
+        margin: 14px 0 6px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--hdr);
+      }
+      .table {
+        margin-top: 10px;
+        border: 1px solid var(--text);
+        border-radius: 4px;
+        overflow: hidden;
+        font-size: 10px;
+      }
+      .tr {
+        display: flex;
+      }
+      .th {
+        flex: 1;
+        color: #fff;
+        background: var(--hdr);
+        padding: 6px;
+        border-right: 1px solid #fff;
+        font-weight: 700;
+      }
+      .td {
+        flex: 1;
+        padding: 6px;
+        border-right: 1px solid var(--text);
+        border-top: 1px solid var(--text);
+      }
+      .td.flex4 {
+        flex: 4;
+      }
+
+      .card {
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        break-inside: avoid;
+      }
+      .product-name {
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .product-meta {
+        color: var(--sub);
+        margin: 2px 0 6px;
+      }
+
+      .size-hdr {
+        margin-top: 8px;
+        padding: 6px 8px;
+        background: #f9fafb;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        font-size: 10px;
+      }
+      .gap12 > * {
+        margin-right: 12px;
+      }
+
+      .spec-row {
+        display: flex;
+        margin-top: 8px;
+      }
+      .spec-left {
+        flex: 1;
+        padding-right: 8px;
+      }
+      .spec-right {
+        flex: 1;
+        padding-left: 8px;
+      }
+
+      .chart {
+        width: 100%;
+        height: 140px;
+        border: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--sub);
+        font-size: 10px;
+      }
+
+      .subtitle {
+        margin: 8px 0 4px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--hdr);
+        padding-bottom: 3px;
+        border-bottom: 1px solid var(--line);
+      }
+      .small-table {
+        border: 1px solid var(--text);
+        border-radius: 4px;
+        overflow: hidden;
+        font-size: 10px;
+      }
+      .th2 {
+        flex: 2;
+        color: #fff;
+        background: var(--hdr);
+        padding: 5px 6px;
+        border-right: 1px solid #fff;
+        font-weight: 700;
+      }
+      .th2n {
+        flex: 1;
+        color: #fff;
+        background: var(--hdr);
+        padding: 5px 6px;
+        font-weight: 700;
+      }
+      .td2 {
+        flex: 2;
+        padding: 5px 6px;
+        border-right: 1px solid var(--text);
+        border-top: 1px solid var(--text);
+      }
+      .td2n {
+        flex: 1;
+        padding: 5px 6px;
+        border-top: 1px solid var(--text);
+      }
+      .row {
+        display: flex;
+      }
+      @media print {
+        .page {
+          padding: 24mm;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <!-- HEADER -->
+      <div class="flex space-between hdr-row">
+        <div class="flex items-center">
+          <div class="logo-box"></div>
+          <div class="company">ZeroOneForge MRP</div>
+        </div>
+        <div style="text-align: right">
+          <div class="title">
+            {{#if isSpec}}Order Specification Sheet{{else}}Order Summary{{/if}}
+          </div>
+          <div class="meta">Order #: {{order.OrderNumber}}</div>
+          <div class="meta">Generated: {{generatedAt}}</div>
+          <div class="pill-row">
+            <!-- Provide statusClass from server: chip-ok / chip-warn / chip-bad -->
+            <span class="chip {{statusClass}}">{{order.StatusName}}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUMMARY BAR -->
+      <div class="infobar">
+        <div class="grid">
+          <div class="cell">
+            <div class="label">Client Name</div>
+            <div class="value">{{order.ClientName}}</div>
+          </div>
+          <div class="cell">
+            <div class="label">Event Name</div>
+            <div class="value">{{order.EventName}}</div>
+          </div>
+          <div class="cell">
+            <div class="label">Deadline</div>
+            <div class="value">{{deadlineFormatted}}</div>
+          </div>
+          <div class="cell">
+            <div class="label">Current Status</div>
+            <div class="value">{{order.StatusName}}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS OVERVIEW -->
+      <div class="section-title">Products Overview</div>
+      <div class="table">
+        <div class="tr">
+          <div class="th">Product</div>
+          <div class="th">Quantity</div>
+          <div class="th">Size</div>
+          <div class="th">Fabric &amp; GSM</div>
+        </div>
+        {{#if order.items.length}} {{#each order.items}} {{#if
+        this.orderItemDetails.length}} {{#each this.orderItemDetails}}
+        <div class="tr">
+          <div class="td">{{../ProductName}}</div>
+          <div class="td">{{Quantity}}</div>
+          <div class="td">{{SizeOptionName}}</div>
+          <div class="td">
+            {{../ProductFabricName}}, {{../ProductFabricGSM}} GSM
+          </div>
+        </div>
+        {{/each}} {{/if}} {{/each}} {{else}}
+        <div class="tr">
+          <div class="td flex4">No Product</div>
+        </div>
+        {{/if}}
+      </div>
+
+      <!-- SPECIFICATION (optional) -->
+      {{#if isSpec}}
+      <div class="section-title">Detailed Items</div>
+
+      {{#each order.items}}
+      <div class="card">
+        <div class="product-name">{{ProductName}}</div>
+        <div class="product-meta">
+          {{ProductCategoryName}} — {{ProductFabricName}} ({{ProductFabricGSM}}
+          GSM)
+        </div>
+
+        {{#each orderItemDetails}}
+        <div class="size-hdr">
+          <div class="flex gap12">
+            <div>Size: {{SizeOptionName}}</div>
+            <div>Qty: {{Quantity}}</div>
+            <div>Priority: {{Priority}}</div>
+          </div>
+        </div>
+
+        <div class="spec-row">
+          <div class="spec-left">
+            {{#if chartSrc}}
+            <img
+              src="{{chartSrc}}"
+              alt="Measurement chart"
+              style="width: 100%; height: 140px; object-fit: contain"
+            />
+            {{else}}
+            <div class="chart">Measurement chart image</div>
+            {{/if}}
+          </div>
+
+          <div class="spec-right">
+            {{#if measurements.top.length}}
+            <div class="subtitle">Top Unit</div>
+            <div class="small-table">
+              <div class="row">
+                <div class="th2">Point</div>
+                <div class="th2n">Value</div>
+                <div class="th2n">Unit</div>
+              </div>
+              {{#each measurements.top}}
+              <div class="row">
+                <div class="td2">{{label}}</div>
+                <div class="td2n">{{value}}</div>
+                <div class="td2n">{{unit}}</div>
+              </div>
+              {{/each}}
+            </div>
+            {{/if}} {{#if measurements.bottom.length}}
+            <div class="subtitle">Bottom Unit</div>
+            <div class="small-table">
+              <div class="row">
+                <div class="th2">Point</div>
+                <div class="th2n">Value</div>
+                <div class="th2n">Unit</div>
+              </div>
+              {{#each measurements.bottom}}
+              <div class="row">
+                <div class="td2">{{label}}</div>
+                <div class="td2n">{{value}}</div>
+                <div class="td2n">{{unit}}</div>
+              </div>
+              {{/each}}
+            </div>
+            {{/if}} {{#if measurements.logoTop.length}}
+            <div class="subtitle">Logo Placement — Top</div>
+            <div class="small-table">
+              <div class="row">
+                <div class="th2">Point</div>
+                <div class="th2n">Value</div>
+                <div class="th2n">Unit</div>
+              </div>
+              {{#each measurements.logoTop}}
+              <div class="row">
+                <div class="td2">{{label}}</div>
+                <div class="td2n">{{value}}</div>
+                <div class="td2n">{{unit}}</div>
+              </div>
+              {{/each}}
+            </div>
+            {{/if}} {{#if measurements.logoBottom.length}}
+            <div class="subtitle">Logo Placement — Bottom</div>
+            <div class="small-table">
+              <div class="row">
+                <div class="th2">Point</div>
+                <div class="th2n">Value</div>
+                <div class="th2n">Unit</div>
+              </div>
+              {{#each measurements.logoBottom}}
+              <div class="row">
+                <div class="td2">{{label}}</div>
+                <div class="td2n">{{value}}</div>
+                <div class="td2n">{{unit}}</div>
+              </div>
+              {{/each}}
+            </div>
+            {{/if}}
+          </div>
+        </div>
+        {{/each}} {{#if printingOptions.length}}
+        <div style="margin-top: 8px">
+          Printing: {{#each printingOptions}}{{PrintingOptionName}}{{#unless
+          @last}}, {{/unless}}{{/each}}
+        </div>
+        {{/if}}
+      </div>
+      {{/each}} {{/if}}
+    </div>
+  </body>
+</html>

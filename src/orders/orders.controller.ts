@@ -8,7 +8,10 @@ import {
   Req,
   ParseIntPipe,
   HttpStatus,
-  HttpCode
+  HttpCode,
+  Query,
+  BadRequestException,
+  Res
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto, GetOrdersItemsDto } from './dto/create-orders.dto';
@@ -18,11 +21,17 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
 import { OrderStatusLogs } from './entities/order-status-log';
+import { Response } from 'express';
+import { OrderPdfService } from './order.pdf.service';
+import { GenerateOrderPdfsDto } from './dto/order.pdf.dto';
 
 
 @ControllerAuthProtector('Orders', 'orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) { }
+  constructor(
+    private readonly ordersService: OrdersService,
+    private readonly pdfs: OrderPdfService
+  ) { }
 
   @Post()
   @ApiBody({ type: CreateOrderDto })
@@ -168,5 +177,18 @@ export class OrdersController {
       throw error;
     }
   }
+
+  @Post('generate-download-pdf')
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Generate and download order pdf')
+  async getOrderPdfsZip(@Body() dto: GenerateOrderPdfsDto, @Res() res: Response) {
+    const { file, filename } = await this.pdfs.generateOrderItemsZip(dto.orderId, dto.pdfType);
+    res.set({
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    });
+    file.getStream().pipe(res);
+  }
+
 
 }
