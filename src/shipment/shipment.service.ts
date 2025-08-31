@@ -194,7 +194,26 @@ export class ShipmentService {
       },
     });
     if (!shippment) throw new NotFoundException(`Shipment with ${id} not found`)
-    return shippment
+    return {
+      ShipmentCode: shippment?.ShipmentCode ?? '',
+      TrackingId: shippment?.TrackingId ?? '',
+      OrderNumber: shippment?.OrderNumber ?? '',
+      OrderIds: shippment?.ShipmentOrders?.map(so => so.OrderId) ?? [],
+      ShipmentCarrierId: shippment?.ShipmentCarrierId ?? '',
+      ShipmentDate: shippment?.ShipmentDate ?? '',
+      ShipmentCost: shippment?.ShipmentCost ?? 0,
+      TotalWeight: shippment?.TotalWeight ?? 0,
+      NumberOfBoxes: shippment?.NumberOfBoxes ?? 0,
+      WeightUnit: shippment?.WeightUnit ?? '',
+      ReceivedTime: shippment?.ReceivedTime ?? '',
+      Status: shippment?.Status ?? '',
+      boxes: shippment?.Boxes.map(box => ({
+        BoxNumber: box?.BoxNumber,
+        Quantity: box?.Quantity,
+        Weight: box?.Weight,
+        OrderItemName: box?.OrderItemName ?? '',
+      })) ?? []
+    }
   }
 
   async update(id: number, updateShipmentDto: UpdateShipmentDto, updatedBy: string) {
