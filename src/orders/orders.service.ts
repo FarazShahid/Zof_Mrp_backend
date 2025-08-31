@@ -774,6 +774,7 @@ export class OrdersService {
           'fabricType.Name AS ProductFabricName',
           'fabricType.GSM AS ProductFabricGSM',
           'orderItem.Description AS Description',
+          'orderItem.itemShipmentStatus AS ItemShipmentStatus',
           'orderItem.OrderItemPriority AS OrderItemPriority',
           'orderItem.ImageId AS ImageId',
           'imageDoc.CloudPath AS ImagePath',
@@ -805,6 +806,7 @@ export class OrdersService {
         if (!itemMap.has(item.Id)) {
           const newItem = {
             Id: item.Id,
+            ItemShipmentStatus: item?.ItemShipmentStatus as OrderItemShipmentEnum,
             ProductId: item.ProductId,
             ProductName: item.ProductName || '',
             ProductCategoryId: item.ProductCategoryId,

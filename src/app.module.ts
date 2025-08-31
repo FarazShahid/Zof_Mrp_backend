@@ -44,7 +44,7 @@ import { ShipmentModule } from './shipment/shipment.module';
         // entities: [],
         // Make Sync False for Production
         synchronize: configService.get('DB_FIRST_TECHNIQUE') === 'true',
-        logging: true,
+        logging: false,
         autoLoadEntities: true,
         keepConnectionAlive: true,
         extra: {

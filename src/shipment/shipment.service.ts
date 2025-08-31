@@ -93,8 +93,8 @@ export class ShipmentService {
         ShipmentDate: new Date(ShipmentDate),
         NumberOfBoxes,
         WeightUnit,
-        ReceivedTime: createShipmentDto.ReceivedTime
-          ? new Date(createShipmentDto.ReceivedTime)
+        ReceivedTime: ReceivedTime
+          ? new Date(ReceivedTime)
           : null,
         Status,
         CreatedBy: createdBy,
@@ -147,7 +147,9 @@ export class ShipmentService {
       relations: [
         'ShipmentCarrier',
         'Boxes',
-        'Boxes.OrderItem'
+        'Boxes.OrderItem',
+        'ShipmentOrders',
+        'ShipmentOrders.Order',
       ],
       order: {
         ShipmentDate: 'DESC',
@@ -156,6 +158,7 @@ export class ShipmentService {
 
     return shipments.map((shipmentItem) => ({
       Id: shipmentItem.Id,
+      Orders: shipmentItem.ShipmentOrders?.map(so => ({ Id: so.OrderId, OrderName: so.Order?.OrderName ?? '', })) ?? [],
       ShipmentCode: shipmentItem.ShipmentCode,
       TrackingId: shipmentItem.TrackingId,
       ShipmentDate: shipmentItem.ShipmentDate,
@@ -182,7 +185,9 @@ export class ShipmentService {
       relations: [
         'ShipmentCarrier',
         'Boxes',
-        'Boxes.OrderItem'
+        'Boxes.OrderItem',
+        'ShipmentOrders',
+        'ShipmentOrders.Order',
       ],
       order: {
         ShipmentDate: 'DESC',
@@ -200,9 +205,11 @@ export class ShipmentService {
       const shipmentRepo = manager.getRepository(Shipment);
       const shipmentBoxRepo = manager.getRepository(ShipmentBox);
       const orderItemRepo = manager.getRepository(OrderItem);
+      const orderRepo = manager.getRepository(Order);
       const shipmentOrderRepo = manager.getRepository(ShipmentOrder);
 
       const {
+        OrderIds,
         ShipmentCode,
         TrackingId,
         OrderNumber,
@@ -229,25 +236,40 @@ export class ShipmentService {
         existingShipment.ShipmentCarrierId = ShipmentCarrierId;
       }
 
-      // Validate OrderItemIds (when boxes provided)
-      if (boxes && Array.isArray(boxes) && boxes.length > 0) {
-        const orderItemIds = new Set<number>(
-          boxes.filter(b => b?.OrderItemId != null).map(b => Number(b.OrderItemId))
-        );
+      let newOrderIdSet: Set<number> | null = null;
+      if (Array.isArray(OrderIds)) {
+        newOrderIdSet = new Set<number>(OrderIds.map(Number));
+        const verifiedOrder = await orderRepo.findBy({ Id: In([...newOrderIdSet]) });
+        if (verifiedOrder.length !== newOrderIdSet.size) {
+          throw new BadRequestException('Some Orders are invalid.');
+        }
+      }
 
-        if (orderItemIds.size > 0) {
-          const verifiedOrderItems = await orderItemRepo.findBy({ Id: In([...orderItemIds]) });
-          if (verifiedOrderItems.length !== orderItemIds.size) {
+      // Validate OrderItemIds (when boxes provided)
+      if (Array.isArray(boxes) && boxes.length > 0) {
+        const orderItemIds = [...new Set(
+          boxes.filter(b => b?.OrderItemId != null).map(b => Number(b.OrderItemId))
+        )];
+
+        if (orderItemIds.length > 0) {
+          const verifiedOrderItems = await orderItemRepo.findBy({ Id: In(orderItemIds) });
+          if (verifiedOrderItems.length !== orderItemIds.length) {
             throw new BadRequestException('Some Order Items are invalid.');
           }
 
-          // Optional consistency check: each OrderItem must belong to an Order already linked to this Shipment
-          // (assumes OrderItem has OrderId)
-          const shipmentOrders = await shipmentOrderRepo.findBy({ ShipmentId: id });
-          const shipmentOrderIds = new Set<number>(shipmentOrders.map(so => so.OrderId));
-          const badItem = verifiedOrderItems.find(oi => !shipmentOrderIds.has(oi.OrderId));
+          // Ensure each OrderItem belongs to an Order linked to this shipment (new or current)
+          // Determine allowed order ids for this shipment:
+          let allowedOrderIds: Set<number>;
+          if (newOrderIdSet) {
+            allowedOrderIds = newOrderIdSet; // we are about to update links to these
+          } else {
+            const currentLinks = await shipmentOrderRepo.findBy({ ShipmentId: id });
+            allowedOrderIds = new Set(currentLinks.map(l => l.OrderId));
+          }
+
+          const badItem = verifiedOrderItems.find(oi => !allowedOrderIds.has(oi.OrderId));
           if (badItem) {
-            throw new BadRequestException(`OrderItem ${badItem.Id} does not belong to an order in this shipment.`);
+            throw new BadRequestException(`OrderItem ${badItem.Id} (OrderId=${badItem.OrderId}) is not part of any linked order for this shipment.`);
           }
         }
       }
@@ -269,32 +291,79 @@ export class ShipmentService {
 
       await shipmentRepo.save(existingShipment);
 
-      // Replace boxes if provided
-      if (boxes && Array.isArray(boxes) && boxes.length > 0) {
-        // Remove old boxes for this shipment
-        await shipmentBoxRepo.delete({ ShipmentId: existingShipment.Id });
+      const prevLinks = await shipmentOrderRepo.findBy({ ShipmentId: id });
+      const prevOrderIdSet = new Set(prevLinks.map(l => l.OrderId));
 
-        // Insert new boxes (fast path). Use save([...]) instead if you need entity hooks.
-        await shipmentBoxRepo.insert(
-          boxes.map(box => ({
-            ShipmentId: existingShipment.Id,
-            BoxNumber: box.BoxNumber,
-            Weight: box.Weight,
-            Quantity: box.Quantity,
-            OrderItemId: box.OrderItemId ?? null,
-            OrderItemName: box.OrderItemName,              // renamed column
-            OrderItemDescription: box.OrderItemDescription ?? null,
-          }))
-        );
-
-        const affectedItemIds = [...new Set(
-          boxes.map(b => b.OrderItemId).filter((id): id is number => !!id)
-        )];
-        await this.recalcOrderItems(affectedItemIds, manager);
+      if (newOrderIdSet) {
+        // Replace links
+        await shipmentOrderRepo.delete({ ShipmentId: id });
+        if (newOrderIdSet.size > 0) {
+          await shipmentOrderRepo.insert(
+            [...newOrderIdSet].map(oid => ({ ShipmentId: id, OrderId: oid }))
+          );
+        }
       }
-      const shipmentOrders = await manager.getRepository(ShipmentOrder).findBy({ ShipmentId: existingShipment.Id });
-      const affectedOrderIds = [...new Set(shipmentOrders.map(so => so.OrderId))];
-      await this.recalcOrders(affectedOrderIds, manager);
+
+      let affectedItemIds: number[] = [];
+      if (Array.isArray(boxes)) {
+        // 1) Collect previous item ids BEFORE delete (to handle removals)
+        const prevBoxes = await shipmentBoxRepo.find({ where: { ShipmentId: id } });
+        const prevItemIds = prevBoxes
+          .map(b => b.OrderItemId)
+          .filter((x): x is number => !!x);
+
+        // 2) Replace boxes
+        await shipmentBoxRepo.delete({ ShipmentId: id });
+
+        if (boxes.length > 0) {
+          await shipmentBoxRepo.insert(
+            boxes.map(box => ({
+              ShipmentId: id,
+              BoxNumber: box.BoxNumber,
+              Weight: box.Weight,
+              Quantity: box.Quantity,
+              OrderItemId: box.OrderItemId ?? null,
+              OrderItemName: box.OrderItemName,
+              OrderItemDescription: box.OrderItemDescription ?? null,
+            }))
+          );
+        }
+
+        // 3) Collect new item ids
+        const newItemIds = boxes
+          .map(b => b.OrderItemId)
+          .filter((x): x is number => !!x);
+
+        // 4) Union of old + new affected items
+        affectedItemIds = [...new Set([...prevItemIds, ...newItemIds])];
+
+        // 5) Recalc item shipping status
+        if (affectedItemIds.length) {
+          await this.recalcOrderItems(affectedItemIds, manager);
+        }
+      }
+
+      // ===== Recalc order-level shipping status =====
+      // Determine orders to recalc: union of (previous links) ∪ (current links) ∪ (orders owning affected items)
+      const currentLinks = await shipmentOrderRepo.findBy({ ShipmentId: id });
+      const currentOrderIdSet = new Set(currentLinks.map(l => l.OrderId));
+
+      let affectedOrderIds: number[] = [
+        ...new Set([
+          ...prevOrderIdSet,
+          ...currentOrderIdSet
+        ].map(Number))
+      ] as unknown as number[]; // ts appeasement
+
+      if (affectedItemIds.length) {
+        const affectedItems = await orderItemRepo.findBy({ Id: In(affectedItemIds) });
+        const itemOrderIds = [...new Set(affectedItems.map(i => i.OrderId))];
+        affectedOrderIds = [...new Set([...affectedOrderIds, ...itemOrderIds])];
+      }
+
+      if (affectedOrderIds.length) {
+        await this.recalcOrders(affectedOrderIds, manager);
+      }
 
       return { id: existingShipment.Id };
     });
@@ -364,7 +433,7 @@ export class ShipmentService {
     for (const it of items) {
       const shipped = shippedMap.get(it.Id) ?? 0;
       const required = requiredMap.get(it.Id) ?? 0;
-
+      console.log(shipped, required)
       // status rules (simple & robust)
       let status: OrderItemShipmentEnum;
       if (shipped <= 0) status = OrderItemShipmentEnum.PENDING;

@@ -121,14 +121,16 @@ export class CreateShipmentDto {
 
 export interface ShipmentResponseDto {
   Id: number;
+  Orders: Array<{ Id: number; OrderName: string }>;
   ShipmentCode: string;
-  TrackingId: string;
+  TrackingId: string; 
   ShipmentDate: string | Date;
   ShipmentCost: number;
   WeightUnit: string;
   TotalWeight: number;
   NumberOfBoxes: number;
   ReceivedTime: string | Date | null;
+  Boxes: any[];
   Status: ShipmentStatus;
   ShipmentCarrierId: number;
   ShipmentCarrierName: string;
