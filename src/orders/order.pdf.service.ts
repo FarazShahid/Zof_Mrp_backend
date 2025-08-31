@@ -3,17 +3,15 @@ import { Injectable, NotFoundException, StreamableFile } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as fs from 'fs/promises';
+import { createWriteStream, createReadStream } from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as archiver from 'archiver';
 import * as Handlebars from 'handlebars';
-import * as stream from 'stream';
-import { promisify } from 'util';
 import { Order } from './entities/orders.entity';
 import puppeteer from 'puppeteer';
 import { PdfType } from './dto/order.pdf.dto';
-
-const pipeline = promisify(stream.pipeline);
+import { buildMeasurements, formatDate, mapStatusToChip, resolveSizeName } from 'pdf-templates/utils/utils';
 
 @Injectable()
 export class OrderPdfService {
@@ -32,125 +30,209 @@ export class OrderPdfService {
   }
 
   async generateOrderItemsZip(orderId: number, pdfType: PdfType): Promise<{ filename: string; file: StreamableFile }> {
-    // 1) Load order + relations we need
-    const order = await this.orderRepo.findOne({
-      where: { Id: orderId },
-      relations: [
-        'orderItems',
-        'orderItems.printingOptions',
-        'orderItems.printingOptions.printingOption',
-        'orderItems.orderItemDetails',
-        'orderItems.orderItemDetails.colorOption',
+    // 1) Load order + needed graph (joins without FK; select whole rows via alias.*)
+    const order = await this.orderRepo
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.client', 'client')
+      .leftJoinAndSelect('order.event', 'event')
+      .leftJoinAndSelect('order.status', 'status')
+      .leftJoinAndSelect('order.orderItems', 'item')
+      .leftJoinAndSelect('item.product', 'product')
+
+      // FabricType (no FK) -> product.fabricType
+      .leftJoinAndMapOne('product.fabricType', 'fabrictype', 'fabricType', 'fabricType.Id = product.FabricTypeId')
+      .addSelect('fabricType.*')
+
+      // Details
+      .leftJoinAndSelect('item.orderItemDetails', 'detail')
+
+      // SizeOption (no FK) -> detail.sizeOpt
+      .leftJoinAndMapOne('detail.sizeOpt', 'sizeoptions', 'sizeOpt', 'sizeOpt.Id = detail.SizeOption')
+      .addSelect('sizeOpt.*')
+
+      // ColorOption (keep single join)
+      .leftJoinAndSelect('detail.colorOption', 'colorOption')
+
+      // SizeMeasurements (no FK) -> detail.measurement
+      .leftJoinAndMapOne('detail.measurement', 'sizemeasurements', 'sm', 'sm.Id = detail.MeasurementId')
+      .addSelect('sm.*')
+
+      // Printing options
+      .leftJoinAndSelect('item.printingOptions', 'printingOptionLink')
+      .leftJoinAndSelect('printingOptionLink.printingOption', 'printingOption')
+
+      .where('order.Id = :id', { id: orderId })
+      .getOne();
+
+    if (!order) throw new NotFoundException('Order not found');
+
+    // 2) Template / constants
+    const template = await this.loadTemplate();
+    const isSpec = pdfType === PdfType.SPECIFICATION;
+    const zipDisplayName = isSpec ? 'order specification.zip' : 'order summary.zip';
+
+    // 3) Launch ONE browser
+    const browser = await puppeteer.launch({
+      headless: true,                       // boolean | "shell"
+      protocolTimeout: 120_000,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
       ],
     });
 
-    if (!order) {
-      throw new NotFoundException('Order not found');
-    }
-
-    // 2) Compile HTML template
-    const template = await this.loadTemplate();
-
-    // 3) Launch Puppeteer once
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
-    const page = await browser.newPage();
-
-    // 4) Create a temp folder for PDFs
+    // 4) Temp path + zip stream (no per-PDF disk I/O)
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'order-pdfs-'));
+    const zipPath = path.join(tempDir, zipDisplayName);
+    const output = createWriteStream(zipPath);
+    const archive = archiver('zip', { zlib: { level: 9 } });
 
-    try {
-      // 5) Generate one PDF per order item
-      const isSpec = pdfType === PdfType.SPECIFICATION;
+    const finalizeZip = new Promise<void>((resolve, reject) => {
+      output.on('finish', resolve);
+      output.on('close', resolve);
+      output.on('error', reject);
+      archive.on('error', reject);
+      archive.on('warning', (err: any) => { if (err?.code !== 'ENOENT') reject(err); });
+      archive.pipe(output);
+    });
 
-      await Promise.all(
-        (order.orderItems ?? []).map(async (item, i) => {
-          // shape the template context
-          const ctx = {
-            isSpec,
-            generatedAt: new Date().toISOString(),
-            order: {
-              id: order.Id,
-              number: order.OrderNumber,
-              name: order.OrderName ?? '',
-              priority: order.OrderPriority,
-              externalId: order.ExternalOrderId,
-              shipmentStatus: order.OrderShipmentStatus, // enum string
-            },
-            item: {
-              index: i + 1,
-              id: item.Id,
-              description: item.Description ?? '',
-              productId: item.ProductId,
-              shipmentStatus: item.itemShipmentStatus,
-            },
-            details: (item.orderItemDetails ?? []).map(d => ({
-              id: d.Id,
-              quantity: d.Quantity,
-              sizeOption: d.SizeOption,
-              measurementId: d.MeasurementId,
-              color: d.colorOption?.Name ?? d.ColorOptionId, // adjust field name if different
-              priority: d.Priority,
-            })),
-            printingOptions: (item.printingOptions ?? []).map(po => ({
-              id: po.Id,
-              printingOptionId: po.PrintingOptionId,
-              name: po.printingOption?.Type ?? po.PrintingOptionId, // adjust field
-              description: po.Description ?? '',
-            })),
-          };
+    // 5) Base header VM (stable across items)
+    const baseHeaderVm = {
+      isSpec,
+      generatedAt: new Date().toISOString(),
+      statusClass: mapStatusToChip(order?.status?.StatusName),
+      deadlineFormatted: formatDate(order?.Deadline),
+      orderHeader: {
+        OrderNumber: order?.OrderNumber ?? '',
+        StatusName: order?.status?.StatusName ?? '',
+        ClientName: order?.client?.Name ?? '',
+        EventName: order?.event?.EventName ?? '',
+      },
+    };
 
-          const html = template(ctx);
+    // 6) Page pool with bounded concurrency
+    const itemCount = order.orderItems?.length ?? 0;
+    const maxCpu = Math.max(2, (os.cpus()?.length ?? 4));
+    const CONCURRENCY = Math.min(6, Math.max(1, Math.min(maxCpu, Math.ceil(itemCount / 5))));
+    const queue = [...(order.orderItems ?? [])];
 
-          await page.setContent(html, { waitUntil: ['domcontentloaded'] });
-          // You can tweak PDF options here
-          const pdfBuffer = await page.pdf({
-            printBackground: true,
-            format: 'A4',
-            margin: { top: '12mm', right: '12mm', bottom: '14mm', left: '12mm' },
-          });
+    // Pre-create pages for reuse + block external network
+    const pagePool: any[] = [];
+    for (let i = 0; i < Math.max(1, CONCURRENCY); i++) {
+      const p = await browser.newPage();
+      p.setDefaultTimeout(60_000);
+      p.setDefaultNavigationTimeout(60_000);
+      await p.setJavaScriptEnabled(false); // static HTML; faster
 
-          const safeOrderNumber = (order.OrderNumber || `order-${order.Id}`).toString().replace(/[^\w\-]+/g, '_');
-          const filename = isSpec
-            ? `${safeOrderNumber}-item-${item.Id}-spec.pdf`
-            : `${safeOrderNumber}-item-${item.Id}-summary.pdf`;
-
-          await fs.writeFile(path.join(tempDir, filename), pdfBuffer);
-        }),
-      );
-
-      // 6) Zip them
-      const zipDisplayName = isSpec ? 'order specification.zip' : 'order summary.zip';
-      const zipPath = path.join(tempDir, zipDisplayName);
-
-      await new Promise<void>((resolve, reject) => {
-        const output = require('fs').createWriteStream(zipPath);
-        const archive = archiver('zip', { zlib: { level: 9 } });
-        output.on('close', () => resolve());
-        archive.on('error', reject);
-        archive.pipe(output);
-        archive.directory(tempDir, false, (entry) => {
-          // only include PDFs, skip the zip itself
-          if (!entry.name.endsWith('.pdf')) return null as any;
-          return entry;
-        });
-        archive.finalize();
+      await p.setRequestInterception(true);
+      p.on('request', req => {
+        const url = req.url();
+        // Allow data:, file:, about:, chrome:; block outbound http(s)
+        if (url.startsWith('http')) return req.abort();
+        return req.continue();
       });
 
-      // 7) Return zip as a stream (and keep temp files until response is done)
-      const zipBuffer = await fs.readFile(zipPath);
-      const file = new StreamableFile(zipBuffer, {
+      pagePool.push(p);
+    }
+
+    const renderOne = async (page: any, item: any) => {
+      try {
+        const ft: any = item?.product?.fabricType;
+        console.log("item.orderItemDetails", item?.orderItemDetails)
+        const vm = {
+          isSpec: baseHeaderVm.isSpec,
+          generatedAt: baseHeaderVm.generatedAt,
+          statusClass: baseHeaderVm.statusClass,
+          deadlineFormatted: baseHeaderVm.deadlineFormatted,
+          order: {
+            OrderNumber: baseHeaderVm.orderHeader.OrderNumber,
+            StatusName: baseHeaderVm.orderHeader.StatusName,
+            ClientName: baseHeaderVm.orderHeader.ClientName,
+            EventName: baseHeaderVm.orderHeader.EventName,
+            items: [
+              {
+                ProductName: item?.product?.Name ?? '',
+                ProductCategoryName: item.product?.ProductCategory?.type ?? '',
+                ProductFabricName: ft?.name ?? '',
+                ProductFabricGSM: ft?.gsm ?? '',
+                chartSrc: undefined,
+                orderItemDetails: (item?.orderItemDetails ?? []).map((detail: any) => ({
+                  Quantity: detail.Quantity,
+                  SizeOptionName: detail.sizeOpt?. OptionSizeOptions ?? "Unknown Size",
+                  Priority: detail.Priority,
+                  measurements: detail.measurement
+                    ? buildMeasurements(detail.measurement)
+                    : { top: [], bottom: [], logoTop: [], logoBottom: [], hat: [] },
+                })),
+                printingOptions: (item.printingOptions ?? []).map((po: any) => ({
+                  PrintingOptionName: po.printingOption?.Type ?? `#${po.PrintingOptionId}`,
+                })),
+              },
+            ],
+          },
+        };
+
+        const html = template(vm);
+        await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 45_000 });
+        await page.emulateMediaType('print');
+
+        const pdfData = await page.pdf({
+          printBackground: true,
+          format: 'A4',
+          margin: { top: '5mm', right: '5mm', bottom: '5mm', left: '5mm' },
+          scale: 1.125
+        });
+
+        const pdfBuffer = Buffer.isBuffer(pdfData) ? pdfData : Buffer.from(pdfData);
+        if (!pdfBuffer || pdfBuffer.length === 0) {
+          throw new Error(`Empty PDF buffer for item ${item?.Id ?? 'unknown'}`);
+        }
+
+        const safeOrderNumber = (order.OrderNumber || `order-${order.Id}`).toString().replace(/[^\w\-]+/g, '_');
+        const filename = isSpec
+          ? `${safeOrderNumber}-item-${item.Id}-spec.pdf`
+          : `${safeOrderNumber}-item-${item.Id}-summary.pdf`;
+
+        archive.append(pdfBuffer, { name: filename });
+        await new Promise(res => setImmediate(res));
+      } catch (err) {
+        console.error(`PDF render failed for item ${item?.Id}:`, err);
+      }
+    };
+    // 8) Workers
+    const runWorker = async () => {
+      const page = pagePool.pop()!;
+      try {
+        while (queue.length) {
+          const item = queue.shift();
+          if (!item) break;
+          await renderOne(page, item);
+        }
+      } finally {
+        pagePool.push(page);
+      }
+    };
+
+    try {
+      await Promise.all(Array.from({ length: Math.max(1, CONCURRENCY) }, () => runWorker()));
+
+      await archive.finalize();
+      await finalizeZip;
+
+      // 9) Stream the ZIP back (avoid RAM spike)
+      const zipRead = createReadStream(zipPath);
+      const file = new StreamableFile(zipRead, {
         type: 'application/zip',
         disposition: `attachment; filename="${zipDisplayName}"`,
       });
 
       return { filename: zipDisplayName, file };
     } finally {
-      await browser.close();
-      // cleanup temp dir async (best to schedule)
-      setTimeout(() => fs.rm(tempDir, { recursive: true, force: true }).catch(() => { }), 5000);
+      // Cleanup
+      await Promise.all(pagePool.map(p => p.close().catch(() => { })));
+      await browser.close().catch(() => { });
+      setTimeout(() => fs.rm(tempDir, { recursive: true, force: true }).catch(() => { }), 2000);
     }
   }
 }

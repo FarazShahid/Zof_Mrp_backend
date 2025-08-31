@@ -126,6 +126,8 @@
         font-size: 12px;
         font-weight: 700;
         color: var(--hdr);
+        break-after: avoid;
+        page-break-after: avoid;
       }
       .table {
         margin-top: 10px;
@@ -160,15 +162,17 @@
         padding: 10px;
         border: 1px solid var(--line);
         border-radius: 6px;
-        break-inside: avoid;
       }
       .product-name {
-        font-size: 12px;
+        font-size: 16px;
         font-weight: 700;
+        break-after: avoid;
+        page-break-after: avoid;
       }
       .product-meta {
         color: var(--sub);
         margin: 2px 0 6px;
+        font-size: 12px;
       }
 
       .size-hdr {
@@ -250,9 +254,34 @@
       .row {
         display: flex;
       }
-      @media print {
+      @media screen {
+        .card {
+          break-inside: auto !important;
+          page-break-inside: auto !important;
+        }
+
+        /* Don’t let headings orphan */
+        .section-title,
+        .product-name,
+        .product-meta,
+        .size-hdr {
+          break-after: avoid;
+          page-break-after: avoid;
+        }
+
+        /* Avoid splitting tables/rows mid-page */
+        .spec-row,
+        .small-table,
+        .small-table .row,
+        .table,
+        .tr {
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+
+        /* Tighter page padding you already have is fine */
         .page {
-          padding: 24mm;
+          padding: 5mm;
         }
       }
     </style>
@@ -328,7 +357,7 @@
 
       <!-- SPECIFICATION (optional) -->
       {{#if isSpec}}
-      <div class="section-title">Detailed Items</div>
+      <div class="section-title detailed-title">Detailed Items</div>
 
       {{#each order.items}}
       <div class="card">
