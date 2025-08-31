@@ -1491,3 +1491,6 @@ ALTER TABLE orderitems
 ADD COLUMN itemShipmentStatus ENUM('Pending', 'Shipped', 'Partially Shipped') 
 NOT NULL DEFAULT 'Pending';
 
+ALTER TABLE orders
+ADD COLUMN OrderShipmentStatus ENUM('Pending', 'Shipped', 'Partially Shipped')
+NOT NULL DEFAULT 'Pending';

@@ -17,27 +17,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ShipmentStatus } from '../entities/shipment.entity';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 
-// export class ShipmentDetailDto {
-//   @CommonApiProperty('Order Item ID', 1)
-//   @IsNumber()
-//   @Min(1)
-//   OrderItemId: number;
-
-//   @CommonApiProperty('Quantity', 1)
-//   @IsNumber()
-//   @Min(1)
-//   Quantity: number;
-
-//   @CommonApiProperty('Size', 'M')
-//   @IsString()
-//   Size: string;
-
-//   @CommonApiProperty('Item Details', 'Special instructions for packing')
-//   @IsString()
-//   @IsOptional()
-//   ItemDetails?: string;
-// }
-
 export class ShipmentBoxDto {
   @CommonApiProperty('Box Number', "ASDSA787ASDAS78")
   @IsString()

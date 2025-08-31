@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Order } from './entities/orders.entity';
-import { OrderItem } from './entities/order-item.entity';
+import { OrderItem, OrderItemShipmentEnum } from './entities/order-item.entity';
 import { OrderItemsPrintingOption } from './entities/order-item-printiing.option.entity';
 import { CreateOrderDto } from './dto/create-orders.dto';
 import { OrderItemDetails } from './entities/order-item-details';
@@ -286,6 +286,7 @@ export class OrdersService {
         .leftJoin('orderstatus', 'status', 'order.OrderStatusId = status.Id')
         .select([
           'order.Id AS Id',
+          'order.OrderShipmentStatus AS OrderShipmentStatus',
           'order.ClientId AS ClientId',
           'client.Name AS ClientName',
           'order.OrderEventId AS OrderEventId',
@@ -310,6 +311,7 @@ export class OrdersService {
 
       const formattedOrders = result.map((order) => ({
         Id: order.Id,
+        OrderShipmentStatus: order?.OrderShipmentStatus as OrderItemShipmentEnum,
         ClientId: order.ClientId,
         ClientName: order.ClientName,
         OrderEventId: order?.OrderEventId ?? null,
@@ -686,6 +688,7 @@ export class OrdersService {
         .select([
           'order.Id AS Id',
           'order.ClientId AS ClientId',
+          'order.OrderShipmentStatus AS OrderShipmentStatus',
           'client.Name AS ClientName',
           'order.OrderEventId AS OrderEventId',
           'event.EventName AS EventName',
@@ -870,6 +873,7 @@ export class OrdersService {
 
       return {
         Id: orderData.Id,
+        OrderShipmentStatus: orderData?.OrderShipmentStatus as OrderItemShipmentEnum,
         ClientId: orderData.ClientId,
         ClientName: orderData.ClientName || 'Unknown Client',
         OrderEventId: orderData?.OrderEventId ?? null,

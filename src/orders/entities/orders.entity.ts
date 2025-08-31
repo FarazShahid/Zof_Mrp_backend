@@ -3,7 +3,7 @@ import { BaseEntity } from '../../common/entities/base.entity';
 import { Client } from '../../clients/entities/client.entity';
 import { ClientEvent } from '../../events/entities/clientevent.entity';
 import { OrderStatus } from '../../orderstatus/entities/orderstatus.entity';
-import { OrderItem } from './order-item.entity';
+import { OrderItem, OrderItemShipmentEnum } from './order-item.entity';
 import { OrderStatusLogs } from './order-status-log';
 import { ShipmentOrder } from 'src/shipment/entities/shipment-order.entity';
 
@@ -47,7 +47,14 @@ export class Order extends BaseEntity {
 
   @ManyToOne(() => OrderStatus)
   @JoinColumn({ name: 'OrderStatusId' })
+
   status: OrderStatus;
+  @Column({
+    type: 'enum',
+    enum: OrderItemShipmentEnum,
+    default: OrderItemShipmentEnum.PENDING,
+  })
+  OrderShipmentStatus: OrderItemShipmentEnum;
 
   @OneToMany(() => OrderStatusLogs, log => log.Order)
   StatusLogs: OrderStatusLogs[];

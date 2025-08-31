@@ -3,14 +3,6 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, Pri
 import { ShipmentBox } from "./shipment-box.entity";
 import { ShipmentOrder } from "./shipment-order.entity";
 
-// export enum ShipmentStatus {
-//     Pending = 'Pending',
-//     InTransit = 'In Transit',
-//     Delivered = 'Delivered',
-//     Received = 'Received',
-//     Cancelled = 'Cancelled',
-// }
-
 export enum ShipmentStatus {
     IN_TRANSIT = "In Transit",
     DAMAGED = "Damaged",

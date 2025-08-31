@@ -1,18 +1,17 @@
-import { DataSource } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateShipmentDto, ShipmentResponseDto } from './dto/create-shipment.dto';
 import { UpdateShipmentDto } from './dto/update-shipment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-// import { Order } from 'src/orders/entities/orders.entity';
 import { In, Repository } from 'typeorm';
 import { ShipmentCarrier } from 'src/shipment-carrier/entities/shipment-carrier.entity';
-// import { OrderItem } from 'src/orders/entities/order-item.entity';
 import { Shipment } from './entities/shipment.entity';
-// import { ShipmentDetail } from './entities/shipment-details';
 import { ShipmentBox } from './entities/shipment-box.entity';
-import { Order } from 'src/orders/entities/orders.entity';
 import { ShipmentOrder } from './entities/shipment-order.entity';
-import { OrderItem } from 'src/orders/entities/order-item.entity';
+import { OrderItem, OrderItemShipmentEnum } from 'src/orders/entities/order-item.entity';
+import { OrderItemDetails } from 'src/orders/entities/order-item-details';
+import { Order } from 'src/orders/entities/orders.entity';
+
 @Injectable()
 export class ShipmentService {
   constructor(
@@ -25,8 +24,8 @@ export class ShipmentService {
     // @InjectRepository(OrderItem)
     // private readonly orderItemRepository: Repository<OrderItem>,
 
-    // @InjectRepository(ShipmentBox)
-    // private readonly shipmentBoxRepository: Repository<ShipmentBox>,
+    @InjectRepository(OrderItemDetails)
+    private readonly orderItemDetailsRepository: Repository<OrderItemDetails>,
 
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
@@ -130,7 +129,16 @@ export class ShipmentService {
       );
 
       await manager.getRepository(ShipmentBox).save(boxEntities);
-      return { id: shipment.Id };
+
+      const affectedItemIds = [...new Set(
+        boxes.map(b => b.OrderItemId).filter((id): id is number => !!id)
+      )];
+      await this.recalcOrderItems(affectedItemIds, manager);
+
+      // ✅ Recalc order-level shipping status from their items
+      const affectedOrderIds = verifiedOrder.map(o => o.Id);
+      await this.recalcOrders(affectedOrderIds, manager);
+      return { id: savedShipment.Id };
     });
   }
 
@@ -262,7 +270,7 @@ export class ShipmentService {
       await shipmentRepo.save(existingShipment);
 
       // Replace boxes if provided
-      if (boxes && Array.isArray(boxes)) {
+      if (boxes && Array.isArray(boxes) && boxes.length > 0) {
         // Remove old boxes for this shipment
         await shipmentBoxRepo.delete({ ShipmentId: existingShipment.Id });
 
@@ -278,7 +286,15 @@ export class ShipmentService {
             OrderItemDescription: box.OrderItemDescription ?? null,
           }))
         );
+
+        const affectedItemIds = [...new Set(
+          boxes.map(b => b.OrderItemId).filter((id): id is number => !!id)
+        )];
+        await this.recalcOrderItems(affectedItemIds, manager);
       }
+      const shipmentOrders = await manager.getRepository(ShipmentOrder).findBy({ ShipmentId: existingShipment.Id });
+      const affectedOrderIds = [...new Set(shipmentOrders.map(so => so.OrderId))];
+      await this.recalcOrders(affectedOrderIds, manager);
 
       return { id: existingShipment.Id };
     });
@@ -288,13 +304,118 @@ export class ShipmentService {
     await this.findOne(id);
 
     await this.dataSource.transaction(async manager => {
-      await manager.getRepository(ShipmentOrder).delete({ ShipmentId: id });
-      await manager.getRepository(ShipmentBox).delete({ ShipmentId: id });
+      const boxRepo = manager.getRepository(ShipmentBox);
+      const soRepo = manager.getRepository(ShipmentOrder);
 
+      // Grab affected IDs BEFORE deletion
+      const boxes = await boxRepo.find({ where: { ShipmentId: id } });
+      const affectedItemIds = [...new Set(
+        boxes.map(b => b.OrderItemId).filter((x): x is number => !!x)
+      )];
+
+      const links = await soRepo.findBy({ ShipmentId: id });
+      const affectedOrderIds = [...new Set(links.map(so => so.OrderId))];
+
+      // Delete children then shipment
+      await soRepo.delete({ ShipmentId: id });
+      await boxRepo.delete({ ShipmentId: id });
       const res = await manager.getRepository(Shipment).delete(id);
       if (!res.affected) throw new InternalServerErrorException('Failed to delete shipment');
+
+      // ✅ Recalc after removal (sums reflect remaining boxes)
+      await this.recalcOrderItems(affectedItemIds, manager);
+      await this.recalcOrders(affectedOrderIds, manager);
     });
 
     return { message: 'Deleted successfully' };
   }
+
+  private async recalcOrderItems(orderItemIds: number[], manager: EntityManager) {
+    if (!orderItemIds?.length) return;
+
+    // shipped per item (across ALL shipments)
+    const shippedRows = await manager.getRepository(ShipmentBox)
+      .createQueryBuilder('b')
+      .select('b.OrderItemId', 'orderItemId')
+      .addSelect('SUM(b.Quantity)', 'shipped')
+      .where('b.OrderItemId IN (:...ids)', { ids: orderItemIds })
+      .groupBy('b.OrderItemId')
+      .getRawMany<{ orderItemId: string; shipped: string }>();
+
+    const shippedMap = new Map<number, number>(
+      shippedRows.map(r => [Number(r.orderItemId), Number(r.shipped)])
+    );
+
+    // required per item
+    const reqRows = await manager.getRepository(OrderItemDetails)
+      .createQueryBuilder('d')
+      .select('d.OrderItemId', 'orderItemId')
+      .addSelect('SUM(d.Quantity)', 'required')
+      .where('d.OrderItemId IN (:...ids)', { ids: orderItemIds })
+      .groupBy('d.OrderItemId')
+      .getRawMany<{ orderItemId: string; required: string }>();
+
+    const requiredMap = new Map<number, number>(
+      reqRows.map(r => [Number(r.orderItemId), Number(r.required)])
+    );
+
+    const items = await manager.getRepository(OrderItem).findBy({ Id: In(orderItemIds) });
+
+    for (const it of items) {
+      const shipped = shippedMap.get(it.Id) ?? 0;
+      const required = requiredMap.get(it.Id) ?? 0;
+
+      // status rules (simple & robust)
+      let status: OrderItemShipmentEnum;
+      if (shipped <= 0) status = OrderItemShipmentEnum.PENDING;
+      else if (required > 0 && shipped < required) status = OrderItemShipmentEnum.PARTIALLY_SHIPPED;
+      else status = OrderItemShipmentEnum.SHIPPED;
+
+      it.itemShipmentStatus = status;
+    }
+    await manager.getRepository(OrderItem).save(items);
+  }
+
+
+  private async recalcOrders(orderIds: number[], manager: EntityManager) {
+    if (!orderIds?.length) return;
+
+    const orderRepo = manager.getRepository(Order);
+    const itemRepo = manager.getRepository(OrderItem);
+
+    const [orders, items] = await Promise.all([
+      orderRepo.findBy({ Id: In(orderIds) }),
+      itemRepo.findBy({ OrderId: In(orderIds) }),
+    ]);
+
+    const byOrder = new Map<number, OrderItem[]>();
+    for (const it of items) {
+      const arr = byOrder.get(it.OrderId) ?? [];
+      arr.push(it);
+      byOrder.set(it.OrderId, arr);
+    }
+
+    for (const order of orders) {
+      const arr = byOrder.get(order.Id) ?? [];
+      const allShipped = arr.length > 0 && arr.every(i => i.itemShipmentStatus === OrderItemShipmentEnum.SHIPPED);
+      const anyShipped = arr.some(i =>
+        i.itemShipmentStatus === OrderItemShipmentEnum.SHIPPED ||
+        i.itemShipmentStatus === OrderItemShipmentEnum.PARTIALLY_SHIPPED
+      );
+
+      const next: OrderItemShipmentEnum =
+        allShipped ? OrderItemShipmentEnum.SHIPPED
+          : anyShipped ? OrderItemShipmentEnum.PARTIALLY_SHIPPED
+            : OrderItemShipmentEnum.PENDING;
+
+      if (order.OrderShipmentStatus !== next) {
+        order.OrderShipmentStatus = next;
+      }
+    }
+
+    await orderRepo.save(orders);
+  }
+
 }
+
+
