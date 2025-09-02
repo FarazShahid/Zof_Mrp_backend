@@ -4,6 +4,26 @@ import { ValidationPipe, Logger, BadRequestException } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
+function extractErrors(errors: any[], parentPath = ''): string[] {
+  const result: string[] = [];
+
+  for (const error of errors) {
+    const propertyPath = parentPath ? `${parentPath}.${error.property}` : error.property;
+
+    if (error.constraints) {
+      result.push(
+        `${propertyPath}: ${Object.values(error.constraints).join(', ')}`
+      );
+    }
+
+    if (error.children && error.children.length > 0) {
+      result.push(...extractErrors(error.children, propertyPath));
+    }
+  }
+
+  return result;
+}
+
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   logger.log('Starting application...');
@@ -30,13 +50,8 @@ async function bootstrap() {
         enableImplicitConversion: true,
       },
       exceptionFactory: (errors) => {
-        const messages = errors.map(error => {
-          const constraints = Object.values(error.constraints || {});
-          return `${error.property}: ${constraints.join(', ')}`;
-        });
-        
+        const messages = extractErrors(errors);
         logger.error(`Validation failed: ${messages.join('; ')}`);
-        
         return new BadRequestException(messages);
       },
     }),
@@ -46,7 +61,7 @@ async function bootstrap() {
   // Global exception filter
   app.useGlobalFilters(new HttpExceptionFilter());
   logger.log('Global exception filter configured');
-  
+
   // Global response transformation
   app.useGlobalInterceptors(new TransformInterceptor());
   logger.log('Global response transformation configured');

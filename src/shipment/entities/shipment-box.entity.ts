@@ -23,7 +23,7 @@ export class ShipmentBox {
     @Column()
     Quantity: number;
 
-    @Column({ type: 'varchar', length: 255, nullable: false })
+    @Column({ type: 'varchar', length: 255, nullable: true })
     OrderItemName: string;
 
     @Column({ type: 'int', nullable: true })

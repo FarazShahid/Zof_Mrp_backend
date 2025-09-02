@@ -54,7 +54,7 @@ export class ShipmentService {
       Status,
       boxes,
     } = createShipmentDto;
-
+    
     if (boxes.length !== NumberOfBoxes) {
       throw new BadRequestException('NumberOfBoxes does not match boxes length.');
     }

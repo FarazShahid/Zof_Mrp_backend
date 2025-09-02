@@ -19,15 +19,18 @@ import { CommonApiProperty } from 'src/common/decorators/common-api-response.dec
 
 export class ShipmentBoxDto {
   @CommonApiProperty('Box Number', "ASDSA787ASDAS78")
+  @IsNotEmpty()
   @IsString()
   BoxNumber: string;
 
   @CommonApiProperty('Box Number', 1)
+  @IsNotEmpty()
   @IsNumber()
   @Min(1)
   Quantity: number;
 
   @CommonApiProperty('Weight', 2.5)
+  @IsNotEmpty()
   @IsNumber()
   @Min(0.01)
   Weight: number;
@@ -38,7 +41,7 @@ export class ShipmentBoxDto {
   OrderItemName: string;
 
   @CommonApiProperty('Order Item ID', 1)
-  @IsOptional()
+  @IsNotEmpty()
   @IsNumber()
   OrderItemId: number;
 
@@ -109,6 +112,7 @@ export class CreateShipmentDto {
   Status: ShipmentStatus;
 
   @ApiProperty({ type: [ShipmentBoxDto] })
+  @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
   @ArrayMinSize(1)
@@ -123,7 +127,7 @@ export interface ShipmentResponseDto {
   Id: number;
   Orders: Array<{ Id: number; OrderName: string }>;
   ShipmentCode: string;
-  TrackingId: string; 
+  TrackingId: string;
   ShipmentDate: string | Date;
   ShipmentCost: number;
   WeightUnit: string;

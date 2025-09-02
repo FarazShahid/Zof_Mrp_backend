@@ -1312,7 +1312,7 @@ CREATE TABLE `Shipment` (
   `ShipmentCarrierId` INT NOT NULL,
   `ShipmentDate` TIMESTAMP NOT NULL,
   `ShipmentCost` DECIMAL(10,2) NOT NULL,
-`TotalWeight` FLOAT NOT NULL,
+  `TotalWeight` FLOAT NOT NULL,
   `NumberOfBoxes` INT NOT NULL,
   `WeightUnit` VARCHAR(255) NOT NULL,
   `ReceivedTime` TIMESTAMP NULL DEFAULT NULL,
@@ -1426,8 +1426,8 @@ FOREIGN KEY (`ProductCategoryId`) REFERENCES `productcategory`(`Id`)
 ON DELETE RESTRICT
 ON UPDATE CASCADE;
 
-
 ALTER TABLE orderitemdetails
+
   MODIFY COLUMN SizeOption INT NULL DEFAULT NULL,
   MODIFY COLUMN MeasurementId INT NULL DEFAULT NULL;
 
@@ -1494,3 +1494,13 @@ NOT NULL DEFAULT 'Pending';
 ALTER TABLE orders
 ADD COLUMN OrderShipmentStatus ENUM('Pending', 'Shipped', 'Partially Shipped')
 NOT NULL DEFAULT 'Pending';
+
+
+ALTER TABLE Shipment 
+MODIFY COLUMN `OrderNumber` VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE ShipmentBox 
+MODIFY COLUMN `OrderItemName` VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE ShipmentBox
+MODIFY COLUMN `OrderItemDescription` TEXT NULL;

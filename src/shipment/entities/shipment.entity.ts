@@ -21,7 +21,7 @@ export class Shipment {
     @Column()
     TrackingId: string;
 
-    @Column()
+    @Column({ type: 'varchar', length: 100, nullable: true })
     OrderNumber: string;
 
     @OneToMany(() => ShipmentOrder, so => so.Shipment, { cascade: true })
