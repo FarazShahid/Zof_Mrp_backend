@@ -54,7 +54,7 @@ export class ShipmentService {
       Status,
       boxes,
     } = createShipmentDto;
-    
+
     if (boxes.length !== NumberOfBoxes) {
       throw new BadRequestException('NumberOfBoxes does not match boxes length.');
     }
@@ -199,7 +199,9 @@ export class ShipmentService {
       TrackingId: shippment?.TrackingId ?? '',
       OrderNumber: shippment?.OrderNumber ?? '',
       OrderIds: shippment?.ShipmentOrders?.map(so => so.OrderId) ?? [],
-      ShipmentCarrierId: shippment?.ShipmentCarrierId ?? '',
+      Orders: shippment?.ShipmentOrders?.map(so => ({ Id: so.OrderId, OrderName: so.Order?.OrderName ?? '', OrderNumber: so.Order?.OrderNumber ?? '' })) ?? [],
+      ShipmentCarrierId: shippment?.ShipmentCarrier?.Id ?? null,
+      ShipmentCarrierName: shippment?.ShipmentCarrier?.Name ?? 'Unknown',
       ShipmentDate: shippment?.ShipmentDate ?? '',
       ShipmentCost: shippment?.ShipmentCost ?? 0,
       TotalWeight: shippment?.TotalWeight ?? 0,
