@@ -158,7 +158,7 @@ export class ShipmentService {
 
     return shipments.map((shipmentItem) => ({
       Id: shipmentItem.Id,
-      Orders: shipmentItem.ShipmentOrders?.map(so => ({ Id: so.OrderId, OrderName: so.Order?.OrderName ?? '', })) ?? [],
+      Orders: shipmentItem.ShipmentOrders?.map(so => ({ Id: so.OrderId, OrderName: so.Order?.OrderName ?? '', OrderNumber: so.Order?.OrderNumber ?? '' })) ?? [],
       ShipmentCode: shipmentItem.ShipmentCode,
       TrackingId: shipmentItem.TrackingId,
       ShipmentDate: shipmentItem.ShipmentDate,
