@@ -186,6 +186,7 @@ export class ShipmentService {
         'ShipmentCarrier',
         'Boxes',
         'Boxes.OrderItem',
+        'Boxes.OrderItem.product',
         'ShipmentOrders',
         'ShipmentOrders.Order',
       ],
@@ -194,6 +195,7 @@ export class ShipmentService {
       },
     });
     if (!shippment) throw new NotFoundException(`Shipment with ${id} not found`)
+  
     return {
       ShipmentCode: shippment?.ShipmentCode ?? '',
       TrackingId: shippment?.TrackingId ?? '',
@@ -214,6 +216,7 @@ export class ShipmentService {
         Quantity: box?.Quantity,
         Weight: box?.Weight,
         OrderItemName: box?.OrderItemName ?? '',
+        OrderItem: box?.OrderItem?.product?.Name ?? '',
         OrderItemId: box?.OrderItemId ?? null,
         OrderItemDescription: box?.OrderItemDescription ?? '',
       })) ?? []
