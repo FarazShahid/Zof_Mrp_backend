@@ -23,3 +23,6 @@ ALTER TABLE `ShipmentBox`
   DROP COLUMN `OrderItemId`,
   DROP COLUMN `OrderItemDescription`,
   DROP COLUMN `Quantity`;
+
+ALTER TABLE `ShipmentBox`
+  ADD COLUMN `OrderBoxDescription` TEXT NULL;

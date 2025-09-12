@@ -10,6 +10,9 @@ export class ShipmentBox {
     @Column()
     ShipmentId: number;
 
+    @Column({ type: 'text', nullable: true })
+    OrderBoxDescription: string;
+
     @ManyToOne(() => Shipment, shipment => shipment.Boxes)
     @JoinColumn({ name: 'ShipmentId' })
     Shipment: Shipment;

@@ -232,6 +232,7 @@ export class ShipmentService {
         Id: box?.Id,
         BoxNumber: box?.BoxNumber,
         Weight: box?.Weight,
+        OrderBoxDescription: box.OrderBoxDescription,
         OrderItemName: box?.OrderItemName ?? '',
         items: (box?.ShipmentBoxItems || []).map(it => ({
           Id: it.Id,
@@ -366,6 +367,7 @@ export class ShipmentService {
             ShipmentId: id,
             BoxNumber: box.BoxNumber,
             Weight: box.Weight,
+            OrderBoxDescription: box.OrderBoxDescription,
             OrderItemName: box.OrderItemName,
             ShipmentBoxItems: (box.items || []).map(it => manager.getRepository(ShipmentBoxItem).create({
               OrderItemId: it.OrderItemId,

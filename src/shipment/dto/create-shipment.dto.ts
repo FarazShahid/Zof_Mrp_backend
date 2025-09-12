@@ -52,6 +52,11 @@ export class ShipmentBoxDto {
   @IsString()
   OrderItemName: string;
 
+  @CommonApiProperty('Box Description', 'Information about Box')
+  @IsString()
+  @IsOptional()
+  OrderBoxDescription?: string;
+
   @ApiProperty({ type: [ShipmentBoxItemDto] })
   @IsArray()
   @ValidateNested({ each: true })
