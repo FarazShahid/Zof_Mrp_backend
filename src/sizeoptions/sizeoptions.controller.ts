@@ -1,4 +1,4 @@
-import { Body, Delete, Get, Param, Post, Put, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Delete, Get, Param, Post, Put, HttpCode, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { SizeoptionsService } from './sizeoptions.service';
 import { CreateSizeOptionDto } from './dto/create-sizeoptions.dto';
 import { SizeOption } from './entities/sizeoptions.entity';
@@ -6,8 +6,10 @@ import { UpdateSizeOptionDto } from './dto/update-sizeoptions.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 
 @ControllerAuthProtector('Size Options', 'sizeoptions')
+@UseInterceptors(AuditInterceptor)
 export class SizeoptionsController {
   constructor(private readonly sizeoptionsService: SizeoptionsService) { }
 

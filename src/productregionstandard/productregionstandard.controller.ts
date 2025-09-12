@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, HttpCode, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { ProductRegionStandardService } from './productregionstandard.service';
 import { CreateProductRegionStandardDto } from './_/create-product-region-standard.dto';
 import { UpdateProductRegionStandardDto } from './_/update-product-region-standard.dto';
@@ -7,8 +7,10 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 
 @ControllerAuthProtector('Product Region Standards', 'product-region-standard')
+@UseInterceptors(AuditInterceptor)
 export class ProductRegionStandardController {
   constructor(private readonly service: ProductRegionStandardService) {}
 

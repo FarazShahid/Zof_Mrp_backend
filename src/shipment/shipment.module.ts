@@ -10,9 +10,10 @@ import { Order } from 'src/orders/entities/orders.entity';
 import { OrderItem } from 'src/orders/entities/order-item.entity';
 import { ShipmentOrder } from './entities/shipment-order.entity';
 import { OrderItemDetails } from 'src/orders/entities/order-item-details';
+import { AuditModule } from 'src/audit-logs/audit.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ShipmentCarrier, Shipment, ShipmentBox, ShipmentBoxItem, Order, OrderItem, ShipmentOrder , OrderItemDetails])],
+  imports: [TypeOrmModule.forFeature([ShipmentCarrier, Shipment, ShipmentBox, ShipmentBoxItem, Order, OrderItem, ShipmentOrder , OrderItemDetails]), AuditModule],
   controllers: [ShipmentController],
   providers: [ShipmentService],
 })

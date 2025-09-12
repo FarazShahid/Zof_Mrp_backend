@@ -1,4 +1,4 @@
-import { Get, Post, Body, Param, Put, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Get, Post, Body, Param, Put, Delete, HttpCode, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { ColorOptionService } from './coloroption.service';
 import { CreateColorOptionDto } from './_/create-color-option.dto';
 import { UpdateColorOptionDto } from './_/update-color-option.dto';
@@ -6,7 +6,9 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 @ControllerAuthProtector('Color Options', 'coloroption')
+@UseInterceptors(AuditInterceptor)
 export class ColorOptionController {
   constructor(private readonly colorOptionService: ColorOptionService) {}
 

@@ -11,7 +11,8 @@ import {
   HttpCode,
   Query,
   BadRequestException,
-  Res
+  Res,
+  UseInterceptors
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto, GetOrdersItemsDto } from './dto/create-orders.dto';
@@ -24,9 +25,11 @@ import { OrderStatusLogs } from './entities/order-status-log';
 import { Response } from 'express';
 import { OrderPdfService } from './order.pdf.service';
 import { GenerateOrderPdfsDto } from './dto/order.pdf.dto';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 
 
 @ControllerAuthProtector('Orders', 'orders')
+@UseInterceptors(AuditInterceptor)
 export class OrdersController {
   constructor(
     private readonly ordersService: OrdersService,

@@ -10,6 +10,7 @@ import {
     HttpStatus,
     BadRequestException,
     Logger,
+    UseInterceptors,
 } from '@nestjs/common';
 import { inventoryTransectionService } from './inventory-transections.service';
 import { CreateInventoryTransectionsDto } from './_/inventory-transections.dto';
@@ -17,8 +18,10 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 
 @ControllerAuthProtector('Inventory Transections', 'inventory-transections')
+@UseInterceptors(AuditInterceptor)
 export class InventoryTransectionController {
 
     constructor(private readonly inventoryTransectionService: inventoryTransectionService) { }

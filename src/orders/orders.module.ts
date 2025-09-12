@@ -17,6 +17,7 @@ import { OrderStatusLogs } from './entities/order-status-log';
 import { SizeMeasurement } from 'src/size-measurements/entities/size-measurement.entity';
 import { ShipmentOrder } from 'src/shipment/entities/shipment-order.entity';
 import { OrderPdfService } from './order.pdf.service';
+import { AuditModule } from 'src/audit-logs/audit.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { OrderPdfService } from './order.pdf.service';
       SizeMeasurement,
       ShipmentOrder
     ]),
+    AuditModule,
     UserModule,
   ],
   controllers: [OrdersController],

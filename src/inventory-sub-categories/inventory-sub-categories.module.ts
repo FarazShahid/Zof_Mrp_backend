@@ -5,9 +5,10 @@ import { InventorySubCategoryService } from './inventory-sub-categories.service'
 import { InventorySubCategoryController } from './inventory-sub-categories.controller';
 import { InventoryCategories } from 'src/inventory-categories/_/inventory-categories.entity';
 import { InventoryItems } from 'src/inventory-items/_/inventory-items.entity';
+import { AuditModule } from 'src/audit-logs/audit.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([InventorySubCategories, InventoryCategories, InventoryItems])],
+  imports: [TypeOrmModule.forFeature([InventorySubCategories, InventoryCategories, InventoryItems]), AuditModule],
   controllers: [InventorySubCategoryController],
   providers: [InventorySubCategoryService],
 })

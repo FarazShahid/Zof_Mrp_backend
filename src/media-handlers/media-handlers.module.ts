@@ -5,10 +5,12 @@ import { MediaHandlersController } from './media-handler.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Media } from 'src/media/_/media.entity';
 import { MediaLink } from 'src/media-link/_/media-link.entity';
+import { AuditModule } from 'src/audit-logs/audit.module';
 
 @Module({
    imports: [
       TypeOrmModule.forFeature([Media, MediaLink]),
+      AuditModule
     ],
   providers: [MediaHandlersService],
   controllers: [MediaHandlersController],
