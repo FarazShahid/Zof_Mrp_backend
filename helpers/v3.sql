@@ -40,3 +40,12 @@ CREATE TABLE auditlogs (
 
   CONSTRAINT FK_AuditLogs_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
 );
+
+-- QA Checklist for Product
+
+CREATE TABLE qachecklist (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name TEXT NOT NULL,
+  productId INT NOT NULL,
+  CONSTRAINT FK_qachecklist_products FOREIGN KEY (productId) REFERENCES product(Id)
+);
