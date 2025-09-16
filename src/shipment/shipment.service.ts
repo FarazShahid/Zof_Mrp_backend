@@ -205,6 +205,7 @@ export class ShipmentService {
         'Boxes',
         'Boxes.ShipmentBoxItems',
         'Boxes.ShipmentBoxItems.OrderItem',
+        'Boxes.ShipmentBoxItems.OrderItem.product', 
         'ShipmentOrders',
         'ShipmentOrders.Order',
       ],
