@@ -23,6 +23,11 @@ export class ShipmentBoxItemDto {
   @IsNumber()
   OrderItemId: number;
 
+  @CommonApiProperty('Order Item Name', 'Green Jersey')
+  @IsOptional()
+  @IsString()
+  OrderItemName: string;
+
   @CommonApiProperty('Item Description', 'Information about item')
   @IsString()
   @IsOptional()

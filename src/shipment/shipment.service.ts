@@ -127,6 +127,7 @@ export class ShipmentService {
           ShipmentBoxItems: (box.items || []).map(it =>
             manager.getRepository(ShipmentBoxItem).create({
               OrderItemId: it.OrderItemId,
+              OrderItemName: it.OrderItemName,
               OrderItemDescription: it.OrderItemDescription ?? null,
               Quantity: it.Quantity,
             })
@@ -182,6 +183,7 @@ export class ShipmentService {
         items: (b.ShipmentBoxItems || []).map(it => ({
           Id: it.Id,
           OrderItemId: it.OrderItemId,
+          OrderItemName: it.OrderItemName,
           OrderItemDescription: it.OrderItemDescription,
           Quantity: it.Quantity,
         }))
@@ -228,6 +230,10 @@ export class ShipmentService {
       WeightUnit: shippment?.WeightUnit ?? '',
       ReceivedTime: shippment?.ReceivedTime ?? '',
       Status: shippment?.Status ?? '',
+      CreatedOn: shippment?.CreatedOn,
+      CreatedBy: shippment?.CreatedBy,
+      UpdatedOn: shippment?.UpdatedOn,
+      UpdatedBy: shippment?.UpdatedBy,
       boxes: shippment?.Boxes.map(box => ({
         Id: box?.Id,
         BoxNumber: box?.BoxNumber,
@@ -237,6 +243,7 @@ export class ShipmentService {
         items: (box?.ShipmentBoxItems || []).map(it => ({
           Id: it.Id,
           OrderItemId: it.OrderItemId,
+          OrderItemName: it.OrderItemName,
           OrderItemDescription: it.OrderItemDescription ?? '',
           Quantity: it.Quantity,
         }))
@@ -371,6 +378,7 @@ export class ShipmentService {
             OrderItemName: box.OrderItemName,
             ShipmentBoxItems: (box.items || []).map(it => manager.getRepository(ShipmentBoxItem).create({
               OrderItemId: it.OrderItemId,
+              OrderItemName: it.OrderItemName,
               OrderItemDescription: it.OrderItemDescription ?? null,
               Quantity: it.Quantity,
             }))
