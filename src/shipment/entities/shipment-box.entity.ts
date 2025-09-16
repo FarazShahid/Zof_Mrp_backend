@@ -44,9 +44,6 @@ export class ShipmentBoxItem {
   @Column()
   OrderItemId: number;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  OrderItemName: string;
-
   @ManyToOne(() => OrderItem, orderItem => orderItem.ShipmentBoxItems)
   @JoinColumn({ name: 'OrderItemId' })
   OrderItem: OrderItem;

@@ -127,7 +127,6 @@ export class ShipmentService {
           ShipmentBoxItems: (box.items || []).map(it =>
             manager.getRepository(ShipmentBoxItem).create({
               OrderItemId: it.OrderItemId,
-              OrderItemName: it.OrderItemName,
               OrderItemDescription: it.OrderItemDescription ?? null,
               Quantity: it.Quantity,
             })
@@ -183,7 +182,6 @@ export class ShipmentService {
         items: (b.ShipmentBoxItems || []).map(it => ({
           Id: it.Id,
           OrderItemId: it.OrderItemId,
-          OrderItemName: it.OrderItemName,
           OrderItemDescription: it.OrderItemDescription,
           Quantity: it.Quantity,
         }))
@@ -206,6 +204,7 @@ export class ShipmentService {
         'ShipmentCarrier',
         'Boxes',
         'Boxes.ShipmentBoxItems',
+        'Boxes.ShipmentBoxItems.OrderItem',
         'ShipmentOrders',
         'ShipmentOrders.Order',
       ],
@@ -243,7 +242,7 @@ export class ShipmentService {
         items: (box?.ShipmentBoxItems || []).map(it => ({
           Id: it.Id,
           OrderItemId: it.OrderItemId,
-          OrderItemName: it.OrderItemName,
+          OrderItemName: it.OrderItem?.product?.Name ?? '',
           OrderItemDescription: it.OrderItemDescription ?? '',
           Quantity: it.Quantity,
         }))
@@ -378,7 +377,6 @@ export class ShipmentService {
             OrderItemName: box.OrderItemName,
             ShipmentBoxItems: (box.items || []).map(it => manager.getRepository(ShipmentBoxItem).create({
               OrderItemId: it.OrderItemId,
-              OrderItemName: it.OrderItemName,
               OrderItemDescription: it.OrderItemDescription ?? null,
               Quantity: it.Quantity,
             }))

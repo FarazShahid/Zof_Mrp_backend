@@ -49,8 +49,3 @@ CREATE TABLE qachecklist (
   productId INT NOT NULL,
   CONSTRAINT FK_qachecklist_products FOREIGN KEY (productId) REFERENCES product(Id)
 );
-
--- Adding OrderItemName in the Table
-
-ALTER TABLE `ShipmentBoxItem`
-ADD COLUMN `OrderItemName` VARCHAR(255) NULL AFTER `OrderItemId`;
