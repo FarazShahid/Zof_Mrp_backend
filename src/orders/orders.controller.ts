@@ -26,6 +26,10 @@ import { Response } from 'express';
 import { OrderPdfService } from './order.pdf.service';
 import { GenerateOrderPdfsDto } from './dto/order.pdf.dto';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { CreateQualityCheckDto } from './dto/create-checklist.dto';
+import { ApiQuery } from '@nestjs/swagger';
+import { ApiOperation } from '@nestjs/swagger';
+import { ApiResponse } from '@nestjs/swagger';
 
 
 @ControllerAuthProtector('Orders', 'orders')
@@ -193,5 +197,76 @@ export class OrdersController {
     file.getStream().pipe(res);
   }
 
+  @Post(':id/qa-checklist')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create QA checklist entries for an order' })
+  @ApiResponse({
+    status: 201,
+    description: 'QA checklist entries successfully created',
+    type: CreateQualityCheckDto,
+    isArray: true,
+  })
+  @ApiBody({
+    description: 'List of QA checklist items to create',
+    type: CreateQualityCheckDto,
+    isArray: true,
+    examples: {
+      example1: {
+        summary: 'Basic example',
+        value: [
+          {
+            productId: 1,
+            measurementId: 5,
+            parameter: 'Length',
+            expected: '100 cm',
+            observed: '98 cm',
+            remarks: 'Slightly short',
+          },
+          {
+            productId: 1,
+            measurementId: 6,
+            parameter: 'Width',
+            expected: '50 cm',
+            observed: '50 cm',
+            remarks: 'Perfect',
+          },
+        ],
+      },
+    },
+  })
+  @CommonApiResponses('Creates QA checklist entries for an order')
+  async createQaChecklist(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dtos: CreateQualityCheckDto[],
+    @CurrentUser() currentUser: any,
+  ): Promise<any> {
+    return this.ordersService.createManyChecklist(id, dtos, currentUser.email);
+  }
 
+  @Get(':id/qa-checklist')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get QA checklist by orderId and optional filters' })
+  @ApiResponse({ status: 200, description: 'List of QA checklist items for the order' })
+  @ApiQuery({
+    name: 'productId',
+    required: false,
+    type: Number,
+    description: 'Filter by productId (optional)',
+    example: 45,
+  })
+  @ApiQuery({
+    name: 'measurementId',
+    required: false,
+    type: Number,
+    description: 'Filter by measurementId (optional)',
+    example: 67,
+  })
+  @CommonApiResponses('Get QA checklist by orderId and optional productId or measurementId')
+  async getQaChecklist(
+    @Param('id', ParseIntPipe) orderId: number,
+    @Query('productId') productId?: number,
+    @Query('measurementId') measurementId?: number,
+  ): Promise<any> {
+    return this.ordersService.getQaChecklist(orderId, productId, measurementId);
+  }
 }

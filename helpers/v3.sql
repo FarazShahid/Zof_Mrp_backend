@@ -49,3 +49,16 @@ CREATE TABLE qachecklist (
   productId INT NOT NULL,
   CONSTRAINT FK_qachecklist_products FOREIGN KEY (productId) REFERENCES product(Id)
 );
+
+CREATE TABLE orderqualitycheck (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    OrderId INT NOT NULL,
+    ProductId INT NULL,
+    MeasurementId INT NULL,
+    Parameter TEXT NOT NULL,
+    Expected VARCHAR(255) NULL,
+    Observed VARCHAR(255) NOT NULL,
+    Remarks TEXT NULL,
+    CreatedBy VARCHAR(255) NOT NULL,
+    CreatedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

@@ -20,6 +20,8 @@ import { OrderStatus } from 'src/orderstatus/entities/orderstatus.entity';
 import { SizeMeasurement } from 'src/size-measurements/entities/size-measurement.entity';
 import { OrderStatusLogs } from './entities/order-status-log';
 import { Response } from 'express';
+import { CreateQualityCheckDto } from './dto/create-checklist.dto';
+import { OrderQualityCheck } from './entities/order-checklist.entity';
 
 @Injectable()
 export class OrdersService {
@@ -46,6 +48,8 @@ export class OrdersService {
     private orderStatusLogRepository: Repository<OrderStatusLogs>,
     @InjectRepository(SizeMeasurement)
     private sizeMeasurementRepository: Repository<SizeMeasurement>,
+    @InjectRepository(OrderQualityCheck)
+    private readonly qualityCheckRepo: Repository<OrderQualityCheck>,
     private dataSource: DataSource,
   ) { }
 
@@ -1074,4 +1078,73 @@ export class OrdersService {
     }));
   }
 
+  async createManyChecklist(
+    orderId: number,
+    dtos: CreateQualityCheckDto[],
+    createdBy: string,
+  ): Promise<OrderQualityCheck[]> {
+    if (!dtos || dtos.length === 0) {
+      return [];
+    }
+
+    const hasProductIds = dtos.some((d) => d.productId);
+    const hasMeasurementIds = dtos.some((d) => d.measurementId);
+
+    if (hasProductIds && hasMeasurementIds) {
+      throw new BadRequestException(
+        'You cannot mix productId and measurementId in the same request.',
+      );
+    }
+
+    if (hasProductIds) {
+      const productIds = dtos.map((d) => d.productId).filter(Boolean);
+      await this.qualityCheckRepo.delete({
+        orderId,
+        productId: In(productIds),
+      });
+    } else if (hasMeasurementIds) {
+      const measurementIds = dtos.map((d) => d.measurementId).filter(Boolean);
+      await this.qualityCheckRepo.delete({
+        orderId,
+        measurementId: In(measurementIds),
+      });
+    } else {
+      await this.qualityCheckRepo.delete({ orderId });
+    }
+
+    const entities = dtos.map((item) =>
+      this.qualityCheckRepo.create({
+        orderId,
+        productId: item.productId ?? null,
+        measurementId: item.measurementId ?? null,
+        parameter: item.parameter,
+        expected: item.expected ?? null,
+        observed: item.observed,
+        remarks: item.remarks ?? null,
+        createdBy,
+      }),
+    );
+
+    return await this.qualityCheckRepo.save(entities);
+  }
+
+  async getQaChecklist(
+    orderId: number,
+    productId?: number,
+    measurementId?: number,
+  ): Promise<OrderQualityCheck[]> {
+    const query = this.qualityCheckRepo
+      .createQueryBuilder('qc')
+      .where('qc.orderId = :orderId', { orderId });
+
+    if (productId) {
+      query.andWhere('qc.productId = :productId', { productId });
+    }
+
+    if (measurementId) {
+      query.andWhere('qc.measurementId = :measurementId', { measurementId });
+    }
+
+    return await query.getMany();
+  }
 }

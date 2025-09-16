@@ -18,6 +18,7 @@ import { SizeMeasurement } from 'src/size-measurements/entities/size-measurement
 import { ShipmentOrder } from 'src/shipment/entities/shipment-order.entity';
 import { OrderPdfService } from './order.pdf.service';
 import { AuditModule } from 'src/audit-logs/audit.module';
+import { OrderQualityCheck } from './entities/order-checklist.entity';
 
 @Module({
   imports: [
@@ -34,7 +35,8 @@ import { AuditModule } from 'src/audit-logs/audit.module';
       ColorOption,
       PrintingOptions,
       SizeMeasurement,
-      ShipmentOrder
+      ShipmentOrder,
+      OrderQualityCheck
     ]),
     AuditModule,
     UserModule,
