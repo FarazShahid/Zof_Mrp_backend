@@ -6,7 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { ShipmentCarrier } from 'src/shipment-carrier/entities/shipment-carrier.entity';
 import { Shipment } from './entities/shipment.entity';
-import { ShipmentBox } from './entities/shipment-box.entity';
+import { ShipmentBox, ShipmentBoxItem } from './entities/shipment-box.entity';
 import { ShipmentOrder } from './entities/shipment-order.entity';
 import { OrderItem, OrderItemShipmentEnum } from 'src/orders/entities/order-item.entity';
 import { OrderItemDetails } from 'src/orders/entities/order-item-details';
@@ -70,7 +70,9 @@ export class ShipmentService {
       throw new BadRequestException('Some Orders are invalid.');
     }
 
-    const orderItemIds = new Set(boxes.map(box => box?.OrderItemId));
+    const orderItemIds = new Set(
+      boxes.flatMap(box => box.items?.map(it => it?.OrderItemId) ?? [])
+    );
     const verifiedOrderItems = await this.orderItemRepository.findBy({ Id: In(Array.from(orderItemIds)) });
     if (verifiedOrderItems.length !== Array.from(orderItemIds).length) {
       throw new BadRequestException('Some Order Items are invalid.');
@@ -118,20 +120,24 @@ export class ShipmentService {
 
       const boxEntities = boxes.map(box =>
         manager.getRepository(ShipmentBox).create({
-          OrderItemId: box.OrderItemId,
           ShipmentId: savedShipment.Id,
           BoxNumber: box.BoxNumber,
           Weight: box.Weight,
-          Quantity: box.Quantity,
           OrderItemName: box.OrderItemName,
-          OrderItemDescription: box.OrderItemDescription
-        }),
+          ShipmentBoxItems: (box.items || []).map(it =>
+            manager.getRepository(ShipmentBoxItem).create({
+              OrderItemId: it.OrderItemId,
+              OrderItemDescription: it.OrderItemDescription ?? null,
+              Quantity: it.Quantity,
+            })
+          )
+        })
       );
 
       await manager.getRepository(ShipmentBox).save(boxEntities);
 
       const affectedItemIds = [...new Set(
-        boxes.map(b => b.OrderItemId).filter((id): id is number => !!id)
+        boxes.flatMap(b => (b.items || []).map(it => it.OrderItemId)).filter((id): id is number => !!id)
       )];
       await this.recalcOrderItems(affectedItemIds, manager);
 
@@ -147,7 +153,7 @@ export class ShipmentService {
       relations: [
         'ShipmentCarrier',
         'Boxes',
-        'Boxes.OrderItem',
+        'Boxes.ShipmentBoxItems',
         'ShipmentOrders',
         'ShipmentOrders.Order',
       ],
@@ -158,6 +164,7 @@ export class ShipmentService {
 
     return shipments.map((shipmentItem) => ({
       Id: shipmentItem.Id,
+      OrderIds: shipmentItem.ShipmentOrders?.map(so => so.OrderId) ?? [],
       Orders: shipmentItem.ShipmentOrders?.map(so => ({ Id: so.OrderId, OrderName: so.Order?.OrderName ?? '', OrderNumber: so.Order?.OrderNumber ?? '' })) ?? [],
       ShipmentCode: shipmentItem.ShipmentCode,
       TrackingId: shipmentItem.TrackingId,
@@ -167,7 +174,18 @@ export class ShipmentService {
       TotalWeight: shipmentItem.TotalWeight,
       NumberOfBoxes: shipmentItem.NumberOfBoxes,
       ReceivedTime: shipmentItem.ReceivedTime,
-      Boxes: [...shipmentItem.Boxes],
+      Boxes: shipmentItem.Boxes?.map(b => ({
+        Id: b.Id,
+        BoxNumber: b.BoxNumber,
+        Weight: b.Weight,
+        OrderItemName: b.OrderItemName,
+        items: (b.ShipmentBoxItems || []).map(it => ({
+          Id: it.Id,
+          OrderItemId: it.OrderItemId,
+          OrderItemDescription: it.OrderItemDescription,
+          Quantity: it.Quantity,
+        }))
+      })) ?? [],
       Status: shipmentItem.Status,
       ShipmentCarrierId: shipmentItem.ShipmentCarrier.Id,
       ShipmentCarrierName: shipmentItem.ShipmentCarrier.Name,
@@ -185,8 +203,9 @@ export class ShipmentService {
       relations: [
         'ShipmentCarrier',
         'Boxes',
-        'Boxes.OrderItem',
-        'Boxes.OrderItem.product',
+        'Boxes.ShipmentBoxItems',
+        'Boxes.ShipmentBoxItems.OrderItem',
+        'Boxes.ShipmentBoxItems.OrderItem.product', 
         'ShipmentOrders',
         'ShipmentOrders.Order',
       ],
@@ -211,14 +230,23 @@ export class ShipmentService {
       WeightUnit: shippment?.WeightUnit ?? '',
       ReceivedTime: shippment?.ReceivedTime ?? '',
       Status: shippment?.Status ?? '',
+      CreatedOn: shippment?.CreatedOn,
+      CreatedBy: shippment?.CreatedBy,
+      UpdatedOn: shippment?.UpdatedOn,
+      UpdatedBy: shippment?.UpdatedBy,
       boxes: shippment?.Boxes.map(box => ({
+        Id: box?.Id,
         BoxNumber: box?.BoxNumber,
-        Quantity: box?.Quantity,
         Weight: box?.Weight,
+        OrderBoxDescription: box.OrderBoxDescription,
         OrderItemName: box?.OrderItemName ?? '',
-        OrderItem: box?.OrderItem?.product?.Name ?? '',
-        OrderItemId: box?.OrderItemId ?? null,
-        OrderItemDescription: box?.OrderItemDescription ?? '',
+        items: (box?.ShipmentBoxItems || []).map(it => ({
+          Id: it.Id,
+          OrderItemId: it.OrderItemId,
+          OrderItemName: it.OrderItem?.product?.Name ?? '',
+          OrderItemDescription: it.OrderItemDescription ?? '',
+          Quantity: it.Quantity,
+        }))
       })) ?? []
     }
   }
@@ -274,7 +302,7 @@ export class ShipmentService {
       // Validate OrderItemIds (when boxes provided)
       if (Array.isArray(boxes) && boxes.length > 0) {
         const orderItemIds = [...new Set(
-          boxes.filter(b => b?.OrderItemId != null).map(b => Number(b.OrderItemId))
+          boxes.flatMap(b => (b.items || []).map(it => Number(it.OrderItemId)))
         )];
 
         if (orderItemIds.length > 0) {
@@ -333,31 +361,33 @@ export class ShipmentService {
       let affectedItemIds: number[] = [];
       if (Array.isArray(boxes)) {
         // 1) Collect previous item ids BEFORE delete (to handle removals)
-        const prevBoxes = await shipmentBoxRepo.find({ where: { ShipmentId: id } });
+        const prevBoxes = await shipmentBoxRepo.find({ where: { ShipmentId: id }, relations: ['ShipmentBoxItems'] });
         const prevItemIds = prevBoxes
-          .map(b => b.OrderItemId)
+          .flatMap(b => b.ShipmentBoxItems?.map(it => it.OrderItemId) ?? [])
           .filter((x): x is number => !!x);
 
         // 2) Replace boxes
         await shipmentBoxRepo.delete({ ShipmentId: id });
 
         if (boxes.length > 0) {
-          await shipmentBoxRepo.insert(
-            boxes.map(box => ({
-              ShipmentId: id,
-              BoxNumber: box.BoxNumber,
-              Weight: box.Weight,
-              Quantity: box.Quantity,
-              OrderItemId: box.OrderItemId ?? null,
-              OrderItemName: box.OrderItemName,
-              OrderItemDescription: box.OrderItemDescription ?? null,
+          const newBoxes = boxes.map(box => shipmentBoxRepo.create({
+            ShipmentId: id,
+            BoxNumber: box.BoxNumber,
+            Weight: box.Weight,
+            OrderBoxDescription: box.OrderBoxDescription,
+            OrderItemName: box.OrderItemName,
+            ShipmentBoxItems: (box.items || []).map(it => manager.getRepository(ShipmentBoxItem).create({
+              OrderItemId: it.OrderItemId,
+              OrderItemDescription: it.OrderItemDescription ?? null,
+              Quantity: it.Quantity,
             }))
-          );
+          }));
+          await shipmentBoxRepo.save(newBoxes);
         }
 
         // 3) Collect new item ids
         const newItemIds = boxes
-          .map(b => b.OrderItemId)
+          .flatMap(b => (b.items || []).map(it => it.OrderItemId))
           .filter((x): x is number => !!x);
 
         // 4) Union of old + new affected items
@@ -403,9 +433,9 @@ export class ShipmentService {
       const soRepo = manager.getRepository(ShipmentOrder);
 
       // Grab affected IDs BEFORE deletion
-      const boxes = await boxRepo.find({ where: { ShipmentId: id } });
+      const boxes = await boxRepo.find({ where: { ShipmentId: id }, relations: ['ShipmentBoxItems'] });
       const affectedItemIds = [...new Set(
-        boxes.map(b => b.OrderItemId).filter((x): x is number => !!x)
+        boxes.flatMap(b => b.ShipmentBoxItems?.map(it => it.OrderItemId) ?? []).filter((x): x is number => !!x)
       )];
 
       const links = await soRepo.findBy({ ShipmentId: id });
@@ -429,12 +459,12 @@ export class ShipmentService {
     if (!orderItemIds?.length) return;
 
     // shipped per item (across ALL shipments)
-    const shippedRows = await manager.getRepository(ShipmentBox)
-      .createQueryBuilder('b')
-      .select('b.OrderItemId', 'orderItemId')
-      .addSelect('SUM(b.Quantity)', 'shipped')
-      .where('b.OrderItemId IN (:...ids)', { ids: orderItemIds })
-      .groupBy('b.OrderItemId')
+    const shippedRows = await manager.getRepository(ShipmentBoxItem)
+      .createQueryBuilder('bi')
+      .select('bi.OrderItemId', 'orderItemId')
+      .addSelect('SUM(bi.Quantity)', 'shipped')
+      .where('bi.OrderItemId IN (:...ids)', { ids: orderItemIds })
+      .groupBy('bi.OrderItemId')
       .getRawMany<{ orderItemId: string; shipped: string }>();
 
     const shippedMap = new Map<number, number>(

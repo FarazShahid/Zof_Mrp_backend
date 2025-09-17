@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
+  UseInterceptors,
 } from '@nestjs/common';
 import { InventoryUnitOfMeasuresService } from './inventory-unit-measures.service';
 import { CreateInventoryUnitMeasuresDto } from './_/create-inventory-unit-measures.dto';
@@ -16,8 +17,10 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 
 @ControllerAuthProtector('Unit of Measures', 'unit-measures')
+@UseInterceptors(AuditInterceptor)
 export class UnitofMeasuresController {
 
   constructor(private readonly InventoryUnitOfMeasuresService: InventoryUnitOfMeasuresService) { }

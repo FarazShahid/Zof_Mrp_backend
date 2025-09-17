@@ -5,14 +5,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ShipmentCarrier } from 'src/shipment-carrier/entities/shipment-carrier.entity';
 import { Shipment } from './entities/shipment.entity';
 // import { ShipmentDetail } from './entities/shipment-details';
-import { ShipmentBox } from './entities/shipment-box.entity';
+import { ShipmentBox, ShipmentBoxItem } from './entities/shipment-box.entity';
 import { Order } from 'src/orders/entities/orders.entity';
 import { OrderItem } from 'src/orders/entities/order-item.entity';
 import { ShipmentOrder } from './entities/shipment-order.entity';
 import { OrderItemDetails } from 'src/orders/entities/order-item-details';
+import { AuditModule } from 'src/audit-logs/audit.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ShipmentCarrier, Shipment, ShipmentBox, Order, OrderItem, ShipmentOrder , OrderItemDetails])],
+  imports: [TypeOrmModule.forFeature([ShipmentCarrier, Shipment, ShipmentBox, ShipmentBoxItem, Order, OrderItem, ShipmentOrder , OrderItemDetails]), AuditModule],
   controllers: [ShipmentController],
   providers: [ShipmentService],
 })

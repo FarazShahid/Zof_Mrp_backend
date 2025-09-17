@@ -20,6 +20,9 @@ import { OrderStatus } from 'src/orderstatus/entities/orderstatus.entity';
 import { SizeMeasurement } from 'src/size-measurements/entities/size-measurement.entity';
 import { OrderStatusLogs } from './entities/order-status-log';
 import { Response } from 'express';
+import { CreateQualityCheckDto } from './dto/create-checklist.dto';
+import { OrderQualityCheck } from './entities/order-checklist.entity';
+import { QAChecklist } from 'src/products/entities/qa-checklist.entity';
 
 @Injectable()
 export class OrdersService {
@@ -46,6 +49,10 @@ export class OrdersService {
     private orderStatusLogRepository: Repository<OrderStatusLogs>,
     @InjectRepository(SizeMeasurement)
     private sizeMeasurementRepository: Repository<SizeMeasurement>,
+    @InjectRepository(OrderQualityCheck)
+    private readonly qualityCheckRepo: Repository<OrderQualityCheck>,
+    @InjectRepository(QAChecklist)
+    private qAChecklistRepository: Repository<QAChecklist>,
     private dataSource: DataSource,
   ) { }
 
@@ -1074,4 +1081,233 @@ export class OrdersService {
     }));
   }
 
+  async createManyChecklist(
+    orderItemId: number,
+    dtos: CreateQualityCheckDto[],
+    createdBy: string,
+  ): Promise<OrderQualityCheck[]> {
+    if (!dtos || dtos.length === 0) {
+      return [];
+    }
+
+    const hasProductIds = dtos.some((d) => d.productId);
+    const hasMeasurementIds = dtos.some((d) => d.measurementId);
+
+    if (hasProductIds && hasMeasurementIds) {
+      throw new BadRequestException(
+        'You cannot mix productId and measurementId in the same request.',
+      );
+    }
+
+    if (hasProductIds) {
+      const productIds = dtos.map((d) => d.productId).filter(Boolean);
+      await this.qualityCheckRepo.delete({
+        orderItemId,
+        productId: In(productIds),
+      });
+    } else if (hasMeasurementIds) {
+      const measurementIds = dtos.map((d) => d.measurementId).filter(Boolean);
+      await this.qualityCheckRepo.delete({
+        orderItemId,
+        measurementId: In(measurementIds),
+      });
+    } else {
+      await this.qualityCheckRepo.delete({ orderItemId });
+    }
+
+    const entities = dtos.map((item) =>
+      this.qualityCheckRepo.create({
+        orderItemId,
+        productId: item.productId ?? null,
+        measurementId: item.measurementId ?? null,
+        parameter: item.parameter,
+        expected: item.expected ?? null,
+        observed: item.observed,
+        remarks: item.remarks ?? null,
+        createdBy,
+      }),
+    );
+
+    return await this.qualityCheckRepo.save(entities);
+  }
+
+  async getQaChecklist(
+    orderItemId: number,
+    productId?: number,
+    measurementId?: number,
+  ): Promise<OrderQualityCheck[]> {
+    const query = this.qualityCheckRepo
+      .createQueryBuilder('qc')
+      .where('qc.orderItemId = :orderItemId', { orderItemId });
+
+    if (productId) {
+      query.andWhere('qc.productId = :productId', { productId });
+    }
+
+    if (measurementId) {
+      query.andWhere('qc.measurementId = :measurementId', { measurementId });
+    }
+
+    return await query.getMany();
+  }
+
+  async createChecklistForOrderItem(
+    orderItemId: number,
+    createdBy: string,
+  ): Promise<OrderQualityCheck[]> {
+    // 1️⃣ Fetch OrderItem
+    const orderItem = await this.orderItemRepository.findOne({
+      where: { Id: orderItemId },
+    });
+
+    if (!orderItem) {
+      throw new NotFoundException('OrderItem not found');
+    }
+
+    const productId = orderItem.ProductId;
+
+    const entities: OrderQualityCheck[] = [];
+
+    // 2️⃣ --- Product QA checklist ---
+    const qaChecklist = await this.qAChecklistRepository.find({
+      where: { productId },
+    });
+
+    if (qaChecklist && qaChecklist.length > 0) {
+      // Delete existing QA for this product
+      await this.qualityCheckRepo.delete({ orderItemId, productId });
+
+      qaChecklist.forEach((qa) => {
+        entities.push(
+          this.qualityCheckRepo.create({
+            orderItemId,
+            productId,
+            measurementId: null,
+            parameter: qa.name,
+            expected: null,
+            observed: null,
+            remarks: null,
+            createdBy,
+          }),
+        );
+      });
+    }
+
+    // 3️⃣ --- Measurement-based QA checklist ---
+    const orderItemDetails = await this.orderItemDetailRepository.find({
+      where: { OrderItemId: orderItemId },
+    });
+
+    const measurementIds = [
+      ...new Set(orderItemDetails.map((d) => d.MeasurementId)),
+    ];
+
+    if (measurementIds.length > 0) {
+      const sizeMeasurements = await this.sizeMeasurementRepository.findBy({
+        Id: In(measurementIds),
+      });
+
+      for (const sm of sizeMeasurements) {
+        await this.qualityCheckRepo.delete({ orderItemId, measurementId: sm?.Id });
+
+        const parameters = [
+          'Measurement1',
+          'FrontLengthHPS',
+          'BackLengthHPS',
+          'AcrossShoulders',
+          'ArmHole',
+          'UpperChest',
+          'LowerChest',
+          'Waist',
+          'BottomWidth',
+          'SleeveLength',
+          'SleeveOpening',
+          'NeckSize',
+          'CollarHeight',
+          'CollarPointHeight',
+          'StandHeightBack',
+          'CollarStandLength',
+          'SideVentFront',
+          'SideVentBack',
+          'PlacketLength',
+          'TwoButtonDistance',
+          'PlacketWidth',
+          'BackNeckDrop',
+          'FrontNeckDrop',
+          'ShoulderSeam',
+          'ShoulderSlope',
+          'Hem',
+          'Neckwidth',
+          'CollarOpening',
+          'ArmHoleStraight',
+          'BottomRib',
+          'CuffHeight',
+          'ColllarHeightCenterBack',
+          'BottomHem',
+          'Inseam',
+          'Hip',
+          'FrontRise',
+          'LegOpening',
+          'KneeWidth',
+          'Outseam',
+          'bFrontRise',
+          'WasitStretch',
+          'WasitRelax',
+          'Thigh',
+          'BackRise',
+          'TotalLength',
+          'WBHeight',
+          'bBottomWidth',
+          'BottomOriginal',
+          'BottomElastic',
+          'BottomCuffZipped',
+          'BottomStraightZipped',
+          'HemBottom',
+          't_TopRight',
+          't_TopLeft',
+          't_BottomRight',
+          't_BottomLeft',
+          't_Center',
+          't_Back',
+          'b_TopRight',
+          'b_TopLeft',
+          'b_BottomRight',
+          'b_BottomLeft',
+          't_left_sleeve',
+          't_right_sleeve',
+          'H_VisorLength',
+          'H_VisorWidth',
+          'H_CrownCircumference',
+          'H_FrontSeamLength',
+          'H_BackSeamLength',
+          'H_RightCenterSeamLength',
+          'H_LeftCenterSeamLength',
+          'H_ClosureHeightIncludingStrapWidth',
+          'H_StrapWidth',
+          'H_StrapbackLength',
+          'H_SweatBandWidth',
+          'H_PatchSize',
+          'H_PatchPlacement',
+        ];
+console.log(createdBy);
+        parameters.forEach((col) => {
+          const value = sm[col as keyof typeof sm] ?? null;
+          entities.push(
+            this.qualityCheckRepo.create({
+              orderItemId: orderItemId,
+              productId: null,
+              measurementId: sm?.Id,
+              parameter: col,
+              expected: value?.toString() ?? null,
+              observed: null,
+              remarks: null,
+              createdBy: createdBy,
+              createdOn: new Date()
+            })
+          );
+        });
+      }
+    }
+    return await this.qualityCheckRepo.save(entities);
+  }
 }

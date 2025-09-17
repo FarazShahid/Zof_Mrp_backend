@@ -8,6 +8,7 @@ import { UnitOfMeasures } from 'src/inventory-unit-measures/_/inventory-unit-mea
 import { Client } from 'src/clients/entities/client.entity';
 import { Order } from 'src/orders/entities/orders.entity';
 import { InventorySuppliers } from 'src/inventory-suppliers/_/inventory-suppliers.entity';
+import { AuditModule } from 'src/audit-logs/audit.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -18,6 +19,7 @@ import { InventorySuppliers } from 'src/inventory-suppliers/_/inventory-supplier
       Order,
       InventorySuppliers
     ]),
+    AuditModule
   ],
   controllers: [InventoryTransectionController],
   providers: [inventoryTransectionService],

@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
+  UseInterceptors,
 } from '@nestjs/common';
 import { InventorySubCategoryService } from './inventory-sub-categories.service';
 import { CreateInventorySubCategoryDto } from './_/inventory-sub-categories.dto';
@@ -16,8 +17,10 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 
 @ControllerAuthProtector('Inventory Sub Categories', 'inventory-sub-categories')
+@UseInterceptors(AuditInterceptor)
 export class InventorySubCategoryController {
 
   constructor(private readonly InventorySubCategoryService: InventorySubCategoryService) { }

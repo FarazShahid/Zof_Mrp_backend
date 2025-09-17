@@ -17,17 +17,29 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ShipmentStatus } from '../entities/shipment.entity';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 
+export class ShipmentBoxItemDto {
+  @CommonApiProperty('Order Item ID', 1)
+  @IsNotEmpty()
+  @IsNumber()
+  OrderItemId: number;
+
+  @CommonApiProperty('Item Description', 'Information about item')
+  @IsString()
+  @IsOptional()
+  OrderItemDescription?: string;
+
+  @CommonApiProperty('Quantity of this order item inside the box', 2)
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
+  Quantity: number;
+}
+
 export class ShipmentBoxDto {
   @CommonApiProperty('Box Number', "ASDSA787ASDAS78")
   @IsNotEmpty()
   @IsString()
   BoxNumber: string;
-
-  @CommonApiProperty('Box Number', 1)
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  Quantity: number;
 
   @CommonApiProperty('Weight', 2.5)
   @IsNotEmpty()
@@ -40,15 +52,17 @@ export class ShipmentBoxDto {
   @IsString()
   OrderItemName: string;
 
-  @CommonApiProperty('Order Item ID', 1)
-  @IsNotEmpty()
-  @IsNumber()
-  OrderItemId: number;
-
-  @CommonApiProperty('Item Description', 'Information about item')
+  @CommonApiProperty('Box Description', 'Information about Box')
   @IsString()
   @IsOptional()
-  OrderItemDescription: string;
+  OrderBoxDescription?: string;
+
+  @ApiProperty({ type: [ShipmentBoxItemDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @ArrayMinSize(1)
+  @Type(() => ShipmentBoxItemDto)
+  items: ShipmentBoxItemDto[];
 }
 
 export class CreateShipmentDto {
@@ -127,6 +141,7 @@ export interface ShipmentResponseDto {
   Id: number;
   Orders: Array<{ Id: number; OrderName: string }>;
   ShipmentCode: string;
+  OrderIds: number[];  
   TrackingId: string;
   ShipmentDate: string | Date;
   ShipmentCost: number;

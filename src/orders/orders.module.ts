@@ -17,6 +17,9 @@ import { OrderStatusLogs } from './entities/order-status-log';
 import { SizeMeasurement } from 'src/size-measurements/entities/size-measurement.entity';
 import { ShipmentOrder } from 'src/shipment/entities/shipment-order.entity';
 import { OrderPdfService } from './order.pdf.service';
+import { AuditModule } from 'src/audit-logs/audit.module';
+import { OrderQualityCheck } from './entities/order-checklist.entity';
+import { QAChecklist } from 'src/products/entities/qa-checklist.entity';
 
 @Module({
   imports: [
@@ -33,8 +36,11 @@ import { OrderPdfService } from './order.pdf.service';
       ColorOption,
       PrintingOptions,
       SizeMeasurement,
-      ShipmentOrder
+      ShipmentOrder,
+      OrderQualityCheck,
+      QAChecklist
     ]),
+    AuditModule,
     UserModule,
   ],
   controllers: [OrdersController],

@@ -1,4 +1,4 @@
-import { Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, Patch, Query } from '@nestjs/common';
+import { Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, Patch, Query, UseInterceptors } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -8,8 +8,10 @@ import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-p
 import { ApiBody } from '@nestjs/swagger';
 import { UpdateProductStatusDto } from './dto/update-status-dto';
 import { ApiQuery } from '@nestjs/swagger';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 
 @ControllerAuthProtector('Products', 'products')
+@UseInterceptors(AuditInterceptor)
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) { }
 

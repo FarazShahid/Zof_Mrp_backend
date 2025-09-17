@@ -1,4 +1,4 @@
-import { Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, Query, UseInterceptors } from '@nestjs/common';
 import { SizeMeasurementsService } from './size-measurements.service';
 import { CreateSizeMeasurementDto } from './dto/create-size-measurement.dto';
 import { UpdateSizeMeasurementDto } from './dto/update-size-measurement.dto';
@@ -7,8 +7,10 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
 import { ApiQuery } from '@nestjs/swagger';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 
 @ControllerAuthProtector('Size Measurements', 'size-measurements')
+@UseInterceptors(AuditInterceptor)
 export class SizeMeasurementsController {
   constructor(private readonly sizeMeasurementsService: SizeMeasurementsService) { }
 

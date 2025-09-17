@@ -1,4 +1,4 @@
-import { Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus } from '@nestjs/common';
+import { Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { EventService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
@@ -6,7 +6,9 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 @ControllerAuthProtector('Events', 'events')
+@UseInterceptors(AuditInterceptor)
 export class EventController {
   constructor(
     private readonly eventService: EventService,
