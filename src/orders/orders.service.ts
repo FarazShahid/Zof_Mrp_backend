@@ -1289,7 +1289,7 @@ export class OrdersService {
           'H_PatchSize',
           'H_PatchPlacement',
         ];
-
+console.log(createdBy);
         parameters.forEach((col) => {
           const value = sm[col as keyof typeof sm] ?? null;
           entities.push(
@@ -1301,7 +1301,7 @@ export class OrdersService {
               expected: value?.toString() ?? null,
               observed: null,
               remarks: null,
-              createdBy: "srefsd",
+              createdBy: createdBy,
               createdOn: new Date()
             })
           );

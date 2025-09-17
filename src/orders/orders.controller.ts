@@ -277,6 +277,6 @@ export class OrdersController {
     @Param('id', ParseIntPipe) orderItemId: number,
     @CurrentUser() currentUser: any,
   ): Promise<OrderQualityCheck[]> {
-    return this.ordersService.createChecklistForOrderItem(orderItemId, currentUser);
+    return this.ordersService.createChecklistForOrderItem(orderItemId, currentUser.email);
   }
 }
