@@ -165,6 +165,6 @@ export class ProductQAChecklistDto {
 
   @ApiProperty({ example: 1 })
   @IsNumber()
-  @IsNotEmpty()
-  productId: number;
+  @IsOptional()
+  productId?: number;
 }
