@@ -19,6 +19,7 @@ import { ShipmentOrder } from 'src/shipment/entities/shipment-order.entity';
 import { OrderPdfService } from './order.pdf.service';
 import { AuditModule } from 'src/audit-logs/audit.module';
 import { OrderQualityCheck } from './entities/order-checklist.entity';
+import { QAChecklist } from 'src/products/entities/qa-checklist.entity';
 
 @Module({
   imports: [
@@ -36,7 +37,8 @@ import { OrderQualityCheck } from './entities/order-checklist.entity';
       PrintingOptions,
       SizeMeasurement,
       ShipmentOrder,
-      OrderQualityCheck
+      OrderQualityCheck,
+      QAChecklist
     ]),
     AuditModule,
     UserModule,

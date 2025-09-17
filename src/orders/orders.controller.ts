@@ -30,6 +30,7 @@ import { CreateQualityCheckDto } from './dto/create-checklist.dto';
 import { ApiQuery } from '@nestjs/swagger';
 import { ApiOperation } from '@nestjs/swagger';
 import { ApiResponse } from '@nestjs/swagger';
+import { OrderQualityCheck } from './entities/order-checklist.entity';
 
 
 @ControllerAuthProtector('Orders', 'orders')
@@ -199,7 +200,7 @@ export class OrdersController {
 
   @Post(':id/qa-checklist')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create QA checklist entries for an order' })
+  @ApiOperation({ summary: 'Create QA checklist entries for an orderItemId' })
   @ApiResponse({
     status: 201,
     description: 'QA checklist entries successfully created',
@@ -245,7 +246,7 @@ export class OrdersController {
 
   @Get(':id/qa-checklist')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get QA checklist by orderId and optional filters' })
+  @ApiOperation({ summary: 'Get QA checklist by orderItemId and optional filters' })
   @ApiResponse({ status: 200, description: 'List of QA checklist items for the order' })
   @ApiQuery({
     name: 'productId',
@@ -261,12 +262,21 @@ export class OrdersController {
     description: 'Filter by measurementId (optional)',
     example: 67,
   })
-  @CommonApiResponses('Get QA checklist by orderId and optional productId or measurementId')
+  @CommonApiResponses('Get QA checklist by orderItemId and optional productId or measurementId')
   async getQaChecklist(
-    @Param('id', ParseIntPipe) orderId: number,
+    @Param('id', ParseIntPipe) orderItemId: number,
     @Query('productId') productId?: number,
     @Query('measurementId') measurementId?: number,
   ): Promise<any> {
-    return this.ordersService.getQaChecklist(orderId, productId, measurementId);
+    return this.ordersService.getQaChecklist(orderItemId, productId, measurementId);
+  }
+
+  @Get(':id/execute-qa-checklist')
+  @HttpCode(HttpStatus.OK)
+  async generateQaChecklist(
+    @Param('id', ParseIntPipe) orderItemId: number,
+    @CurrentUser() currentUser: any,
+  ): Promise<OrderQualityCheck[]> {
+    return this.ordersService.createChecklistForOrderItem(orderItemId, currentUser);
   }
 }

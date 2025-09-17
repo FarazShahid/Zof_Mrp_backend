@@ -6,7 +6,7 @@ export class OrderQualityCheck {
     id: number;
 
     @Column({ type: 'int' })
-    orderId: number;
+    orderItemId: number;
 
     @Column({ type: 'int', nullable: true })
     productId: number | null;
@@ -19,9 +19,9 @@ export class OrderQualityCheck {
 
     @Column({ type: 'varchar', length: 255, nullable: true })
     expected: string | null;
-
-    @Column({ type: 'varchar', length: 255 })
-    observed: string;
+    
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    observed: string | null;
 
     @Column({ type: 'text', nullable: true })
     remarks: string | null;

@@ -50,15 +50,16 @@ CREATE TABLE qachecklist (
   CONSTRAINT FK_qachecklist_products FOREIGN KEY (productId) REFERENCES product(Id)
 );
 
-CREATE TABLE orderqualitycheck (
-    Id INT AUTO_INCREMENT PRIMARY KEY,
-    OrderId INT NOT NULL,
-    ProductId INT NULL,
-    MeasurementId INT NULL,
-    Parameter TEXT NOT NULL,
-    Expected VARCHAR(255) NULL,
-    Observed VARCHAR(255) NOT NULL,
-    Remarks TEXT NULL,
-    CreatedBy VARCHAR(255) NOT NULL,
-    CreatedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+CREATE TABLE `orderqualitycheck` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `orderItemId` INT NOT NULL,
+  `productId` INT NULL,
+  `measurementId` INT NULL,
+  `parameter` TEXT NULL,
+  `expected` VARCHAR(255) NULL,
+  `observed` VARCHAR(255) NULL,
+  `remarks` TEXT NULL,
+  `createdBy` VARCHAR(255) NOT NULL,
+  `createdOn` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
