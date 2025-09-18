@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { ShipmentService } from './shipment.service';
 import { CreateShipmentDto } from './dto/create-shipment.dto';
 import { UpdateShipmentDto } from './dto/update-shipment.dto';
@@ -7,9 +7,11 @@ import { ApiBody } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { CreateOrderDto } from 'src/orders/dto/create-orders.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 
 
 @ControllerAuthProtector('Shipment', 'shipment')
+@UseInterceptors(AuditInterceptor)
 export class ShipmentController {
   constructor(private readonly shipmentService: ShipmentService) { }
 

@@ -1,12 +1,14 @@
-import { Controller, Post, Body, Logger, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Logger, HttpCode, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags, ApiBody  } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { LoginUserDto } from './dto/login-user.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { LoginResponseDto } from './dto/responses/login.response.dto';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 @ApiTags('Authentication')
 @Controller('auth')
+@UseInterceptors(AuditInterceptor)
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
 

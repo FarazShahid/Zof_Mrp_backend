@@ -1,11 +1,13 @@
-import { Body, Delete, Get, Param, Post, Put, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Delete, Get, Param, Post, Put, HttpCode, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { OrderstatusService } from './orderstatus.service';
 import { CreateOrderStatusDto, UpdateOrderStatusDto } from './dto/order-status.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 @ControllerAuthProtector('Order Statuses', 'orderstatuses')
+@UseInterceptors(AuditInterceptor)
 export class OrderStatusController {
   constructor(private readonly orderStatusService: OrderstatusService) { }
 

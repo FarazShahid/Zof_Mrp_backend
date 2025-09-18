@@ -1,6 +1,7 @@
 import { Get, Post, Body, Param, Delete, Logger,  HttpCode, 
   HttpStatus, BadRequestException,
-  Put, } from '@nestjs/common';
+  Put,
+  UseInterceptors, } from '@nestjs/common';
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
@@ -8,8 +9,10 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { ApiBody } from '@nestjs/swagger';
 import { CommonApiResponses, CommonApiResponseModal } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 
 @ControllerAuthProtector('Clients', 'clients')
+@UseInterceptors(AuditInterceptor)
 export class ClientsController {
   private readonly logger = new Logger(ClientsController.name);
 

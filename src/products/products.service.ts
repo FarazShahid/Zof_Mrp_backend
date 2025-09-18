@@ -54,6 +54,7 @@ export class ProductsService {
         (createProductDto.productColors?.length ?? 0) > 0 ||
         (createProductDto.productDetails?.length ?? 0) > 0 ||
         (createProductDto.productSizes?.length ?? 0) > 0 ||
+        (createProductDto.qaChecklist?.length ?? 0) > 0 ||
         (createProductDto.printingOptions?.length ?? 0) > 0;
 
       if (hasRelations) {
@@ -130,6 +131,16 @@ export class ProductsService {
             await queryRunner.query(
               `INSERT INTO availblesizeoptions (sizeId, ProductId) VALUES (?, ?)`,
               [sizeId, savedProduct.Id],
+            );
+          }
+
+          // ✅ Insert QA Checklist
+          const qaChecklist = createProductDto.qaChecklist ?? [];
+
+          for (const item of qaChecklist) {
+            await queryRunner.query(
+              `INSERT INTO qachecklist (name, productId) VALUES (?, ?)`,
+              [item.name, savedProduct.Id],
             );
           }
 
@@ -246,12 +257,24 @@ export class ProductsService {
       [id],
     );
 
+    const qaChecklistRaw = await this.dataSource.query(
+      `SELECT * FROM qachecklist WHERE productId = ?`,
+      [id],
+    );
+
+    const qaChecklist = qaChecklistRaw.map((item) => ({
+      id: item.id,
+      name: item.name,
+      productId: item.productId,
+    }));
+
     return {
       ...product,
       printingOptions,
       productColors,
       productDetails,
       productSizes,
+      qaChecklist
     };
   }
 
@@ -449,6 +472,51 @@ export class ProductsService {
         if (toAdd.length) await printingOptionRepo.save(toAdd);
       }
 
+      // --- QA Checklist ---
+      if (Array.isArray(updateProductDto.qaChecklist)) {
+        const validChecklist = updateProductDto.qaChecklist.filter(
+          (c) => c.name && c.name.trim().length > 0,
+        );
+
+        const existingChecklist: { id: number }[] = await queryRunner.query(
+          `SELECT id FROM qachecklist WHERE productId = ?`,
+          [id],
+        );
+
+        const updatedChecklistIds = validChecklist
+          .filter((c) => c.id)
+          .map((c) => c.id);
+
+        // Delete removed checklist items
+        const toRemove = existingChecklist
+          .map((c) => c.id)
+          .filter((existingId) => !updatedChecklistIds.includes(existingId));
+
+        if (toRemove.length) {
+          const ids = toRemove.join(',');
+          await queryRunner.query(
+            `DELETE FROM qachecklist WHERE id IN (${ids})`,
+          );
+        }
+
+        // Insert or update checklist
+        for (const checklist of validChecklist) {
+          if (checklist.id) {
+            await queryRunner.query(
+              `UPDATE qachecklist SET name = ? WHERE id = ?`,
+              [checklist.name, checklist.id],
+            );
+          } else {
+            await queryRunner.query(
+              `INSERT INTO qachecklist 
+         (productId, name) 
+         VALUES (?, ?)`,
+              [id, checklist.name],
+            );
+          }
+        }
+      }
+
       await queryRunner.commitTransaction();
       return updatedProduct;
     } catch (error) {
@@ -511,6 +579,11 @@ export class ProductsService {
       // Delete related available size options
       await queryRunner.query(
         `DELETE FROM availblesizeoptions WHERE ProductId = ?`,
+        [id],
+      );
+
+      await queryRunner.query(
+        `DELETE FROM qachecklist WHERE productId = ?`,
         [id],
       );
 

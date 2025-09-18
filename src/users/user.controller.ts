@@ -1,4 +1,4 @@
-import { Get, Post, Param, Body, Put, Delete, Logger, HttpCode, HttpStatus } from '@nestjs/common';
+import { Get, Post, Param, Body, Put, Delete, Logger, HttpCode, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -7,8 +7,10 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 
 @ControllerAuthProtector('Users', 'users')
+@UseInterceptors(AuditInterceptor)
 export class UserController {
   private readonly logger = new Logger(UserController.name);
 

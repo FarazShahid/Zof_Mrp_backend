@@ -18,7 +18,7 @@ export function CommonApiResponses(summary: string) {
 
 export const CommonApiProperty = (
   description: string = '',
-  example?: string | number | boolean,
+  example?: string | number | boolean | any[],
   isRequired: boolean = true
 ) => {
   return ApiProperty({

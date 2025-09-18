@@ -8,9 +8,10 @@ import { InventorySubCategories } from 'src/inventory-sub-categories/_/inventory
 import { InventoryCategories } from 'src/inventory-categories/_/inventory-categories.entity';
 import { UnitOfMeasures } from 'src/inventory-unit-measures/_/inventory-unit-measures.entity';
 import { InventoryTransactions } from 'src/inventory-transections/_/inventory-transections.entity';
+import { AuditModule } from 'src/audit-logs/audit.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([InventoryItems, InventorySuppliers, InventorySubCategories, InventoryCategories, UnitOfMeasures, InventoryTransactions])],
+  imports: [TypeOrmModule.forFeature([InventoryItems, InventorySuppliers, InventorySubCategories, InventoryCategories, UnitOfMeasures, InventoryTransactions]), AuditModule],
   controllers: [InventoryItemController],
   providers: [inventoryItemService],
 })

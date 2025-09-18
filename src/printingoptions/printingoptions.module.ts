@@ -5,11 +5,13 @@ import { UserModule } from 'src/users/user.module';
 import { PrintingoptionsService } from './printingoptions.service';
 import { PrintingOptions } from './entities/printingoptions.entity';
 import { ProductPrintingOptions } from 'src/products/entities/product-printing-options.entity';
+import { AuditModule } from 'src/audit-logs/audit.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([PrintingOptions, ProductPrintingOptions]),
-    UserModule
+    UserModule,
+    AuditModule
   ],
   controllers: [PrintingoptionsController],
   providers: [PrintingoptionsService],

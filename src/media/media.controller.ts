@@ -1,8 +1,10 @@
-import { Controller, Post, Body, Get, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Put, Delete, UseInterceptors } from '@nestjs/common';
 import { MediaService } from './media.service';
 import { CreateMediaDto, LinkMediaDto } from './_/media.dto';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 
 @Controller('media')
+@UseInterceptors(AuditInterceptor)
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 

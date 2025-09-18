@@ -4,10 +4,12 @@ import { ProductcutoptionsController } from './productcutoptions.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductcutoptionsService } from './productcutoptions.service';
 import { ProductCutOption } from './entity/productcutoptions.entity';
+import { AuditModule } from 'src/audit-logs/audit.module';
 
 @Module({
    imports: [
-      TypeOrmModule.forFeature([ProductCutOption])
+      TypeOrmModule.forFeature([ProductCutOption]),
+      AuditModule
     ],
   controllers: [ProductcutoptionsController],
   providers: [ProductcutoptionsService],

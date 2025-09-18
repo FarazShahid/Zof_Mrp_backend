@@ -1,12 +1,14 @@
-import { Get, Post, Body, Param, Put, Delete, ParseIntPipe, HttpCode, HttpStatus } from '@nestjs/common';
+import { Get, Post, Body, Param, Put, Delete, ParseIntPipe, HttpCode, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { SleeveTypeService } from './sleeve-type.service';
 import { CreateSleeveTypeDto } from "./dto/create-sleeve-type.dto/create-sleeve-type.dto";
 import { UpdateSleeveTypeDto } from './dto/update-sleeve-type.dto/update-sleeve-type.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 
 @ControllerAuthProtector('Sleeve Types', 'sleeve-type')
+@UseInterceptors(AuditInterceptor)
 export class SleeveTypeController {
   constructor(private readonly sleeveService: SleeveTypeService) { }
 

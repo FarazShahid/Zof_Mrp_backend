@@ -5,6 +5,7 @@ import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { User } from '../users/entities/user.entity';
+import { AuditModule } from 'src/audit-logs/audit.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { User } from '../users/entities/user.entity';
       secret: 'yourSecretKey',
       signOptions: { expiresIn: '24h' },
     }),
+    AuditModule
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],

@@ -8,7 +8,6 @@ import {
   IsString,
   MaxLength,
   IsOptional,
-  ArrayMinSize,
   MinLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -140,4 +139,32 @@ export class CreateProductDto {
   @IsNotEmpty()
   // @ArrayMinSize(, { message: 'At least one Product Size is required' })
   productSizes: ProductSizesDto[];
+
+  @CommonApiProperty("", [{
+    id: 1,
+    name: "Is all okay",
+    productId: 1
+  }])
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductQAChecklistDto)
+  qaChecklist?: ProductQAChecklistDto[];
+}
+
+export class ProductQAChecklistDto {
+  @IsNumber()
+  @IsOptional()
+  id?: number;
+
+  @ApiProperty({ example: 'Check stitching quality' })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(3)
+  name: string;
+
+  @ApiProperty({ example: 1 })
+  @IsNumber()
+  @IsOptional()
+  productId?: number;
 }

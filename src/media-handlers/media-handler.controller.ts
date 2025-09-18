@@ -19,8 +19,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 
 @ControllerAuthProtector('Media Handler', 'media-handler')
+@UseInterceptors(AuditInterceptor)
 @ApiTags('Media Handler')
 export class MediaHandlersController {
   constructor(private readonly mediaHandlersService: MediaHandlersService) {}
