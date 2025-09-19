@@ -23,6 +23,14 @@ import { Response } from 'express';
 import { CreateQualityCheckDto } from './dto/create-checklist.dto';
 import { OrderQualityCheck } from './entities/order-checklist.entity';
 import { QAChecklist } from 'src/products/entities/qa-checklist.entity';
+import * as fs from 'fs/promises';
+import { createWriteStream, createReadStream } from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+import * as archiver from 'archiver';
+import puppeteer from 'puppeteer';
+import { StreamableFile } from '@nestjs/common';
+import Handlebars from 'handlebars';
 
 @Injectable()
 export class OrdersService {
@@ -1193,7 +1201,6 @@ export class OrdersService {
       });
     }
 
-    // 3️⃣ --- Measurement-based QA checklist ---
     const orderItemDetails = await this.orderItemDetailRepository.find({
       where: { OrderItemId: orderItemId },
     });
@@ -1289,10 +1296,10 @@ export class OrdersService {
           'H_PatchSize',
           'H_PatchPlacement',
         ];
-console.log(createdBy);
         parameters.forEach((col) => {
           const value = sm[col as keyof typeof sm] ?? null;
-          entities.push(
+
+          (value != null && value != 0.00) && entities.push(
             this.qualityCheckRepo.create({
               orderItemId: orderItemId,
               productId: null,
@@ -1310,4 +1317,231 @@ console.log(createdBy);
     }
     return await this.qualityCheckRepo.save(entities);
   }
+
+  private templateCache: Handlebars.TemplateDelegate | null = null;
+
+  private async loadTemplate(): Promise<Handlebars.TemplateDelegate> {
+    if (this.templateCache) return this.templateCache;
+    const templatePath = path.join(process.cwd(), 'pdf-templates', 'checklist.html');
+    const html = await fs.readFile(templatePath, 'utf-8');
+    this.templateCache = Handlebars.compile(html, { noEscape: true });
+    return this.templateCache;
+  }
+
+  async generateChecklistZip(orderId: number): Promise<{ filename: string; file: StreamableFile }> {
+    const order = await this.orderRepository.findOne({
+      where: { Id: orderId },
+      relations: ['orderItems', 'client', 'event', 'status'],
+    });
+
+    if (!order) throw new NotFoundException('Order not found');
+
+    const template = await this.loadTemplate();
+    const zipDisplayName = `order-${order.OrderNumber}-checklists.zip`;
+
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+    });
+
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'qa-checklists-'));
+    const zipPath = path.join(tempDir, zipDisplayName);
+    const output = createWriteStream(zipPath);
+    const archive = archiver('zip', { zlib: { level: 9 } });
+
+    const finalizeZip = new Promise<void>((resolve, reject) => {
+      output.on('finish', resolve);
+      output.on('close', resolve);
+      output.on('error', reject);
+      archive.on('error', reject);
+      archive.pipe(output);
+    });
+
+    for (const item of order.orderItems ?? []) {
+      const checklist = await this.getQaChecklist(item.Id);
+
+      const grouped = checklist.reduce((acc, row) => {
+        const key = `measurement${row ?? 'none'}`;
+
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(row);
+        return acc;
+      }, {} as Record<string, any[]>);
+
+      const measurementGroups = Object.entries(grouped)
+        .filter(([key]) => key !== 'measurementnone')
+        .map(([name, rows]) => ({ name, rows }));
+      const genericChecks = grouped['measurementnone'] ?? [];
+
+      const vm = {
+        order: {
+          OrderNumber: order.OrderNumber,
+          ClientName: order.client?.Name,
+          EventName: order.event?.EventName,
+          StatusName: order.status?.StatusName,
+        },
+        item: {
+          Id: item.Id,
+          ProductId: item.ProductId,
+          measurementGroups,
+          genericChecks,
+        },
+      };
+
+      const page = await browser.newPage();
+      await page.setJavaScriptEnabled(false);
+      await page.setRequestInterception(true);
+      page.on('request', req => {
+        if (req.url().startsWith('http')) return req.abort();
+        req.continue();
+      });
+
+      const html = template(vm);
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      await page.emulateMediaType('print');
+
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: { top: '5mm', right: '5mm', bottom: '5mm', left: '5mm' },
+      });
+
+      const filename = `order-${order.OrderNumber}-item-${item.Id}-checklist.pdf`;
+      archive.append(Buffer.from(pdfBuffer), { name: filename });
+      await page.close();
+    }
+
+    await archive.finalize();
+    await finalizeZip;
+
+    const zipRead = createReadStream(zipPath);
+    const file = new StreamableFile(zipRead, {
+      type: 'application/zip',
+      disposition: `attachment; filename="${zipDisplayName}"`,
+    });
+
+    await browser.close();
+    setTimeout(() => fs.rm(tempDir, { recursive: true, force: true }).catch(() => { }), 2000);
+
+    return { filename: zipDisplayName, file };
+  }
+
+  async generateChecklistZipForItems(
+    orderId: number,
+    itemIds: number[],
+  ): Promise<{ filename: string; file: StreamableFile }> {
+    const order = await this.orderRepository.findOne({
+      where: { Id: orderId },
+      relations: ['orderItems', 'client', 'event', 'status'],
+    });
+    if (!order) throw new NotFoundException('Order not found');
+
+    const itemsToProcess = (order.orderItems ?? []).filter(i => itemIds?.includes(i.Id));
+    if (!itemsToProcess.length) {
+      console.log(order);
+      throw new NotFoundException('No matching order items found for provided IDs');
+    }
+
+    const template = await this.loadTemplate();
+    const zipDisplayName = `order-${order.OrderNumber}-checklists.zip`;
+
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+    });
+
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'qa-checklists-'));
+    const zipPath = path.join(tempDir, zipDisplayName);
+    const output = createWriteStream(zipPath);
+    const archive = archiver('zip', { zlib: { level: 9 } });
+
+    const finalizeZip = new Promise<void>((resolve, reject) => {
+      output.on('finish', resolve);
+      output.on('close', resolve);
+      output.on('error', reject);
+      archive.on('error', reject);
+      archive.pipe(output);
+    });
+
+    for (const item of itemsToProcess) {
+      const checklist = await this.getQaChecklist(item.Id);
+
+      const grouped = checklist.reduce((acc, row) => {
+        const key = row.measurementId ?? 'none';
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(row);
+        return acc;
+      }, {} as Record<string, any[]>);
+
+      const measurementGroups = Object.entries(grouped)
+        .filter(([key]) => key !== 'none')
+        .map(([measurementId, rows]) => {
+          // Find the "Measurement1" row
+          const labelRow = rows.find(r => r.parameter === 'Measurement1');
+
+          // Use its expected value as the group name
+          const name = labelRow?.expected ?? `measurement${measurementId}`;
+
+          // Exclude the "Measurement1" row from the actual rows
+          const filteredRows = rows.filter(r => r.parameter !== 'Measurement1');
+
+          return { name, rows: filteredRows };
+        });
+
+      // Generic checks (measurementId null/none)
+      const genericChecks = grouped['none'] ?? [];
+
+      const vm = {
+        order: {
+          OrderNumber: order.OrderNumber,
+          ClientName: order.client?.Name,
+          EventName: order.event?.EventName,
+          StatusName: order.status?.StatusName,
+        },
+        item: {
+          Id: item.Id,
+          ProductId: item.ProductId,
+          measurementGroups,
+          genericChecks,
+        },
+      };
+
+      const page = await browser.newPage();
+      await page.setJavaScriptEnabled(false);
+      await page.setRequestInterception(true);
+      page.on('request', req => {
+        if (req.url().startsWith('http')) return req.abort();
+        req.continue();
+      });
+
+      const html = template(vm);
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      await page.emulateMediaType('print');
+
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: { top: '5mm', right: '5mm', bottom: '5mm', left: '5mm' },
+      });
+
+      const filename = `order-${order.OrderNumber}-item-${item.Id}-checklist.pdf`;
+      archive.append(Buffer.from(pdfBuffer), { name: filename });
+      await page.close();
+    }
+
+    await archive.finalize();
+    await finalizeZip;
+
+    const zipRead = createReadStream(zipPath);
+    const file = new StreamableFile(zipRead, {
+      type: 'application/zip',
+      disposition: `attachment; filename="${zipDisplayName}"`,
+    });
+
+    await browser.close();
+    setTimeout(() => fs.rm(tempDir, { recursive: true, force: true }).catch(() => { }), 2000);
+
+    return { filename: zipDisplayName, file };
+  }
+
 }

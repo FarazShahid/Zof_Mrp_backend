@@ -31,6 +31,7 @@ import { ApiQuery } from '@nestjs/swagger';
 import { ApiOperation } from '@nestjs/swagger';
 import { ApiResponse } from '@nestjs/swagger';
 import { OrderQualityCheck } from './entities/order-checklist.entity';
+import { GenerateQaChecklistZipDto } from './dto/qa-checklist-zip.dto';
 
 
 @ControllerAuthProtector('Orders', 'orders')
@@ -191,6 +192,24 @@ export class OrdersController {
   @CommonApiResponses('Generate and download order pdf')
   async getOrderPdfsZip(@Body() dto: GenerateOrderPdfsDto, @Res() res: Response) {
     const { file, filename } = await this.pdfs.generateOrderItemsZip(dto.orderId, dto.pdfType);
+    res.set({
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    });
+    file.getStream().pipe(res);
+  }
+
+  @Post(':id/qa-checklist-zip')
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Generate ZIP of QA checklist PDFs for selected order item IDs')
+  @ApiBody({ type: GenerateQaChecklistZipDto })
+  async getQaChecklistZipForItems(
+    @Param('id', ParseIntPipe) orderId: number,
+    @Body() body: GenerateQaChecklistZipDto,
+    @Res() res: Response,
+  ) {
+    const { itemIds } = body ?? { itemIds: [] };
+    const { file, filename } = await this.ordersService.generateChecklistZipForItems(orderId, itemIds);
     res.set({
       'Content-Type': 'application/zip',
       'Content-Disposition': `attachment; filename="${filename}"`,
