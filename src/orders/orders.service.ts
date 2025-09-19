@@ -1358,20 +1358,29 @@ export class OrdersService {
     });
 
     for (const item of order.orderItems ?? []) {
-      const checklist = await this.getQaChecklist(item.Id);
+      let checklist = await this.getQaChecklist(item.Id);
+
+      if (!checklist || checklist.length === 0) {
+        await this.createChecklistForOrderItem(item.Id, 'system');
+        checklist = await this.getQaChecklist(item.Id);
+      }
 
       const grouped = checklist.reduce((acc, row) => {
-        const key = `measurement${row ?? 'none'}`;
-
+        const key = row.measurementId ?? 'none';
         if (!acc[key]) acc[key] = [];
         acc[key].push(row);
         return acc;
       }, {} as Record<string, any[]>);
 
       const measurementGroups = Object.entries(grouped)
-        .filter(([key]) => key !== 'measurementnone')
-        .map(([name, rows]) => ({ name, rows }));
-      const genericChecks = grouped['measurementnone'] ?? [];
+        .filter(([key]) => key !== 'none')
+        .map(([measurementId, rows]) => {
+          const labelRow = rows.find(r => r.parameter === 'Measurement1');
+          const name = labelRow?.expected ?? `measurement${measurementId}`;
+          const filteredRows = rows.filter(r => r.parameter !== 'Measurement1');
+          return { name, rows: filteredRows };
+        });
+      const genericChecks = grouped['none'] ?? [];
 
       const vm = {
         order: {
@@ -1464,7 +1473,12 @@ export class OrdersService {
     });
 
     for (const item of itemsToProcess) {
-      const checklist = await this.getQaChecklist(item.Id);
+      let checklist = await this.getQaChecklist(item.Id);
+
+      if (!checklist || checklist.length === 0) {
+        await this.createChecklistForOrderItem(item.Id, 'system');
+        checklist = await this.getQaChecklist(item.Id);
+      }
 
       const grouped = checklist.reduce((acc, row) => {
         const key = row.measurementId ?? 'none';
