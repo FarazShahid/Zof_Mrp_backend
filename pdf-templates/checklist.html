@@ -1,229 +1,305 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
-<head>
-    <meta charset="UTF-8">
-    <title>QA Sheet - BumbleBee</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>QA Sheet</title>
     <style>
-        @page {
-            size: A4;
-            margin: 20mm;
-        }
+      /* Page */
+      @page {
+        size: A4;
+        margin: 18mm 16mm;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        color: #111827; /* gray-900 */
+        margin: 0;
+      }
 
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
+      /* Palette */
+      :root {
+        --ink: #111827; /* gray-900 */
+        --muted: #6b7280; /* gray-500 */
+        --line: #e5e7eb; /* gray-200 */
+        --wash: #f3f4f6; /* gray-100 */
+        --badge: #2563eb; /* blue-600 */
+        --box: #d1d5db; /* gray-300 */
+      }
 
-        .header {
-            text-align: center;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
+      /* Header */
+      .header {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+      .logo {
+        height: 36px;
+        width: auto;
+        object-fit: contain;
+      }
+      .document-title {
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+      }
+      .status-badge {
+        display: inline-block;
+        background: var(--badge);
+        color: #fff;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 11px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+      .divider {
+        height: 1px;
+        background: var(--line);
+        margin: 8px 0 14px;
+      }
 
-        .document-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
+      /* Meta row (Order/Client/Event) */
+      .meta {
+        display: grid;
+        grid-template-columns: 28mm 1fr;
+        row-gap: 6px;
+        column-gap: 10mm;
+        margin-bottom: 30px;
+      }
+      .meta-label {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .meta-value {
+        color: var(--ink);
+        font-size: 12px;
+      }
 
-        .order-details {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
+      /* Sections */
+      .section {
+        margin: 12px 0 16px;
+      }
+      .section-title {
+        font-size: 13px;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+        color: var(--ink);
+      }
 
-        .order-info {
-            flex: 1;
-        }
+      /* Tables - soft grid */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0 0 8px 0;
+        table-layout: fixed;
+      }
+      thead th {
+        background: var(--wash);
+        color: var(--ink);
+        font-weight: 700;
+        font-size: 12px;
+        text-align: left;
+        border: 0.5px solid var(--line);
+        padding: 8px;
+      }
+      tbody td {
+        border: 0.5px solid var(--line);
+        padding: 8px;
+        vertical-align: middle;
+        word-break: break-word;
+      }
+      /* Center numeric-ish columns (Expected/Observed) */
+      .col-expected,
+      .col-observed {
+        text-align: center;
+      }
+      .muted {
+        color: var(--muted);
+      }
 
-        .qr-placeholder {
-            width: 80px;
-            height: 80px;
-            border: 2px dashed #666;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            color: #666;
-        }
+      /* Final comments (boxed) */
+      .final-box {
+        border: 0.75px solid var(--box);
+        border-radius: 4px;
+        padding: 10px 12px;
+        margin-top: 8px;
+      }
+      .final-line {
+        border-bottom: 1px dashed var(--muted);
+        height: 36px;
+        margin: 8px 0 0 0;
+      }
 
-        .section {
-            margin-bottom: 10px;
-        }
+      /* Signatures */
+      .signatures {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16mm;
+        margin-top: 10mm;
+      }
+      .sig-title {
+        font-weight: 700;
+        margin: 0 0 6px 0;
+      }
+      .sig-row {
+        margin: 6px 0;
+      }
+      .underline {
+        display: inline-block;
+        min-width: 48mm;
+        border-bottom: 1px dashed var(--ink);
+        transform: translateY(-2px);
+      }
 
-        .section-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 5px;
-        }
+      /* Page breaks */
+      .page-break {
+        page-break-before: always;
+      }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
-        }
+      /* Optional mannequin/QR placeholders (kept but styled to be subtle if you re-enable) */
+      .qr-placeholder,
+      .mannequin-placeholder {
+        border: 1px dashed var(--muted);
+        color: var(--muted);
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .qr-placeholder {
+        width: 24mm;
+        height: 24mm;
+      }
+      .mannequin-placeholder {
+        width: 40mm;
+        height: 50mm;
+        margin: 0 auto 8px;
+      }
 
-        th,
-        td {
-            border: 1px solid #333;
-            padding: 8px;
-            text-align: left;
+      /* Print friendliness */
+      @media print {
+        .status-badge {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
         }
-
-        th {
-            background-color: #f5f5f5;
-            font-weight: bold;
+        thead th {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
         }
-
-        .underline {
-            border-bottom: 1px dashed #333;
-            min-height: 20px;
-            display: inline-block;
-            min-width: 100px;
-        }
-
-        .wide-underline {
-            min-width: 200px;
-        }
-
-        .mannequin-placeholder {
-            width: 120px;
-            height: 150px;
-            border: 2px dashed #666;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            color: #666;
-            margin: 0 auto 15px;
-        }
-
-        .size-layout {
-            display: grid;
-            grid-template-columns: 1fr 180px;
-            gap: 16px;
-            align-items: start;
-        }
-
-        .signatures {
-            margin-top: 40px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .signature-block {
-            width: 200px;
-        }
-
-        .page-break {
-            page-break-before: always;
-        }
-
-        .dotted {
-            color: #666;
-        }
+      }
     </style>
-</head>
-
-<body>
+  </head>
+  <body>
+    <!-- Header with optional company logo & status badge -->
     <div class="header">
-        <div class="document-title">QA SHEET</div>
-        <div class="order-details">
-            <div class="order-info">
-                <p><strong>Order Number:</strong> {{order.OrderNumber}}</p>
-                <p><strong>Client Name:</strong> {{order.ClientName}}</p>
-                <p><strong>Event:</strong> {{order.EventName}}</p>
-                <p><strong>Status:</strong> {{order.StatusName}}</p>
-            </div>
-            <!-- <div class="qr-placeholder">
-                QR Code<br>Placeholder
-            </div> -->
-        </div>
+      <div>
+        {{#if order.CompanyLogoUrl}}
+        <img class="logo" src="{{order.CompanyLogoUrl}}" alt="Company Logo" />
+        {{/if}}
+      </div>
+      <div class="document-title">QA SHEET</div>
+      <div><span class="status-badge">{{order.StatusName}}</span></div>
     </div>
 
+    <!-- Divider -->
+    <div class="divider"></div>
+
+    <!-- Meta block -->
+    <div class="meta">
+      <div class="meta-label">Order Number</div>
+      <div class="meta-value">{{order.OrderNumber}}</div>
+
+      <div class="meta-label">Client Name</div>
+      <div class="meta-value">{{order.ClientName}}</div>
+
+      <div class="meta-label">Event</div>
+      <div class="meta-value">{{order.EventName}}</div>
+    </div>
+
+    <!-- Measurement groups -->
     {{#each item.measurementGroups}}
-    <div class="section {{#unless @first}}page-break{{/unless}}">
-        <div class="section-title">QA Checklist - {{name}}</div>
-        <div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Parameter</th>
-                        <th>Expected</th>
-                        <th>Observed</th>
-                        <th style="width: 40%;">Remarks</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{#each rows}}
-                    <tr>
-                        <td>{{parameter}}</td>
-                        <td>{{expected}}</td>
-                        <td class="dotted">{{observed}}</td>
-                        <td class="dotted" style="width: 40%;">{{remarks}}</td>
-                    </tr>
-                    {{/each}}
-                </tbody>
-            </table>
-        </div>
+    <div class="section ">
+      <div class="section-title">QA Checklist — {{name}}</div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 18%">Parameter</th>
+            <th style="width: 18%">Expected</th>
+            <th style="width: 18%">Observed</th>
+            <th style="width: 42%">Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each rows}}
+          <tr>
+            <td>{{parameter}}</td>
+            <td class="col-expected">{{expected}}</td>
+            <td class="col-observed muted">{{observed}}</td>
+            <td class="muted">{{remarks}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
     </div>
     {{/each}}
 
+    <!-- Generic QA -->
     {{#if item.genericChecks}}
-    <div class="section page-break">
-        <div class="section-title">Generic QA List</div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Parameter</th>
-                    <th>Expected</th>
-                    <th>Observed</th>
-                    <th style="width: 40%;">Remarks</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#each item.genericChecks}}
-                <tr>
-                    <td>{{parameter}}</td>
-                    <td>{{expected}}</td>
-                    <td class="dotted">{{observed}}</td>
-                    <td class="dotted" style="width: 40%;">{{remarks}}</td>
-                </tr>
-                {{/each}}
-            </tbody>
-        </table>
+    <div class="section">
+      <div class="section-title">Generic QA List</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 18%">Parameter</th>
+            <th style="width: 18%">Expected</th>
+            <th style="width: 18%">Observed</th>
+            <th style="width: 42%">Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each item.genericChecks}}
+          <tr>
+            <td>{{parameter}}</td>
+            <td class="col-expected">{{expected}}</td>
+            <td class="col-observed muted">{{observed}}</td>
+            <td class="muted">{{remarks}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
     </div>
     {{/if}}
 
+    <!-- Final comments & signatures -->
     <div class="section">
-        <div class="section-title">Final Comments & Signatures</div>
-        <div style="margin-bottom: 30px;">
-            <p><strong>Final Comments:</strong></p>
-            <div style="border-bottom: 1px dashed #333; height: 40px; margin-bottom: 20px;"></div>
-            <div style="border-bottom: 1px dashed #333; height: 40px; margin-bottom: 20px;"></div>
-        </div>
+      <div class="section-title">Final Comments & Signatures</div>
 
-        <div class="signatures">
-            <div class="signature-block">
-                <p><strong>QA Inspector</strong></p>
-                <p>Date: <span class="underline"></span></p>
-                <p>Signature: <span class="underline"></span></p>
-            </div>
-            <div class="signature-block">
-                <p><strong>Supervisor</strong></p>
-                <p>Date: <span class="underline"></span></p>
-                <p>Signature: <span class="underline"></span></p>
-            </div>
+      <div class="final-box">
+        <div class="meta-label" style="margin-bottom: 4px">Final Comments</div>
+        <div class="final-line"></div>
+        <div class="final-line"></div>
+      </div>
+
+      <div class="signatures">
+        <div>
+          <div class="sig-title">QA Inspector</div>
+          <div class="sig-row">Date: <span class="underline"></span></div>
+          <div class="sig-row">Signature: <span class="underline"></span></div>
         </div>
+        <div>
+          <div class="sig-title">Supervisor</div>
+          <div class="sig-row">Date: <span class="underline"></span></div>
+          <div class="sig-row">Signature: <span class="underline"></span></div>
+        </div>
+      </div>
     </div>
-</body>
-
+  </body>
 </html>
