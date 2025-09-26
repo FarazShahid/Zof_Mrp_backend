@@ -1214,104 +1214,110 @@ export class OrdersService {
         Id: In(measurementIds),
       });
 
+      const parameterLabels: Record<string, string> =  {
+        Measurement1: "Measurement",
+        FrontLengthHPS: "Front Length (HPS)",
+        BackLengthHPS: "Back Length (HPS)",
+        AcrossShoulders: "Across Shoulders",
+        ArmHole: "Arm Hole",
+        UpperChest: "Upper Chest",
+        LowerChest: "Lower Chest",
+        Waist: "Waist",
+        BottomWidth: "Bottom Width",
+        SleeveLength: "Sleeve Length",
+        SleeveOpening: "Sleeve Opening",
+        NeckSize: "Neck Size",
+        CollarHeight: "Collar Height",
+        CollarPointHeight: "Collar Point Height",
+        StandHeightBack: "Stand Height Back",
+        CollarStandLength: "Collar Stand Length",
+        SideVentFront: "Side Vent Front",
+        SideVentBack: "Side Vent Back",
+        PlacketLength: "Placket Length",
+        TwoButtonDistance: "Two Button Distance",
+        PlacketWidth: "Placket Width",
+        BackNeckDrop: "Back Neck Drop",
+        FrontNeckDrop: "Front Neck Drop",
+        ShoulderSeam: "Shoulder Seam",
+        ShoulderSlope: "Shoulder Slope",
+        Hem: "Hem",
+        Neckwidth: "Neck Width",
+        CollarOpening: "Collar Opening",
+        ArmHoleStraight: "Arm Hole Straight",
+        BottomRib: "Bottom Rib",
+        CuffHeight: "Cuff Height",
+        ColllarHeightCenterBack: "Collar Height Center Back",
+        BottomHem: "Bottom Hem",
+        Inseam: "Inseam",
+        Hip: "Hip",
+        FrontRise: "Front Rise",
+        LegOpening: "Leg Opening",
+        KneeWidth: "Knee Width",
+        Outseam: "Outseam",
+        bFrontRise: "Back Front Rise",
+        WasitStretch: "Waist Stretch",
+        WasitRelax: "Waist Relax",
+        Thigh: "Thigh",
+        BackRise: "Back Rise",
+        TotalLength: "Total Length",
+        WBHeight: "Waistband Height",
+        bBottomWidth: "Back Bottom Width",
+        BottomOriginal: "Bottom Original",
+        BottomElastic: "Bottom Elastic",
+        BottomCuffZipped: "Bottom Cuff Zipped",
+        BottomStraightZipped: "Bottom Straight Zipped",
+        HemBottom: "Hem Bottom",
+        t_TopRight: "Top Logo - Top Right",
+        t_TopLeft: "Top Logo - Top Left",
+        t_BottomRight: "Top Logo - Bottom Right",
+        t_BottomLeft: "Top Logo - Bottom Left",
+        t_Center: "Top Logo - Center",
+        t_Back: "Top Logo - Back",
+        b_TopRight: "Bottom Logo - Top Right",
+        b_TopLeft: "Bottom Logo - Top Left",
+        b_BottomRight: "Bottom Logo - Bottom Right",
+        b_BottomLeft: "Bottom Logo - Bottom Left",
+        t_left_sleeve: "Logo - Left Sleeve",
+        t_right_sleeve: "Logo - Right Sleeve",
+        H_VisorLength: "Visor Length",
+        H_VisorWidth: "Visor Width",
+        H_CrownCircumference: "Crown Circumference",
+        H_FrontSeamLength: "Front Seam Length",
+        H_BackSeamLength: "Back Seam Length",
+        H_RightCenterSeamLength: "Right Center Seam Length",
+        H_LeftCenterSeamLength: "Left Center Seam Length",
+        H_ClosureHeightIncludingStrapWidth: "Hat Closure Height + Strap Width",
+        H_StrapWidth: "Strap Width",
+        H_StrapbackLength: "Strapback Length",
+        H_SweatBandWidth: "Sweat Band Width",
+        H_PatchSize: "Patch Size",
+        H_PatchPlacement: "Patch Placement"
+      };;
+
+
       for (const sm of sizeMeasurements) {
         await this.qualityCheckRepo.delete({ orderItemId, measurementId: sm?.Id });
 
-        const parameters = [
-          'Measurement1',
-          'FrontLengthHPS',
-          'BackLengthHPS',
-          'AcrossShoulders',
-          'ArmHole',
-          'UpperChest',
-          'LowerChest',
-          'Waist',
-          'BottomWidth',
-          'SleeveLength',
-          'SleeveOpening',
-          'NeckSize',
-          'CollarHeight',
-          'CollarPointHeight',
-          'StandHeightBack',
-          'CollarStandLength',
-          'SideVentFront',
-          'SideVentBack',
-          'PlacketLength',
-          'TwoButtonDistance',
-          'PlacketWidth',
-          'BackNeckDrop',
-          'FrontNeckDrop',
-          'ShoulderSeam',
-          'ShoulderSlope',
-          'Hem',
-          'Neckwidth',
-          'CollarOpening',
-          'ArmHoleStraight',
-          'BottomRib',
-          'CuffHeight',
-          'ColllarHeightCenterBack',
-          'BottomHem',
-          'Inseam',
-          'Hip',
-          'FrontRise',
-          'LegOpening',
-          'KneeWidth',
-          'Outseam',
-          'bFrontRise',
-          'WasitStretch',
-          'WasitRelax',
-          'Thigh',
-          'BackRise',
-          'TotalLength',
-          'WBHeight',
-          'bBottomWidth',
-          'BottomOriginal',
-          'BottomElastic',
-          'BottomCuffZipped',
-          'BottomStraightZipped',
-          'HemBottom',
-          't_TopRight',
-          't_TopLeft',
-          't_BottomRight',
-          't_BottomLeft',
-          't_Center',
-          't_Back',
-          'b_TopRight',
-          'b_TopLeft',
-          'b_BottomRight',
-          'b_BottomLeft',
-          't_left_sleeve',
-          't_right_sleeve',
-          'H_VisorLength',
-          'H_VisorWidth',
-          'H_CrownCircumference',
-          'H_FrontSeamLength',
-          'H_BackSeamLength',
-          'H_RightCenterSeamLength',
-          'H_LeftCenterSeamLength',
-          'H_ClosureHeightIncludingStrapWidth',
-          'H_StrapWidth',
-          'H_StrapbackLength',
-          'H_SweatBandWidth',
-          'H_PatchSize',
-          'H_PatchPlacement',
-        ];
+        const parameters = Object.keys(parameterLabels);
+
         parameters.forEach((col) => {
           const value = sm[col as keyof typeof sm] ?? null;
 
-          (value != null && value != 0.00) && entities.push(
-            this.qualityCheckRepo.create({
-              orderItemId: orderItemId,
-              productId: null,
-              measurementId: sm?.Id,
-              parameter: col,
-              expected: value?.toString() ?? null,
-              observed: null,
-              remarks: null,
-              createdBy: createdBy,
-              createdOn: new Date()
-            })
-          );
+          if (value != null && value != 0.0) {
+            entities.push(
+              this.qualityCheckRepo.create({
+                orderItemId,
+                productId: null,
+                measurementId: sm?.Id,
+                parameter: parameterLabels[col] || col,
+                expected: value?.toString() ?? null,
+                observed: null,
+                remarks: null,
+                createdBy,
+                createdOn: new Date(),
+              }),
+            );
+          }
         });
       }
     }
@@ -1375,9 +1381,9 @@ export class OrdersService {
       const measurementGroups = Object.entries(grouped)
         .filter(([key]) => key !== 'none')
         .map(([measurementId, rows]) => {
-          const labelRow = rows.find(r => r.parameter === 'Measurement1');
+          const labelRow = rows.find(r => r.parameter === 'Measurement');
           const name = labelRow?.expected ?? `measurement${measurementId}`;
-          const filteredRows = rows.filter(r => r.parameter !== 'Measurement1');
+          const filteredRows = rows.filter(r => r.parameter !== 'Measurement');
           return { name, rows: filteredRows };
         });
       const genericChecks = grouped['none'] ?? [];
@@ -1491,13 +1497,13 @@ export class OrdersService {
         .filter(([key]) => key !== 'none')
         .map(([measurementId, rows]) => {
           // Find the "Measurement1" row
-          const labelRow = rows.find(r => r.parameter === 'Measurement1');
+          const labelRow = rows.find(r => r.parameter === 'Measurement');
 
           // Use its expected value as the group name
           const name = labelRow?.expected ?? `measurement${measurementId}`;
 
           // Exclude the "Measurement1" row from the actual rows
-          const filteredRows = rows.filter(r => r.parameter !== 'Measurement1');
+          const filteredRows = rows.filter(r => r.parameter !== 'Measurement');
 
           return { name, rows: filteredRows };
         });
