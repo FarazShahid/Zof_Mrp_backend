@@ -14,7 +14,7 @@
       }
       body {
         font-family: Arial, sans-serif;
-        font-size: 12px;
+        font-size: 10px;
         color: #111827; /* gray-900 */
         margin: 0;
       }
@@ -92,7 +92,11 @@
         margin: 0 0 8px 0;
         color: var(--ink);
       }
-
+    .flexContainer{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      } 
       /* Tables - soft grid */
       table {
         width: 100%;
@@ -205,7 +209,6 @@
         {{/if}}
       </div>
       <div class="document-title">QA SHEET</div>
-      <div><span class="status-badge">{{order.StatusName}}</span></div>
     </div>
 
     <!-- Divider -->
@@ -221,13 +224,24 @@
 
       <div class="meta-label">Event</div>
       <div class="meta-value">{{order.EventName}}</div>
+
+      <div class="meta-label">Total Order Items</div>
+      <!-- Order item length -->
+      <div class="meta-value"></div>
     </div>
 
     <!-- Measurement groups -->
     {{#each item.measurementGroups}}
     <div class="section ">
       <div class="section-title">QA Checklist — {{name}}</div>
-
+        <div class="flexContainer">
+          <div class="sig-row">Accepted Pieces: <span class="underline"></span></div>
+          <div class="sig-row">Rejected Pieces: <span class="underline"></span></div>
+        </div>
+         <div class="flexContainer">
+          <div class="sig-row">Total Produced: <span class="underline"></span></div>
+          <div class="sig-row">Date & Time of QA: <span class="underline"></span></div>
+        </div>
       <table>
         <thead>
           <tr>
