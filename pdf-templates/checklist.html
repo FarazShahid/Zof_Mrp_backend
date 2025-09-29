@@ -92,11 +92,11 @@
         margin: 0 0 8px 0;
         color: var(--ink);
       }
-    .flexContainer{
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      } 
+      .flexContainer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
       /* Tables - soft grid */
       table {
         width: 100%;
@@ -221,9 +221,11 @@
 
       <div class="meta-label">Client Name</div>
       <div class="meta-value">{{order.ClientName}}</div>
-
+      
+      {{#if order.EventName}}
       <div class="meta-label">Event</div>
       <div class="meta-value">{{order.EventName}}</div>
+      {{/if}}
 
       <div class="meta-label">Product Name</div>
       <!-- Order item length -->
@@ -232,16 +234,24 @@
 
     <!-- Measurement groups -->
     {{#each item.measurementGroups}}
-    <div class="section ">
+    <div class="section">
       <div class="section-title">Size Chart — {{name}}</div>
-        <div class="flexContainer">
-          <div class="sig-row">Accepted Pieces: <span class="underline"></span></div>
-          <div class="sig-row">Rejected Pieces: <span class="underline"></span></div>
+      <div class="flexContainer">
+        <div class="sig-row">
+          Accepted Pieces: <span class="underline"></span>
         </div>
-         <div class="flexContainer">
-          <div class="sig-row">Total Produced: <span class="underline"></span></div>
-          <div class="sig-row">Date & Time of QA: <span class="underline"></span></div>
+        <div class="sig-row">
+          Rejected Pieces: <span class="underline"></span>
         </div>
+      </div>
+      <div class="flexContainer">
+        <div class="sig-row">
+          Total Produced: <span class="underline"></span>
+        </div>
+        <div class="sig-row">
+          Date & Time of QA: <span class="underline"></span>
+        </div>
+      </div>
       <table>
         <thead>
           <tr>
