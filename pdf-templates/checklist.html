@@ -216,19 +216,22 @@
 
     <!-- Meta block -->
     <div class="meta">
-      <div class="meta-label">Order Number</div>
+      <div class="meta-label">Order Name</div>
       <div class="meta-value">{{order.OrderNumber}}</div>
 
       <div class="meta-label">Client Name</div>
       <div class="meta-value">{{order.ClientName}}</div>
-      
+
       {{#if order.EventName}}
       <div class="meta-label">Event</div>
       <div class="meta-value">{{order.EventName}}</div>
       {{/if}}
 
       <div class="meta-label">Product Name</div>
-      <!-- Order item length -->
+      <div class="meta-value"></div>
+
+      
+      <div class="meta-label">Total Qunatity</div>
       <div class="meta-value"></div>
     </div>
 
@@ -246,12 +249,15 @@
       </div>
       <div class="flexContainer">
         <div class="sig-row">
-          Total Produced: <span class="underline"></span>
+          To Be Produced: <span class="underline">{{Total}}</span>
         </div>
         <div class="sig-row">
-          Date & Time of QA: <span class="underline"></span>
+          Total Produced: <span class="underline"></span>
         </div>
       </div>
+       <div class="sig-row">
+          Date & Time: <span class="underline"></span>
+        </div>
       <table>
         <thead>
           <tr>
