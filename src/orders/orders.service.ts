@@ -1335,10 +1335,15 @@ export class OrdersService {
   }
 
   async generateChecklistZip(orderId: number): Promise<{ filename: string; file: StreamableFile }> {
-    const order = await this.orderRepository.findOne({
-      where: { Id: orderId },
-      relations: ['orderItems', 'client', 'event', 'status'],
-    });
+    const order = await this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderItems', 'orderItem')
+      .leftJoinAndMapOne('orderItem.product', 'product', 'product', 'product.Id = orderItem.ProductId') // manual product join
+      .leftJoinAndSelect('order.client', 'client')
+      .leftJoinAndSelect('order.event', 'event')
+      .leftJoinAndSelect('order.status', 'status')
+      .where('order.Id = :orderId', { orderId })
+      .getOne();
 
     if (!order) throw new NotFoundException('Order not found');
 
@@ -1371,6 +1376,21 @@ export class OrdersService {
         checklist = await this.getQaChecklist(item.Id);
       }
 
+      const details = await this.orderItemDetailRepository
+        .createQueryBuilder('detail')
+        .select('detail.measurementId', 'measurementId')
+        .addSelect('SUM(detail.Quantity)', 'totalQuantity')
+        .where('detail.orderItemId = :orderItemId', { orderItemId: item.Id })
+        .groupBy('detail.measurementId')
+        .getRawMany<{ measurementId: number; totalQuantity: string }>();
+
+      const quantityMap = details.reduce((acc, d) => {
+        acc[d.measurementId] = Number(d.totalQuantity);
+        return acc;
+      }, {} as Record<number, number>);
+
+      const totalForItem = Object.values(quantityMap).reduce((sum, q) => sum + q, 0);
+
       const grouped = checklist.reduce((acc, row) => {
         const key = row.measurementId ?? 'none';
         if (!acc[key]) acc[key] = [];
@@ -1384,16 +1404,17 @@ export class OrdersService {
           const labelRow = rows.find(r => r.parameter === 'Measurement');
           const name = labelRow?.expected ?? `measurement${measurementId}`;
           const filteredRows = rows.filter(r => r.parameter !== 'Measurement');
-          return { name, rows: filteredRows };
+          return { name, rows: filteredRows, totalQuantity: quantityMap[Number(measurementId)] ?? 0 };
         });
       const genericChecks = grouped['none'] ?? [];
-
       const vm = {
         order: {
           OrderNumber: order.OrderNumber,
           ClientName: order.client?.Name,
           EventName: order.event?.EventName,
           StatusName: order.status?.StatusName,
+          ProductName: item.product?.Name,
+          TotalQuantity: totalForItem,
         },
         item: {
           Id: item.Id,
@@ -1445,10 +1466,15 @@ export class OrdersService {
     orderId: number,
     itemIds: number[],
   ): Promise<{ filename: string; file: StreamableFile }> {
-    const order = await this.orderRepository.findOne({
-      where: { Id: orderId },
-      relations: ['orderItems', 'client', 'event', 'status'],
-    });
+    const order = await this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderItems', 'orderItem')
+      .leftJoinAndMapOne('orderItem.product', 'product', 'product', 'product.Id = orderItem.ProductId')
+      .leftJoinAndSelect('order.client', 'client')
+      .leftJoinAndSelect('order.event', 'event')
+      .leftJoinAndSelect('order.status', 'status')
+      .where('order.Id = :orderId', { orderId })
+      .getOne();
     if (!order) throw new NotFoundException('Order not found');
 
     const itemsToProcess = (order.orderItems ?? []).filter(i => itemIds?.includes(i.Id));
@@ -1486,6 +1512,21 @@ export class OrdersService {
         checklist = await this.getQaChecklist(item.Id);
       }
 
+      const details = await this.orderItemDetailRepository
+        .createQueryBuilder('detail')
+        .select('detail.measurementId', 'measurementId')
+        .addSelect('SUM(detail.Quantity)', 'totalQuantity')
+        .where('detail.orderItemId = :orderItemId', { orderItemId: item.Id })
+        .groupBy('detail.measurementId')
+        .getRawMany<{ measurementId: number; totalQuantity: string }>();
+
+      const quantityMap = details.reduce((acc, d) => {
+        acc[d.measurementId] = Number(d.totalQuantity);
+        return acc;
+      }, {} as Record<number, number>);
+
+      const totalForItem = Object.values(quantityMap).reduce((sum, q) => sum + q, 0);
+
       const grouped = checklist.reduce((acc, row) => {
         const key = row.measurementId ?? 'none';
         if (!acc[key]) acc[key] = [];
@@ -1505,18 +1546,19 @@ export class OrdersService {
           // Exclude the "Measurement1" row from the actual rows
           const filteredRows = rows.filter(r => r.parameter !== 'Measurement');
 
-          return { name, rows: filteredRows };
+          return { name, rows: filteredRows, totalQuantity: quantityMap[Number(measurementId)] ?? 0 };
         });
 
       // Generic checks (measurementId null/none)
       const genericChecks = grouped['none'] ?? [];
-
       const vm = {
         order: {
           OrderNumber: order.OrderNumber,
           ClientName: order.client?.Name,
           EventName: order.event?.EventName,
+          ProductName: item.product?.Name,
           StatusName: order.status?.StatusName,
+          TotalQuantity: totalForItem,
         },
         item: {
           Id: item.Id,

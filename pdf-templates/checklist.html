@@ -227,12 +227,15 @@
       <div class="meta-value">{{order.EventName}}</div>
       {{/if}}
 
+       {{#if order.ProductName}}
       <div class="meta-label">Product Name</div>
-      <div class="meta-value"></div>
+      <div class="meta-value">{{order.ProductName}}</div>
+        {{/if}}
 
-      
+        {{#if order.ProductName}}
       <div class="meta-label">Total Qunatity</div>
-      <div class="meta-value"></div>
+      <div class="meta-value">{{order.TotalQuantity}}</div>
+        {{/if}}
     </div>
 
     <!-- Measurement groups -->
@@ -255,8 +258,13 @@
           Total Produced: <span class="underline"></span>
         </div>
       </div>
+       <div class="flexContainer">
+         <div class="sig-row">
+          To be Produced: <span class="underline">{{totalQuantity}}</span>
+        </div>
        <div class="sig-row">
           Date & Time: <span class="underline"></span>
+        </div>
         </div>
       <table>
         <thead>
