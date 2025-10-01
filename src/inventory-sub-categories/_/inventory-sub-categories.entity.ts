@@ -1,35 +1,41 @@
+import { InventoryCategories } from 'src/inventory-categories/_/inventory-categories.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
   DeleteDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+
 
 @Entity('inventorysubcategories')
 export class InventorySubCategories {
   @PrimaryGeneratedColumn()
   Id: number;
 
-  @Column({ length: 100 })
+  @Column({ type: 'varchar', length: 100 })
   Name: string;
 
-  @Column()
+  @Column({ type: 'int' })
   CategoryId: number;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @ManyToOne(() => InventoryCategories, { onDelete: 'CASCADE' })
+  @JoinColumn([{ name: 'CategoryId', referencedColumnName: 'Id' }])
+  category: InventoryCategories;
+
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
 
-  @Column({ length: 100 })
-  CreatedBy: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  CreatedBy: string | null;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   UpdatedOn: Date;
 
-  @Column({ length: 100, nullable: true })
-  UpdatedBy: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  UpdatedBy: string | null;
 
-  @DeleteDateColumn({ type: 'timestamp', nullable: true })
+  @DeleteDateColumn({ type: 'datetime', nullable: true })
   DeletedAt: Date;
 }

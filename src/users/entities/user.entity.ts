@@ -1,28 +1,30 @@
-import { Entity, Column, PrimaryGeneratedColumn, UpdateDateColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, UpdateDateColumn, CreateDateColumn, Index } from 'typeorm';
 
-@Entity('users')
+@Entity({ name: 'users' })
+
 export class User {
   @PrimaryGeneratedColumn()
   Id: number;
 
-  @Column({ unique: true, length: 255 })
+  @Column({ type: 'varchar', length: 255, unique: true })
   Email: string;
 
-  @Column({ length: 255 })
+  @Column({ type: 'varchar', length: 255 })
   Password: string;
 
-  @Column({ default: true })
+  @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
 
-  @Column({ length: 255 })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+  UpdatedOn: Date;
+
+  @Column({ type: 'varchar', length: 100 })
   CreatedBy: string;
 
-  @Column({ length: 255 })
+  @Column({ type: 'varchar', length: 100 })
   UpdatedBy: string;
 
-  @UpdateDateColumn({ type: 'timestamp' })
-  UpdatedOn: Date;
 }

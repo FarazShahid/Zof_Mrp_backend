@@ -1,12 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
 
 @Entity('productcategory')
+
 export class ProductCategory {
   @PrimaryGeneratedColumn()
-  id: number;
+  Id: number;
 
-  @Column({ type: 'varchar', length: 255 })
-  type: string;
+  @Column({ type: 'varchar', length: 255, unique: true })
+  Type: string;
 
   @Column({ type: 'boolean', default: false, nullable: true })
   IsTopUnit: boolean;
@@ -26,16 +27,16 @@ export class ProductCategory {
   @Column({ type: 'boolean', default: false, nullable: true })
   IsSocks: boolean;
 
-  @CreateDateColumn({ type: 'timestamp' })
-  createdOn: Date;
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  CreatedOn: Date;
 
-  @Column({ type: 'varchar', length: 100 })
-  createdBy: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  CreatedBy: string;
 
-  @UpdateDateColumn({ type: 'timestamp' })
-  updatedOn: Date;
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+  UpdatedOn: Date;
 
-  @Column({ type: 'varchar', length: 100 })
-  updatedBy: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  UpdatedBy: string;
 
 }

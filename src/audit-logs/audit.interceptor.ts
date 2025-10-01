@@ -11,7 +11,7 @@ import { AuditLogService } from './audit-log.service';
 export class AuditInterceptor implements NestInterceptor {
   constructor(
     private readonly auditLogService: AuditLogService,
-  ) {}
+  ) { }
 
   private sanitizePayload(payload: any): any {
     if (!payload || typeof payload !== 'object') {
@@ -40,7 +40,7 @@ export class AuditInterceptor implements NestInterceptor {
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest();
     const { method, originalUrl: endpoint, ip, headers, body, params } = req;
-    
+
     // For login endpoint, get user email from body since no token exists yet
     let user = req.user || {};
     if (endpoint.includes('/login') && body?.email) {
@@ -96,13 +96,13 @@ export class AuditInterceptor implements NestInterceptor {
         }
         if (method !== 'GET') {
           await this.auditLogService.createLog({
-            userId: user.userId || 0,
-            module,
-            action,
-            details,
-            entityId: params?.id || null,
-            ip,
-            device: headers['user-agent'],
+            UserId: user.userId || 0,
+            Module: module,
+            Action: action,
+            Details: details,
+            EntityId: params?.id || null,
+            Ip: ip,
+            Device: headers['user-agent'],
           });
         }
       }),

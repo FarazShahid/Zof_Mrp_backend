@@ -1,31 +1,31 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity('fabrictype')
 export class FabricType {
   @PrimaryGeneratedColumn()
-  id: number;
+  Id: number;
 
-  @Column({ length: 255 })
-  type: string;
+  @Column({ type: 'varchar', length: 255 })
+  Type: string;
 
-  @Column({ length: 255 })
-  name: string;
+  @Column({ type: 'varchar', length: 255 })
+  Name: string;
 
-  @Column()
-  gsm: number;
+  @Column({ type: 'int' })
+  GSM: number;
 
-  @Column({default: null})
-  CategoryId: number;
+  @Column({ type: 'int', nullable: true })
+  CategoryId: number | null;
 
-  @CreateDateColumn({ type: 'timestamp' })
-  createdOn: Date;
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  CreatedOn: Date;
 
-  @Column({ length: 100 })
-  createdBy: string;
+  @Column({ type: 'varchar', length: 100 })
+  CreatedBy: string;
 
-  @UpdateDateColumn({ type: 'timestamp' })
-  updatedOn: Date;
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+  UpdatedOn: Date;
 
-  @Column({ length: 100, nullable: true })
-  updatedBy: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  UpdatedBy: string;
 }

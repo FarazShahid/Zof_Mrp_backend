@@ -1,5 +1,5 @@
 import { ShipmentCarrier } from "src/shipment-carrier/entities/shipment-carrier.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ShipmentBox } from "./shipment-box.entity";
 import { ShipmentOrder } from "./shipment-order.entity";
 
@@ -10,24 +10,24 @@ export enum ShipmentStatus {
     CANCELLED = "Cancelled",
 }
 
-@Entity('Shipment')
+@Entity('shipment')
 export class Shipment {
     @PrimaryGeneratedColumn()
     Id: number;
 
-    @Column()
+    @Column({ type: 'varchar', length: 255 })
     ShipmentCode: string;
 
-    @Column()
+    @Column({ type: 'varchar', length: 255, default: () => "'TEMP_TRACKING'" })
     TrackingId: string;
 
-    @Column({ type: 'varchar', length: 100, nullable: true })
+    @Column({ type: 'varchar', length: 255, nullable: true })
     OrderNumber: string;
 
     @OneToMany(() => ShipmentOrder, so => so.Shipment, { cascade: true })
     ShipmentOrders: ShipmentOrder[];
 
-    @Column()
+    @Column({ type: 'int' })
     ShipmentCarrierId: number;
 
     @ManyToOne(() => ShipmentCarrier, carrier => carrier.Shipments)
@@ -43,31 +43,31 @@ export class Shipment {
     @Column({ type: 'float' })
     TotalWeight: number;
 
-    @Column()
+    @Column({ type: 'int' })
     NumberOfBoxes: number;
 
-    @Column()
+    @Column({ type: 'varchar', length: 255 })
     WeightUnit: string;
 
-    @Column({ type: 'timestamp', nullable: true })
+    @Column({ type: 'timestamp', nullable: true, default: null })
     ReceivedTime?: Date;
 
     @Column({ type: 'enum', enum: ShipmentStatus })
     Status: ShipmentStatus;
 
-    @OneToMany(() => ShipmentBox, box => box.Shipment, { cascade: true })
+    @OneToMany(() => ShipmentBox, box => box.shipment, { cascade: true })
     Boxes: ShipmentBox[];
 
-    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @CreateDateColumn({ type: 'timestamp' })
     CreatedOn: Date;
 
-    @Column()
+    @Column({ type: 'varchar', length: 255 })
     CreatedBy: string;
 
-    @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+    @UpdateDateColumn({ type: 'timestamp' })
     UpdatedOn: Date;
 
-    @Column()
+    @Column({ type: 'varchar', length: 255 })
     UpdatedBy: string;
 
 }

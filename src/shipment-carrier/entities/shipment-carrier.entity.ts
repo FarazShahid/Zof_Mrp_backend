@@ -1,7 +1,7 @@
 import { Shipment } from 'src/shipment/entities/shipment.entity';
 import { Entity, Column, UpdateDateColumn, CreateDateColumn, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('ShipmentCarriers')
+@Entity('shipmentcarriers')
 export class ShipmentCarrier {
 
     @PrimaryGeneratedColumn()
@@ -10,19 +10,18 @@ export class ShipmentCarrier {
     @Column({ type: 'varchar', length: 100 })
     Name: string;
 
-    //New Column
     @OneToMany(() => Shipment, shipment => shipment.ShipmentCarrier)
     Shipments: Shipment[];
 
-    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-    CreatedOn: Date;
+    @CreateDateColumn({ type: 'timestamp' })
+    createdOn: Date;
 
-    @Column()
-    CreatedBy: string;
+    @Column({ type: 'varchar', length: 100, nullable: true })
+    createdBy: string | null;
 
-    @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
-    UpdatedOn: Date;
+    @UpdateDateColumn({ type: 'timestamp' })
+    updatedOn: Date;
 
-    @Column()
-    UpdatedBy: string;
+    @Column({ type: 'varchar', length: 100, nullable: true })
+    updatedBy: string | null;
 }

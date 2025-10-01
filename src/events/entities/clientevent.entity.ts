@@ -5,24 +5,25 @@ export class ClientEvent {
   @PrimaryGeneratedColumn()
   Id: number;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   EventName: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   Description: string;
 
-  @Column({default: null})
+  @Column({ type: 'int', nullable: true, default: null })
   ClientId: number | null;
 
-  @Column()
-  CreatedBy: string;
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  UpdatedOn: Date;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
+  CreatedBy: string;
+
+  @Column({ type: 'varchar', length: 255 })
   UpdatedBy: string;
 
-  @UpdateDateColumn({ type: 'timestamp' })
-  UpdatedOn: Date;
 }

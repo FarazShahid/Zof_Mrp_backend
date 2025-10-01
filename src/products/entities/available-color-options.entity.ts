@@ -1,26 +1,32 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { ColorOption } from "src/coloroption/_/color-option.entity";
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('availablecoloroptions')
+
 export class AvailableColorOption {
     @PrimaryGeneratedColumn()
     Id: number;
 
-    @Column()
+    @Column({ type: 'int' })
     colorId: number;
 
-    @Column()
+    @ManyToOne(() => ColorOption, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+    @JoinColumn([{ name: 'colorId', referencedColumnName: 'Id' }])
+    coloroption: ColorOption;
+
+    @Column({ type: 'int' })
     ProductId: number;
 
-    @Column({ nullable: true })
-    ImageId?: number;
+    @Column({ type: 'int', nullable: true })
+    ImageId?: number | null;
 
-    @CreateDateColumn({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+    @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
     CreatedOn: Date;
 
     @Column({ type: 'varchar', length: 100, nullable: true })
     CreatedBy?: string;
 
-    @UpdateDateColumn({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+    @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
     UpdatedOn: Date;
 
     @Column({ type: 'varchar', length: 100, nullable: true })

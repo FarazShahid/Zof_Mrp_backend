@@ -1,25 +1,30 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { ProductRegionStandard } from 'src/productregionstandard/_/product-region-standard.entity';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 
 @Entity('sizeoptions')
 export class SizeOption {
   @PrimaryGeneratedColumn()
   Id: number;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255, nullable: true })
   OptionSizeOptions: string;
 
-  @Column()
+  @Column({ type: 'int', nullable: true })
   ProductRegionId: number;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @ManyToOne(() => ProductRegionStandard, { nullable: true, onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  @JoinColumn({ name: 'ProductRegionId', referencedColumnName: 'Id' })
+  ProductRegion?: ProductRegionStandard | null;
+
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
 
-  @Column()
-  CreatedBy: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  CreatedBy: string | null;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   UpdatedOn: Date;
 
-  @Column()
-  UpdatedBy: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  UpdatedBy: string | null;
 }

@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, JoinColumn, Index, ManyToOne } from 'typeorm';
 import { Product } from './product.entity';
 
 @Entity('qachecklist')
+
 export class QAChecklist {
   @PrimaryGeneratedColumn()
   id: number;
@@ -9,9 +10,10 @@ export class QAChecklist {
   @Column({ type: 'text' })
   name: string;
 
-  @Column()
+  @Column({ type: 'int' })
   productId: number;
 
-  @JoinColumn({ name: 'productId' })
+  @ManyToOne(() => Product)
+  @JoinColumn([{ name: 'productId' }])
   product: Product;
 }

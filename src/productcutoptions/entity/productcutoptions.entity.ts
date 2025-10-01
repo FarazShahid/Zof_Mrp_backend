@@ -5,18 +5,18 @@ export class ProductCutOption {
   @PrimaryGeneratedColumn()
   Id: number;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   OptionProductCutOptions: string;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   CreatedBy: string;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   UpdatedOn: Date;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   UpdatedBy: string;
 }

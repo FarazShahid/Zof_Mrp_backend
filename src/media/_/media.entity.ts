@@ -12,24 +12,24 @@ export class Media {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   file_name: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 100 })
   file_type: string;
 
-  @Column('text')
+  @Column({ type: 'text' })
   file_url: string;
 
-  @Column({ nullable: true })
-  uploaded_by: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  uploaded_by: string | null;
 
-  @CreateDateColumn()
-  uploaded_on: Date;
+  @CreateDateColumn({ type: 'datetime', nullable: true })
+  uploaded_on: Date | null;
 
-  @UpdateDateColumn()
-  updated_on: Date;
+  @UpdateDateColumn({ type: 'datetime', nullable: true })
+  updated_on: Date | null;
 
-  @DeleteDateColumn({ nullable: true })
-  deleted_at?: Date;
+  @DeleteDateColumn({ type: 'datetime', nullable: true })
+  deleted_at?: Date | null;
 }

@@ -13,7 +13,7 @@ import { OrderStatus } from '../orderstatus/entities/orderstatus.entity';
 import { Product } from '../products/entities/product.entity';
 import { ColorOption } from '../coloroption/_/color-option.entity';
 import { PrintingOptions } from '../printingoptions/entities/printingoptions.entity';
-import { OrderStatusLogs } from './entities/order-status-log';
+import { OrderStatusLogs } from './entities/order-status-log.entity';
 import { SizeMeasurement } from 'src/size-measurements/entities/size-measurement.entity';
 import { ShipmentOrder } from 'src/shipment/entities/shipment-order.entity';
 import { OrderPdfService } from './order.pdf.service';

@@ -1,12 +1,7 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity({ name: 'document' })
+
 export class DocumentEntity {
   @PrimaryGeneratedColumn()
   Id: number;
@@ -32,15 +27,17 @@ export class DocumentEntity {
   @Column({ type: 'int' })
   DocTypeId: number;
 
-  @CreateDateColumn({ type: 'datetime' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   CreatedBy: string;
 
-  @UpdateDateColumn({ type: 'datetime' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   UpdatedOn: Date;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   UpdatedBy: string;
 }
+
+

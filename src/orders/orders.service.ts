@@ -18,7 +18,7 @@ import { Product } from '../products/entities/product.entity';
 import { PrintingOptions } from '../printingoptions/entities/printingoptions.entity';
 import { OrderStatus } from 'src/orderstatus/entities/orderstatus.entity';
 import { SizeMeasurement } from 'src/size-measurements/entities/size-measurement.entity';
-import { OrderStatusLogs } from './entities/order-status-log';
+import { OrderStatusLogs } from './entities/order-status-log.entity';
 import { Response } from 'express';
 import { CreateQualityCheckDto } from './dto/create-checklist.dto';
 import { OrderQualityCheck } from './entities/order-checklist.entity';

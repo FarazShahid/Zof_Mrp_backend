@@ -22,29 +22,29 @@ export class SleeveTypeService {
     try {
       this.logger.log(`Creating sleeve type with data: ${JSON.stringify(data)}, createdBy: ${userEmail}`);
 
-      const category = await this.categoryRepository.findOne({ where: { id: data.productCategoryId } });
+      const category = await this.categoryRepository.findOne({ where: { Id: data.productCategoryId } });
       if (!category) {
         throw new NotFoundException(`Product Category not found.`);
       }
 
       const newSleeve = this.sleeveRepository.create({
-        sleeveTypeName: data.sleeveTypeName,
+        SleeveTypeName: data.sleeveTypeName,
         productCategory: category,
         CreatedBy: userEmail,
-        updatedBy: userEmail
+        UpdatedBy: userEmail
       });
 
       const savedSleeve = await this.sleeveRepository.save(newSleeve);
 
       return {
-        id: savedSleeve.id,
-        sleeveTypeName: savedSleeve.sleeveTypeName,
+        id: savedSleeve.Id,
+        sleeveTypeName: savedSleeve.SleeveTypeName,
         CreatedOn: savedSleeve.CreatedOn,
         CreatedBy: savedSleeve.CreatedBy,
         UpdatedOn: savedSleeve.UpdatedOn,
-        updatedBy: savedSleeve.updatedBy,
-        productCategoryId: savedSleeve.productCategory.id,
-        categoryName: savedSleeve.productCategory.type,
+        updatedBy: savedSleeve.UpdatedBy,
+        productCategoryId: savedSleeve.productCategory.Id,
+        categoryName: savedSleeve.productCategory.Type,
       };
     } catch (error) {
       this.logger.error(`Error creating sleeve type: ${error.message}`, error.stack);
@@ -57,16 +57,16 @@ export class SleeveTypeService {
 
       const result = await this.sleeveRepository
         .createQueryBuilder('sleeve')
-        .leftJoin('productcategory', 'category', 'sleeve.productCategoryId = category.id')
+        .leftJoin('productcategory', 'category', 'sleeve.productCategoryId = category.Id')
         .select([
-          'sleeve.id AS id',
-          'sleeve.sleeveTypeName AS sleeveTypeName',
-          'sleeve.productCategoryId AS productCategoryId',
-          'category.type AS categoryName',
+          'sleeve.Id AS id',
+          'sleeve.SleeveTypeName AS sleeveTypeName',
+          'sleeve.ProductCategoryId AS productCategoryId',
+          'category.Type AS categoryName',
           'sleeve.CreatedOn AS CreatedOn',
           'sleeve.CreatedBy AS CreatedBy',
           'sleeve.UpdatedOn AS UpdatedOn',
-          'sleeve.updatedBy AS updatedBy'
+          'sleeve.UpdatedBy AS updatedBy'
         ])
         .orderBy('sleeve.CreatedOn', 'DESC')
         .getRawMany();
@@ -93,18 +93,18 @@ export class SleeveTypeService {
 
       const result = await this.sleeveRepository
         .createQueryBuilder('sleeve')
-        .leftJoin('productcategory', 'category', 'sleeve.productCategoryId = category.id')
+        .leftJoin('productcategory', 'category', 'sleeve.productCategoryId = category.Id')
         .select([
-          'sleeve.id AS id',
-          'sleeve.sleeveTypeName AS sleeveTypeName',
-          'sleeve.productCategoryId AS productCategoryId',
-          'category.type AS categoryName',
+          'sleeve.Id AS id',
+          'sleeve.SleeveTypeName AS sleeveTypeName',
+          'sleeve.ProductCategoryId AS productCategoryId',
+          'category.Type AS categoryName',
           'sleeve.CreatedOn AS CreatedOn',
           'sleeve.CreatedBy AS CreatedBy',
           'sleeve.UpdatedOn AS UpdatedOn',
-          'sleeve.updatedBy AS updatedBy'
+          'sleeve.UpdatedBy AS updatedBy'
         ])
-        .where('sleeve.id = :id', { id })
+        .where('sleeve.Id = :id', { id })
         .getRawOne();
 
       if (!result) {
@@ -131,23 +131,23 @@ export class SleeveTypeService {
     try {
       this.logger.log(`Updating sleeve type with id: ${id}, data: ${JSON.stringify(data)}, updatedBy: ${userEmail}`);
 
-      const sleeve = await this.sleeveRepository.findOne({ where: { id } });
+      const sleeve = await this.sleeveRepository.findOne({ where: { Id: id } });
       if (!sleeve) {
         throw new NotFoundException(`Sleeve Type not found.`);
       }
 
       if (data.sleeveTypeName) {
         const existingSleeve = await this.sleeveRepository.findOne({
-          where: { sleeveTypeName: data.sleeveTypeName },
+          where: { SleeveTypeName: data.sleeveTypeName },
         });
 
-        if (existingSleeve && existingSleeve.id !== id) {
+        if (existingSleeve && existingSleeve.Id !== id) {
           throw new BadRequestException(`Sleeve Type "${data.sleeveTypeName}" already exists.`);
         }
       }
 
       if (data.productCategoryId) {
-        const category = await this.categoryRepository.findOne({ where: { id: data.productCategoryId } });
+        const category = await this.categoryRepository.findOne({ where: { Id: data.productCategoryId } });
         if (!category) {
           throw new NotFoundException(`Product Category with ID ${data.productCategoryId} not found.`);
         }
@@ -155,8 +155,8 @@ export class SleeveTypeService {
         sleeve.productCategory = category;
       }
 
-      sleeve.sleeveTypeName = data.sleeveTypeName || sleeve.sleeveTypeName;
-      sleeve.updatedBy = userEmail;
+      sleeve.SleeveTypeName = data.sleeveTypeName || sleeve.SleeveTypeName;
+      sleeve.UpdatedBy = userEmail;
 
       await this.sleeveRepository.save(sleeve);
 
@@ -171,7 +171,7 @@ export class SleeveTypeService {
     try {
       this.logger.log(`Removing sleeve type with id: ${id}`);
 
-      const sleeve = await this.sleeveRepository.findOne({ where: { id } });
+      const sleeve = await this.sleeveRepository.findOne({ where: { Id: id } });
       if (!sleeve) {
         throw new NotFoundException(`Sleeve Type not found.`);
       }

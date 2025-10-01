@@ -1,36 +1,44 @@
+import { User } from 'src/users/entities/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity('auditlogs')
+
 export class AuditLog {
   @PrimaryGeneratedColumn()
-  id: number;
+  Id: number;
 
-  @Column()
-  userId: number;
+  @Column({ type: 'int' })
+  UserId: number;
 
-  @Column({ length: 100 })
-  module: string;
+  @ManyToOne(() => User, { onDelete: 'RESTRICT', onUpdate: 'CASCADE' })
+  @JoinColumn([{ name: 'UserId', referencedColumnName: 'Id' }])
+  user: User;
 
-  @Column({ length: 50 })
-  action: string;
+  @Column({ type: 'varchar', length: 100 })
+  Module: string;
+
+  @Column({ type: 'varchar', length: 50 })
+  Action: string;
 
   @Column({ type: 'text', nullable: true })
-  details: string;
+  Details: string;
 
-  @Column({ nullable: true })
-  entityId: string;
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  EntityId: string;
 
-  @Column({ length: 100, nullable: true })
-  ip: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  Ip: string;
 
-  @Column({ length: 255, nullable: true })
-  device: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  Device: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @CreateDateColumn({ type: 'timestamp' })
+  CreatedAt: Date;
 }

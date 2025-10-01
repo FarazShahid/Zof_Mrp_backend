@@ -1,22 +1,24 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
+
 
 @Entity('productregionstandard')
+
 export class ProductRegionStandard {
   @PrimaryGeneratedColumn()
   Id: number;
 
-  @Column({ type: 'varchar', length: 50 })
+  @Column({ type: 'varchar', length: 50, unique: true })
   Name: string;
 
-  @CreateDateColumn({ type: 'datetime' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
+
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+  UpdatedOn: Date;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   CreatedBy: string;
 
-  @UpdateDateColumn({ type: 'datetime' })
-  UpdatedOn: Date;
-
   @Column({ type: 'varchar', length: 100, nullable: true })
-  UpdatedBy: string;
+  UpdatedBy: string | null;
 }

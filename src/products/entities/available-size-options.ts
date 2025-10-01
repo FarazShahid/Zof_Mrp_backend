@@ -6,9 +6,9 @@ export class AvailbleSizeOptions {
     @PrimaryGeneratedColumn()
     Id: number;
 
-    @Column()
+    @Column({ type: 'int' })
     sizeId: number;
 
-    @Column()
+    @Column({ type: 'int' })
     ProductId: number;
 }

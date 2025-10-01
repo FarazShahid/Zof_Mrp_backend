@@ -1,54 +1,57 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { OrderItem } from "src/orders/entities/order-item.entity";
 import { Shipment } from "./shipment.entity";
 
-@Entity('ShipmentBox')
+@Entity('shipmentbox')
+
 export class ShipmentBox {
-    @PrimaryGeneratedColumn()
-    Id: number;
+  @PrimaryGeneratedColumn()
+  Id: number;
 
-    @Column()
-    ShipmentId: number;
+  @Column({ type: 'int' })
+  ShipmentId: number;
 
-    @Column({ type: 'text', nullable: true })
-    OrderBoxDescription: string;
+  @ManyToOne(() => Shipment, shipment => shipment.Boxes, { onDelete: 'CASCADE' })
+  @JoinColumn([{ name: 'ShipmentId' }])
+  shipment: Shipment;
 
-    @ManyToOne(() => Shipment, shipment => shipment.Boxes)
-    @JoinColumn({ name: 'ShipmentId' })
-    Shipment: Shipment;
+  @Column({ type: 'text', nullable: true })
+  OrderBoxDescription: string;
 
-    @Column({ type: 'float' })
-    Weight: number;
+  @Column({ type: 'float' })
+  Weight: number;
 
-    @Column({ type: 'varchar' })
-    BoxNumber: string;
+  @Column({ type: 'varchar', length: 100 })
+  BoxNumber: string;
 
-    @Column({ type: 'varchar', length: 255, nullable: true })
-    OrderItemName: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  OrderItemName: string;
 
-    @OneToMany(() => ShipmentBoxItem, (boxItem) => boxItem.ShipmentBox, {
-        cascade: true,
-    })
-    ShipmentBoxItems: ShipmentBoxItem[];
+  @OneToMany(() => ShipmentBoxItem, (boxItem) => boxItem.ShipmentBox, { cascade: true })
+  ShipmentBoxItems: ShipmentBoxItem[];
 }
 
-@Entity("ShipmentBoxItem")
+@Entity("shipmentboxitem")
+
 export class ShipmentBoxItem {
   @PrimaryGeneratedColumn()
   Id: number;
+
+  @Column({ type: 'int' })
+  ShipmentBoxId: number;
 
   @ManyToOne(() => ShipmentBox, box => box.ShipmentBoxItems, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'ShipmentBoxId' })
   ShipmentBox: ShipmentBox;
 
-  @Column()
+  @Column({ type: 'int' })
   OrderItemId: number;
 
   @ManyToOne(() => OrderItem, orderItem => orderItem.ShipmentBoxItems)
   @JoinColumn({ name: 'OrderItemId' })
   OrderItem: OrderItem;
 
-  @Column({ type: "varchar", nullable: true })
+  @Column({ type: "varchar", length: 255, nullable: true })
   OrderItemDescription: string;
 
   @Column({ type: "int", default: 1 })

@@ -1,5 +1,4 @@
-import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
-import { BaseEntity } from '../../common/entities/base.entity';
+import { Entity, Column, ManyToOne, JoinColumn, OneToMany, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Order } from './orders.entity';
 import { Product } from '../../products/entities/product.entity';
 import { OrderItemsPrintingOption } from './order-item-printiing.option.entity';
@@ -14,36 +13,41 @@ export enum OrderItemShipmentEnum {
 }
 
 @Entity('orderitems')
-export class OrderItem extends BaseEntity {
-  @Column()
+export class OrderItem {
+
+  @PrimaryGeneratedColumn()
+  Id: number;
+
+  @Column({ type: 'int' })
   OrderId: number;
 
-  @Column()
+  @ManyToOne(() => Order, order => order.orderItems)
+  @JoinColumn({ name: 'OrderId' })
+  order: Order;
+
+  @Column({ type: 'int' })
   ProductId: number;
+
+  @ManyToOne(() => Product)
+  @JoinColumn({ name: 'ProductId' })
+  product: Product;
 
   @Column({ nullable: true })
   Description: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: true })
   ImageId: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: true })
   FileId: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: true })
   VideoId: number;
 
   @Column({ type: 'int', default: 0 })
   OrderItemPriority: number;
 
   // Relations
-  @ManyToOne(() => Order, order => order.orderItems)
-  @JoinColumn({ name: 'OrderId' })
-  order: Order;
-
-  @ManyToOne(() => Product)
-  @JoinColumn({ name: 'ProductId' })
-  product: Product;
 
   @OneToMany(() => OrderItemsPrintingOption, printingOption => printingOption.orderItem)
   printingOptions: OrderItemsPrintingOption[];
@@ -56,5 +60,18 @@ export class OrderItem extends BaseEntity {
 
   @Column({ type: 'enum', enum: OrderItemShipmentEnum, default: OrderItemShipmentEnum.PENDING })
   itemShipmentStatus: OrderItemShipmentEnum;
+
+
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  CreatedOn: Date;
+
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+  UpdatedOn: Date;
+
+  @Column({ type: 'varchar', length: 255 })
+  CreatedBy: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  UpdatedBy: string;
 
 }

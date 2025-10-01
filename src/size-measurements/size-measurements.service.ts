@@ -29,7 +29,7 @@ export class SizeMeasurementsService {
         .where('so.OptionSizeOptions = :sizeOptionId', { sizeOptionId: createSizeMeasurementDto.SizeOptionId })
         .getRawOne();
 
-      const productCategoryId = await this.productCategoryRepository.findOne({ where: { id: createSizeMeasurementDto.ProductCategoryId } })
+      const productCategoryId = await this.productCategoryRepository.findOne({ where: { Id: createSizeMeasurementDto.ProductCategoryId } })
       if (!productCategoryId) {
         throw new BadRequestException(`Product category with id ${createSizeMeasurementDto.ProductCategoryId} does not exist`)
       }
@@ -69,7 +69,7 @@ export class SizeMeasurementsService {
           'so.OptionSizeOptions AS SizeOptionName',
           'cl.Name AS ClientName',
           'pc.Id AS ProductCategoryId',
-          'pc.type AS ProductCategoryType'
+          'pc.Type AS ProductCategoryType'
         ])
         .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
         .leftJoin('productcategory', 'pc', 'sm.ProductCategoryId = pc.Id')
@@ -130,7 +130,7 @@ export class SizeMeasurementsService {
           'so.OptionSizeOptions AS SizeOptionName',
           'cl.Name AS ClientName',
           'pc.Id AS ProductCategoryId',
-          'pc.type AS ProductCategoryType'
+          'pc.Type AS ProductCategoryType'
         ])
         .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
         .leftJoin('client', 'cl', 'sm.ClientId = cl.Id')
@@ -174,7 +174,7 @@ export class SizeMeasurementsService {
       let sizeOptionName = null;
       let cutOptionName = null;
       if (updateSizeMeasurementDto.ProductCategoryId) {
-        const productcategory = await this.productCategoryRepository.findOne({ where: { id: updateSizeMeasurementDto.ProductCategoryId } })
+        const productcategory = await this.productCategoryRepository.findOne({ where: { Id: updateSizeMeasurementDto.ProductCategoryId } })
         if (!productcategory) {
           throw new BadRequestException(`Product category with id ${updateSizeMeasurementDto.ProductCategoryId} does not exist`)
         }
@@ -250,7 +250,7 @@ export class SizeMeasurementsService {
           'so.OptionSizeOptions AS SizeOptionName',
           'cl.Name AS ClientName',
           'pc.Id AS ProductCategoryId',
-          'pc.type AS ProductCategoryType'
+          'pc.Type AS ProductCategoryType'
         ])
         .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
         .leftJoin('client', 'cl', 'sm.ClientId = cl.Id')

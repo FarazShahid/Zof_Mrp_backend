@@ -20,8 +20,8 @@ export class ShipmentCarrierService {
     if (existingCareer) throw new ConflictException("Carrier with this name already exists")
     const newCarrier = this.carrierRepo.create({
       ...createShipmentCarrierDto,
-      CreatedBy: createdBy,
-      UpdatedBy: createdBy
+      createdBy: createdBy,
+      updatedBy: createdBy
     })
     if (!newCarrier) throw new InternalServerErrorException()
     const savedCarrier = await this.carrierRepo.save(newCarrier)
@@ -32,7 +32,7 @@ export class ShipmentCarrierService {
 
   async findAll() {
     return await this.carrierRepo.find({
-      order: { CreatedOn: 'DESC' },
+      order: { createdOn: 'DESC' },
     });
   }
 
@@ -53,7 +53,7 @@ export class ShipmentCarrierService {
 
     const updatedCarrier = this.carrierRepo.merge(carrier, {
       ...updateShipmentCarrierDto,
-      UpdatedBy: updatedBy,
+      updatedBy: updatedBy,
     });
 
     return await this.carrierRepo.save(updatedCarrier);

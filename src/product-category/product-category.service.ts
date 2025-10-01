@@ -12,7 +12,7 @@ export class ProductCategoryService {
 
   async create(data: Partial<ProductCategory>, userEmail: string): Promise<ProductCategory> {
     const existingCategory = await this.categoryRepository.findOne({
-      where: { type: data.type },
+      where: { Type: data.Type },
     });
 
     if (existingCategory) {
@@ -21,8 +21,8 @@ export class ProductCategoryService {
 
     return await this.categoryRepository.save({
       ...data,
-      createdBy: userEmail,
-      updatedBy: userEmail,
+      CreatedBy: userEmail,
+      UpdatedBy: userEmail,
     });
   }
 
@@ -31,28 +31,28 @@ export class ProductCategoryService {
   }
 
   async findOne(id: number): Promise<ProductCategory> {
-    const category = await this.categoryRepository.findOne({ where: { id } });
+    const category = await this.categoryRepository.findOne({ where: { Id: id } });
 
     if (!category) {
-      throw new NotFoundException(`Categor not found.`);
+      throw new NotFoundException(`Category not found.`);
     }
 
     return category;
   }
 
   async update(id: number, data: Partial<ProductCategory>, userEmail: string): Promise<ProductCategory> {
-    if (data.type) {
+    if (data.Type) {
       const existingCategory = await this.categoryRepository.findOne({
-        where: { type: data.type },
+        where: { Type: data.Type },
       });
 
-      if (existingCategory && existingCategory.id !== id) {
+      if (existingCategory && existingCategory.Id !== id) {
         throw new BadRequestException(`Category with this type already exists.`);
       }
     }
     await this.categoryRepository.update(id, {
       ...data,
-      updatedBy: userEmail
+      UpdatedBy: userEmail
     });
     return this.findOne(id);
   }

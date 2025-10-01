@@ -15,11 +15,11 @@ export class OrderQualityCheck {
     measurementId: number | null;
 
     @Column({ type: 'text', nullable: true })
-    parameter: string;
+    parameter: string | null;
 
     @Column({ type: 'varchar', length: 255, nullable: true })
     expected: string | null;
-    
+
     @Column({ type: 'varchar', length: 255, nullable: true })
     observed: string | null;
 

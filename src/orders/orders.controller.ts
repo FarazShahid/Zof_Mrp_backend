@@ -21,7 +21,7 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
-import { OrderStatusLogs } from './entities/order-status-log';
+import { OrderStatusLogs } from './entities/order-status-log.entity';
 import { Response } from 'express';
 import { OrderPdfService } from './order.pdf.service';
 import { GenerateOrderPdfsDto } from './dto/order.pdf.dto';

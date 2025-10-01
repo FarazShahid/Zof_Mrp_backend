@@ -5,21 +5,21 @@ export class OrderStatus {
   @PrimaryGeneratedColumn()
   Id: number;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   StatusName: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   Description: string;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   CreatedBy: string;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   UpdatedOn: Date;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   UpdatedBy: string;
 }

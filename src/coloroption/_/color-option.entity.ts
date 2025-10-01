@@ -11,13 +11,13 @@ export class ColorOption {
   @Column({ type: 'varchar', length: 20 })
   HexCode: string;
 
-  @CreateDateColumn({ type: 'datetime' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
-  CreatedBy: string;
+  CreatedBy: string | null;
 
-  @UpdateDateColumn({ type: 'datetime' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   UpdatedOn: Date;
 
   @Column({ type: 'varchar', length: 100, nullable: true })

@@ -4,8 +4,10 @@ import {
   MaxLength,
   IsNumber,
   IsOptional,
+  IsEnum,
 } from 'class-validator';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
+import { TransactionType } from './inventory-transections.entity';
 
 export class CreateInventoryTransectionsDto {
   @CommonApiProperty('Inventory Item ID', '1')
@@ -18,11 +20,10 @@ export class CreateInventoryTransectionsDto {
   @IsNotEmpty()
   Quantity: number;
 
-  @CommonApiProperty('Transection Type Name', 'In')
-  @IsString()
+  @CommonApiProperty('Transaction Type Name', TransactionType.IN)
+  @IsEnum(TransactionType)
   @IsNotEmpty()
-  @MaxLength(20)
-  TransactionType: string;
+  TransactionType: TransactionType;
 
   @CommonApiProperty('Client ID', '3')
   @IsNumber()

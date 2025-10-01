@@ -5,34 +5,34 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  CreateDateColumn,
   JoinColumn,
 } from 'typeorm';
 
 @Entity('media_links')
+
 export class MediaLink {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'int' })
   media_id: number;
 
-  @ManyToOne(() => Media)
-  @JoinColumn({ name: 'media_id' })
+  @ManyToOne(() => Media, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'media_id', referencedColumnName: 'id' })
   media: Media;
 
-  @Column()
-  reference_type: string;
-
-  @Column({ nullable: true })
-  tag: string;
-
-  @Column()
+  @Column({ type: 'int' })
   reference_id: number;
 
-  @CreateDateColumn()
+  @Column({ type: 'varchar', length: 100 })
+  reference_type: string;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  tag: string | null;
+
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   created_on: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 100, nullable: true })
   created_by: string;
 }

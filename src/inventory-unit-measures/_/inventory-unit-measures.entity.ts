@@ -1,28 +1,28 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, DeleteDateColumn } from 'typeorm';
 
-@Entity('UnitOfMeasures')
+@Entity('unitofmeasures')
 export class UnitOfMeasures {
   @PrimaryGeneratedColumn()
   Id: number;
 
-  @Column({ length: 100 })
+  @Column({ type: 'varchar', length: 255 })
   Name: string;
 
-  @Column({ length: 100 })
-  ShortForm: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  ShortForm: string | null;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
 
-  @Column({ length: 100 })
-  CreatedBy: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  CreatedBy: string | null;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   UpdatedOn: Date;
 
-  @Column({ length: 100, nullable: true })
-  UpdatedBy: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  UpdatedBy: string | null;
 
-  @DeleteDateColumn({ type: 'timestamp', nullable: true })
-  DeletedAt: Date;
+  @DeleteDateColumn({ type: 'datetime', nullable: true })
+  DeletedAt: Date | null;
 }

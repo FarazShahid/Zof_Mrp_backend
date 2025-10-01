@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { InventoryTransactions } from './_/inventory-transections.entity';
+import { InventoryTransactions, TransactionType } from './_/inventory-transections.entity';
 import { CreateInventoryTransectionsDto } from './_/inventory-transections.dto';
 import { InventoryItems } from 'src/inventory-items/_/inventory-items.entity';
 import { UnitOfMeasures } from 'src/inventory-unit-measures/_/inventory-unit-measures.entity';
@@ -28,7 +28,7 @@ export class inventoryTransectionService {
     private readonly ordersRepository: Repository<Order>,
     @InjectRepository(InventorySuppliers)
     private readonly inventorySupplierRepository: Repository<InventorySuppliers>,
-  ) {}
+  ) { }
 
   async create(data: CreateInventoryTransectionsDto, createdBy: string) {
     const item = await this.inventoryItemsRepository.findOneBy({
@@ -43,9 +43,9 @@ export class inventoryTransectionService {
       },
     );
 
-    if (data.TransactionType === 'Opening Balance') {
+    if (data.TransactionType === TransactionType.OPENING_BALANCE) {
       const hasOpeningBalance = existingTransaction.some(
-        (tx) => tx.TransactionType === 'Opening Balance',
+        (tx) => tx.TransactionType === TransactionType.OPENING_BALANCE,
       );
       if (hasOpeningBalance) {
         throw new BadRequestException(
@@ -56,7 +56,7 @@ export class inventoryTransectionService {
 
     if (
       existingTransaction?.length === 0 &&
-      data.TransactionType !== 'Opening Balance'
+      data.TransactionType !== TransactionType.OPENING_BALANCE
     ) {
       throw new BadRequestException(
         'First transaction for an item must be of type "Opening Balance".',
@@ -66,7 +66,7 @@ export class inventoryTransectionService {
     const currentStock = parseFloat(item.Stock?.toString() ?? '0');
     const qty = parseFloat(data.Quantity?.toString() ?? '0');
 
-    if (data.TransactionType === 'OUT' && currentStock < qty) {
+    if (data.TransactionType === TransactionType.OUT && currentStock < qty) {
       throw new BadRequestException('Not enough stock available');
     }
 
@@ -202,22 +202,22 @@ export class inventoryTransectionService {
 
     const supplier = transaction.SupplierId
       ? await this.inventorySupplierRepository.findOne({
-          where: { Id: transaction.SupplierId },
-          withDeleted: true,
-        })
+        where: { Id: transaction.SupplierId },
+        withDeleted: true,
+      })
       : null;
 
     const client = transaction.ClientId
       ? await this.clientsRepository.findOne({
-          where: { Id: transaction.ClientId },
-          withDeleted: true,
-        })
+        where: { Id: transaction.ClientId },
+        withDeleted: true,
+      })
       : null;
     const order = transaction.OrderId
       ? await this.ordersRepository.findOne({
-          where: { Id: transaction.OrderId },
-          withDeleted: true,
-        })
+        where: { Id: transaction.OrderId },
+        withDeleted: true,
+      })
       : null;
 
     return {
@@ -270,12 +270,12 @@ export class inventoryTransectionService {
       const newType =
         data.TransactionType || existingTransaction.TransactionType;
 
-      if (newType === 'Opening Balance') {
+      if (newType === TransactionType.OPENING_BALANCE) {
         const existingOpeningBalance =
           await this.inventoryTransactionsRepository.findOne({
             where: {
               InventoryItemId: itemId,
-              TransactionType: 'Opening Balance',
+              TransactionType: TransactionType.OPENING_BALANCE,
             },
             withDeleted: true,
           });
@@ -291,14 +291,14 @@ export class inventoryTransectionService {
       // Step 1: Revert the effect of the old transaction
       const oldQty = parseFloat(existingTransaction.Quantity.toString());
       switch (existingTransaction.TransactionType) {
-        case 'IN':
-        case 'Opening Balance':
-        case 'Return to Stock':
+        case TransactionType.IN:
+        case TransactionType.OPENING_BALANCE:
+        case TransactionType.RETURN_TO_STOCK:
           stock = parseFloat((stock - oldQty).toFixed(2));
           break;
-        case 'OUT':
-        case 'Return to Supplier':
-        case 'Disposal':
+        case TransactionType.OUT:
+        case TransactionType.RETURN_TO_SUPPLIER:
+        case TransactionType.DISPOSAL:
           stock = parseFloat((stock + oldQty).toFixed(2));
           break;
       }
@@ -306,14 +306,14 @@ export class inventoryTransectionService {
       // Step 2: Apply the effect of the new transaction
 
       switch (newType) {
-        case 'IN':
-        case 'Opening Balance':
-        case 'Return to Stock':
+        case TransactionType.IN:
+        case TransactionType.OPENING_BALANCE:
+        case TransactionType.RETURN_TO_STOCK:
           stock = parseFloat((stock + newQty).toFixed(2));
           break;
-        case 'OUT':
-        case 'Return to Supplier':
-        case 'Disposal':
+        case TransactionType.OUT:
+        case TransactionType.RETURN_TO_SUPPLIER:
+        case TransactionType.DISPOSAL:
           stock = parseFloat((stock - newQty).toFixed(2));
           break;
       }
@@ -368,14 +368,14 @@ export class inventoryTransectionService {
     const transactionQty = parseFloat(transaction.Quantity.toString());
 
     switch (transaction.TransactionType) {
-      case 'IN':
-      case 'Opening Balance':
-      case 'Return to Stock':
+      case TransactionType.IN:
+      case TransactionType.OPENING_BALANCE:
+      case TransactionType.RETURN_TO_STOCK:
         updatedStock = parseFloat((updatedStock - transactionQty).toFixed(2));
         break;
-      case 'OUT':
-      case 'Return to Supplier':
-      case 'Disposal':
+      case TransactionType.OUT:
+      case TransactionType.RETURN_TO_SUPPLIER:
+      case TransactionType.DISPOSAL:
         updatedStock = parseFloat((updatedStock + transactionQty).toFixed(2));
         break;
       default:

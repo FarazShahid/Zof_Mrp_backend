@@ -82,8 +82,7 @@ export class CreateClientDto {
   CompleteAddress: string;
 
   @CommonApiProperty('Client Status Id', '1')
-  @Transform(({ value }) => Number(value))
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  ClientStatusId: number;
+  ClientStatusId: string | null;
 }

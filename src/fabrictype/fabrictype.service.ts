@@ -10,13 +10,16 @@ export class FabricTypeService {
     private readonly fabricTypeRepository: Repository<FabricType>,
     @InjectRepository(ProductCategory)
     private readonly productCategoryRepository: Repository<ProductCategory>,
-  ) {}
+  ) { }
 
   async create(data: { type: string; name: string; gsm: number; CategoryId: number; createdBy: string }) {
     const fabric = this.fabricTypeRepository.create({
-      ...data,
+      Type: data.type,
+      Name: data.name,
+      GSM: data.gsm,
+      CreatedBy: data.createdBy,
       CategoryId: data.CategoryId ?? null,
-      createdOn: new Date(),
+      CreatedOn: new Date(),
     });
     return this.fabricTypeRepository.save(fabric);
   }
@@ -25,69 +28,69 @@ export class FabricTypeService {
     const response = await this.fabricTypeRepository.find();
     const CategoryIds = response.filter(e => e.CategoryId).map(e => e.CategoryId);
     const categories = await this.productCategoryRepository.find({
-          where: { id: In(CategoryIds) },
-          withDeleted: true,
-        });
-    const categoryMap = new Map(categories.map(cat => [cat.id, cat.type]));
-    return response.map(e=>({
-      id: e.id,
-      name: e.name,
-      type: e.type,
-      gsm: e.gsm,
+      where: { Id: In(CategoryIds) },
+      withDeleted: true,
+    });
+    const categoryMap = new Map(categories.map(cat => [cat.Id, cat.Type]));
+    return response.map(e => ({
+      id: e.Id,
+      name: e.Name,
+      type: e.Type,
+      gsm: e.GSM,
       categoryid: e.CategoryId,
       categoryName: categoryMap.get(e.CategoryId) ?? "N/A",
-      createdOn: e.createdOn,
-      createdBy: e.createdBy,
-      updatedOn: e.updatedOn,
-      updatedBy: e.updatedBy
+      createdOn: e.CreatedOn,
+      createdBy: e.CreatedBy,
+      updatedOn: e.UpdatedOn,
+      updatedBy: e.UpdatedBy
     }));
   }
 
   async findOne(id: number) {
-    const fabricType = await this.fabricTypeRepository.findOne({ where: { id } });
+    const fabricType = await this.fabricTypeRepository.findOne({ where: { Id: id } });
     if (!fabricType) {
       throw new NotFoundException(`Fabric type with ID ${id} not found`);
     }
     const category = await this.productCategoryRepository.findOne({
-      where: { id: fabricType.CategoryId },
+      where: { Id: fabricType.CategoryId },
       withDeleted: true,
     });
 
     return {
-      id: fabricType.id,
-      name: fabricType.name,
-      type: fabricType.type,
-      gsm: fabricType.gsm,
+      id: fabricType.Id,
+      name: fabricType.Name,
+      type: fabricType.Type,
+      gsm: fabricType.GSM,
       categoryid: fabricType.CategoryId,
-      categoryName: category?.type ?? "N/A",
-      createdOn: fabricType.createdOn,
-      createdBy: fabricType.createdBy,
-      updatedOn: fabricType.updatedOn,
-      updatedBy: fabricType.updatedBy
+      categoryName: category?.Type ?? "N/A",
+      createdOn: fabricType.CreatedOn,
+      createdBy: fabricType.CreatedBy,
+      updatedOn: fabricType.UpdatedOn,
+      updatedBy: fabricType.UpdatedBy
     };
   }
 
-  async update(id: number, data: any) {    
+  async update(id: number, data: any) {
     try {
-      const fabricType = await this.fabricTypeRepository.findOne({ where: { id } });
+      const fabricType = await this.fabricTypeRepository.findOne({ where: { Id: id } });
       if (!fabricType) {
         throw new NotFoundException(`Fabric type with ID ${id} not found`);
       }
 
       const { type, name, gsm, updatedBy, CategoryId } = data;
       const updateData: any = {};
-      
-      if (type !== undefined) updateData.type = type;
-      if (name !== undefined) updateData.name = name;
-      if (gsm !== undefined) updateData.gsm = gsm;
+
+      if (type !== undefined) updateData.Type = type;
+      if (name !== undefined) updateData.Name = name;
+      if (gsm !== undefined) updateData.GSM = gsm;
       if (CategoryId !== undefined) updateData.CategoryId = CategoryId;
-      
-      updateData.updatedBy = updatedBy;
-      updateData.updatedOn = new Date();
+
+      updateData.UpdatedBy = updatedBy;
+      updateData.UpdatedOn = new Date();
 
       await this.fabricTypeRepository.update(id, updateData);
-      
-      return this.fabricTypeRepository.findOne({ where: { id } });
+
+      return this.fabricTypeRepository.findOne({ where: { Id: id } });
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;

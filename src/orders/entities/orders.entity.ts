@@ -3,23 +3,41 @@ import { BaseEntity } from '../../common/entities/base.entity';
 import { Client } from '../../clients/entities/client.entity';
 import { ClientEvent } from '../../events/entities/clientevent.entity';
 import { OrderStatus } from '../../orderstatus/entities/orderstatus.entity';
-import { OrderItem, OrderItemShipmentEnum } from './order-item.entity';
-import { OrderStatusLogs } from './order-status-log';
+import { OrderItem } from './order-item.entity';
+import { OrderStatusLogs } from './order-status-log.entity';
 import { ShipmentOrder } from 'src/shipment/entities/shipment-order.entity';
+
+enum OrderItemShipmentEnum {
+  PENDING = 'Pending',
+  SHIPPED = 'Shipped',
+  PARTIALLY_SHIPPED = 'Partially Shipped',
+}
 
 @Entity('orders')
 export class Order extends BaseEntity {
-  @Column()
+  @Column({ type: 'int' })
   ClientId: number;
 
-  @Column({ nullable: true })
+  @ManyToOne(() => Client)
+  @JoinColumn({ name: 'ClientId' })
+  client: Client;
+
+  @Column({ type: 'int', nullable: true })
   OrderEventId: number;
 
-  @Column({ nullable: true })
+  @ManyToOne(() => ClientEvent)
+  @JoinColumn({ name: 'OrderEventId' })
+  event: ClientEvent;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
   Description: string;
 
-  @Column({ default: 1 })
+  @Column({ type: 'int', default: 1 })
   OrderStatusId: number;
+
+  @ManyToOne(() => OrderStatus)
+  @JoinColumn({ name: 'OrderStatusId' })
+  status: OrderStatus;
 
   @Column({ type: 'int', nullable: true })
   OrderPriority: number;
@@ -27,33 +45,18 @@ export class Order extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   Deadline: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   OrderNumber: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   OrderName: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255, nullable: true })
   ExternalOrderId: string;
 
   // Relations
-  @ManyToOne(() => Client)
-  @JoinColumn({ name: 'ClientId' })
-  client: Client;
 
-  @ManyToOne(() => ClientEvent)
-  @JoinColumn({ name: 'OrderEventId' })
-  event: ClientEvent;
-
-  @ManyToOne(() => OrderStatus)
-  @JoinColumn({ name: 'OrderStatusId' })
-
-  status: OrderStatus;
-  @Column({
-    type: 'enum',
-    enum: OrderItemShipmentEnum,
-    default: OrderItemShipmentEnum.PENDING,
-  })
+  @Column({ type: 'enum', enum: OrderItemShipmentEnum, default: OrderItemShipmentEnum.PENDING })
   OrderShipmentStatus: OrderItemShipmentEnum;
 
   @OneToMany(() => OrderStatusLogs, log => log.Order)

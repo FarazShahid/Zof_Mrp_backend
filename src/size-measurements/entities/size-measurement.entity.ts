@@ -5,13 +5,13 @@ export class SizeMeasurement {
   @PrimaryGeneratedColumn()
   Id: number;
 
-  @Column({ type: 'decimal', nullable: false, default: 1 })
+  @Column({ type: 'int', nullable: false, default: 1 })
   SizeOptionId: number;
 
-  @Column({ type: 'decimal', nullable: true, default: null })
+  @Column({ type: 'int', nullable: true, default: null })
   ClientId: number;
 
-  @Column({ type: 'decimal', nullable: true, default: null })
+  @Column({ type: 'int', nullable: true, default: null })
   CutOptionId: number;
 
   @Column({ type: 'int', nullable: true, default: null })
@@ -258,17 +258,13 @@ export class SizeMeasurement {
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   H_PatchPlacement: number;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'datetime', nullable: true })
   CreatedOn: Date;
 
   @Column({ length: 100, nullable: true })
   CreatedBy: string;
 
-  @Column({
-    type: 'datetime',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
+  @Column({ type: 'datetime', nullable: true })
   UpdatedOn: Date;
 
   @Column({ length: 100, nullable: true })

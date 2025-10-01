@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import * as stream from 'stream';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
-import { DocumentEntity } from './_/document.entity';
 import { Media } from 'src/media/_/media.entity';
 import { MediaLink } from 'src/media-link/_/media-link.entity';
 

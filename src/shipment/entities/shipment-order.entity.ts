@@ -1,9 +1,11 @@
 // Junction Table
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique, Index } from 'typeorm';
 import { Shipment } from './shipment.entity';
 import { Order } from 'src/orders/entities/orders.entity';
 
-@Entity('shipmentOrders')
+
+@Entity('shipmentorders')
+
 export class ShipmentOrder {
     @PrimaryGeneratedColumn()
     Id: number;

@@ -1,61 +1,93 @@
 import { Client } from "src/clients/entities/client.entity";
-import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn, CreateDateColumn, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from "typeorm";
 import { ProductPrintingOptions } from "./product-printing-options.entity";
 import { ProductCategory } from "src/product-category/entities/product-category.entity";
 import { FabricType } from "src/fabrictype/_/fabrictype.entity";
 
-@Entity('product')
-export class Product {
 
-    @PrimaryGeneratedColumn()
+@Entity('product')
+
+export class Product {
+    @PrimaryGeneratedColumn({ type: 'int', name: 'Id' })
     Id: number;
 
-    @Column()
-    Name: string;
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    Name: string | null;
 
-    @ManyToOne(() => Client, client => client.Products)
-    @JoinColumn({ name: 'ClientId' })
-    Client: Client;
+    @Column({ type: 'varchar', length: 255 })
+    Description: string;
 
-    @Column()
-    ClientId: number;
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    productStatus: string | null;
 
-    @OneToMany(() => ProductPrintingOptions, ppo => ppo.Product)
-    ProductPrintingOptions: ProductPrintingOptions[];
+    @Column({ type: 'boolean', default: false })
+    isArchived: boolean;
 
-    @Column({ name: 'ProductCategoryId', type: 'int' })
+    @Column({ type: 'int', nullable: true })
+    ClientId: number | null;
+
+    @ManyToOne(() => Client, { onDelete: 'SET NULL', onUpdate: 'CASCADE' })
+    @JoinColumn([{ name: 'ClientId', referencedColumnName: 'Id' }])
+    client: Client | null;
+
+    @Column({ type: 'int' })
     ProductCategoryId: number;
 
-    @ManyToOne(() => ProductCategory, { onDelete: 'RESTRICT', onUpdate: 'CASCADE' })
-    @JoinColumn({ name: 'ProductCategoryId' })
+    @ManyToOne(() => ProductCategory, { onUpdate: 'CASCADE' })
+    @JoinColumn([{ name: 'ProductCategoryId', referencedColumnName: 'Id' }])
     ProductCategory: ProductCategory;
 
-    @Column()
-    isArchived: boolean;
-    
-    @Column()
+    @Column({ type: 'int' })
     FabricTypeId: number;
 
     @ManyToOne(() => FabricType)
-    @JoinColumn({ name: 'FabricTypeId' })
+    @JoinColumn([{ name: 'FabricTypeId', referencedColumnName: 'Id' }])
     fabricType: FabricType;
 
+    @OneToMany(() => ProductPrintingOptions, productPrintingOptions => productPrintingOptions.Product)
+    ProductPrintingOptions: ProductPrintingOptions[];
 
-    @Column()
-    productStatus: string;
-
-    @Column()
-    Description: string;
-
-    @CreateDateColumn({ type: 'timestamp' })
+    @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
     CreatedOn: Date;
 
-    @Column()
-    CreatedBy: string;
-
-    @UpdateDateColumn({ type: 'timestamp' })
+    @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
     UpdatedOn: Date;
 
-    @Column()
+    @Column({ type: 'varchar', length: 255 })
+    CreatedBy: string;
+
+    @Column({ type: 'varchar', length: 255 })
     UpdatedBy: string;
 }
+
+
+
+@Entity({ name: 'productdetails' })
+
+export class Productdetails {
+    @PrimaryGeneratedColumn()
+    Id: number;
+
+    @Column({ type: 'int' })
+    ProductId: number;
+
+    @Column({ type: 'int', nullable: true })
+    ProductCutOptionId: number | null;
+
+    @Column({ type: 'int', nullable: true })
+    SleeveTypeId: number | null;
+
+    @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+    CreatedOn: Date;
+
+    @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+    UpdatedOn: Date;
+
+    @Column({ type: 'varchar', length: 100, nullable: true })
+    CreatedBy: string | null;
+
+    @Column({ type: 'varchar', length: 100, nullable: true })
+    UpdatedBy: string | null;
+}
+
+

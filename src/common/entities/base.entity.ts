@@ -4,15 +4,15 @@ export abstract class BaseEntity {
   @PrimaryGeneratedColumn()
   Id: number;
 
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ type: 'timestamp' })
   CreatedOn: Date;
 
-  @Column()
-  CreatedBy: number;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  CreatedBy: string | null;
 
-  @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({ type: 'timestamp' })
   UpdatedOn: Date;
 
-  @Column()
-  UpdatedBy: number;
-} 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  UpdatedBy: string | null;
+}   

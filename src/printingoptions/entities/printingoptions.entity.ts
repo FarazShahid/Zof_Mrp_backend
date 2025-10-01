@@ -6,21 +6,21 @@ export class PrintingOptions {
   @PrimaryGeneratedColumn()
   Id: number;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   Type: string;
 
   @OneToMany(() => ProductPrintingOptions, ppo => ppo.PrintingOption)
   ProductPrintingOptions: ProductPrintingOptions[];
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
 
-  @Column()
-  CreatedBy: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  CreatedBy: string | null;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   UpdatedOn: Date;
 
-  @Column()
-  UpdatedBy: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  UpdatedBy: string | null;
 }

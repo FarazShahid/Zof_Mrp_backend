@@ -1,25 +1,25 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
 
-@Entity('InventoryCategories')
+@Entity('inventorycategories')
 export class InventoryCategories {
   @PrimaryGeneratedColumn()
   Id: number;
 
-  @Column({ length: 100 })
+  @Column({ type: 'varchar', length: 100 })
   Name: string;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   CreatedOn: Date;
 
-  @Column({ length: 100 })
-  CreatedBy: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  CreatedBy: string | null;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   UpdatedOn: Date;
 
-  @Column({ length: 100, nullable: true })
-  UpdatedBy: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  UpdatedBy: string | null;
 
-  @DeleteDateColumn({ type: 'timestamp', nullable: true })
+  @DeleteDateColumn({ type: 'datetime', nullable: true })
   DeletedAt: Date;
 }
