@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class  $MIGRATIONNAME1759310200315 implements MigrationInterface {
-    name = ' $MIGRATIONNAME1759310200315'
+export class EntitiesChange1759333097681 implements MigrationInterface {
+    name = 'EntitiesChange1759333097681'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE \`auditlogs\` DROP FOREIGN KEY \`FK_AuditLogs_Users\``);
@@ -35,6 +35,21 @@ export class  $MIGRATIONNAME1759310200315 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`productionorders\` DROP FOREIGN KEY \`productionorders_ibfk_1\``);
         await queryRunner.query(`ALTER TABLE \`productionconsumption\` DROP FOREIGN KEY \`productionconsumption_ibfk_1\``);
         await queryRunner.query(`ALTER TABLE \`productionconsumption\` DROP FOREIGN KEY \`productionconsumption_ibfk_2\``);
+        await queryRunner.query(`DROP INDEX \`FK_AuditLogs_Users\` ON \`auditlogs\``);
+        await queryRunner.query(`DROP INDEX \`FK_orderstatuslogs_order\` ON \`orderstatuslogs\``);
+        await queryRunner.query(`DROP INDEX \`FK_orderstatuslogs_status\` ON \`orderstatuslogs\``);
+        await queryRunner.query(`DROP INDEX \`FK_ShipmentBoxItem_OrderItem\` ON \`shipmentboxitem\``);
+        await queryRunner.query(`DROP INDEX \`FK_ShipmentBoxItem_ShipmentBox\` ON \`shipmentboxitem\``);
+        await queryRunner.query(`DROP INDEX \`FK_ShipmentOrder_Order\` ON \`shipmentorders\``);
+        await queryRunner.query(`DROP INDEX \`FK_ShipmentOrder_Shipment\` ON \`shipmentorders\``);
+        await queryRunner.query(`DROP INDEX \`FK_productprintingoptions_printingoption\` ON \`productprintingoptions\``);
+        await queryRunner.query(`DROP INDEX \`FK_productprintingoptions_product\` ON \`productprintingoptions\``);
+        await queryRunner.query(`DROP INDEX \`FK_product_category\` ON \`product\``);
+        await queryRunner.query(`DROP INDEX \`FK_Product_Client\` ON \`product\``);
+        await queryRunner.query(`DROP INDEX \`fk_availablecoloroptions_coloroption\` ON \`availablecoloroptions\``);
+        await queryRunner.query(`DROP INDEX \`FK_qachecklist_products\` ON \`qachecklist\``);
+        await queryRunner.query(`DROP INDEX \`fk_sizemeasurements_productcategory\` ON \`sizemeasurements\``);
+        await queryRunner.query(`DROP INDEX \`fk_product_region\` ON \`sizeoptions\``);
         await queryRunner.query(`DROP INDEX \`CategoryId\` ON \`inventorysubcategories\``);
         await queryRunner.query(`DROP INDEX \`CategoryId\` ON \`inventoryitems\``);
         await queryRunner.query(`DROP INDEX \`ItemCode\` ON \`inventoryitems\``);
@@ -67,6 +82,7 @@ export class  $MIGRATIONNAME1759310200315 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX \`DocumentTypeId\` ON \`orderdoc\``);
         await queryRunner.query(`DROP INDEX \`OrderId\` ON \`orderdoc\``);
         await queryRunner.query(`DROP INDEX \`OrderItemId\` ON \`orderdoc\``);
+        await queryRunner.query(`DROP INDEX \`EventName\` ON \`orderevent\``);
         await queryRunner.query(`DROP INDEX \`OrderServiceOptionId\` ON \`orderservices\``);
         await queryRunner.query(`DROP INDEX \`OrderServicesId\` ON \`orderservicesmedia\``);
         await queryRunner.query(`DROP INDEX \`ServiceName\` ON \`orderservicesoption\``);
@@ -75,6 +91,7 @@ export class  $MIGRATIONNAME1759310200315 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX \`FinishedGoodId\` ON \`productionorders\``);
         await queryRunner.query(`DROP INDEX \`ProductionOrderId\` ON \`productionconsumption\``);
         await queryRunner.query(`DROP INDEX \`RawMaterialId\` ON \`productionconsumption\``);
+        await queryRunner.query(`ALTER TABLE \`media\` ADD \`typeId\` int NULL`);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`auditlogs\` CHANGE \`CreatedAt\` \`CreatedAt\` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)`);
         await queryRunner.query(`ALTER TABLE \`client\` CHANGE \`Phone\` \`Phone\` varchar(255) NULL`);
@@ -191,6 +208,8 @@ export class  $MIGRATIONNAME1759310200315 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`ordercategory\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`orderdoc\` CHANGE \`CreatedOn\` \`CreatedOn\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`orderdoc\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
+        await queryRunner.query(`ALTER TABLE \`orderevent\` CHANGE \`EventName\` \`EventName\` varchar(255) NOT NULL`);
+        await queryRunner.query(`ALTER TABLE \`orderevent\` ADD UNIQUE INDEX \`IDX_140833f21152c0c440bc772f86\` (\`EventName\`)`);
         await queryRunner.query(`ALTER TABLE \`orderevent\` CHANGE \`CreatedOn\` \`CreatedOn\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`orderevent\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`orderservices\` CHANGE \`CreatedOn\` \`CreatedOn\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP`);
@@ -212,7 +231,6 @@ export class  $MIGRATIONNAME1759310200315 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`productionorders\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`productionconsumption\` CHANGE \`CreatedOn\` \`CreatedOn\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`productionconsumption\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
-        await queryRunner.query(`CREATE UNIQUE INDEX \`IDX_140833f21152c0c440bc772f86\` ON \`orderevent\` (\`EventName\`)`);
         await queryRunner.query(`ALTER TABLE \`auditlogs\` ADD CONSTRAINT \`FK_002a4d398ca4c20bd2d2a60f6f1\` FOREIGN KEY (\`UserId\`) REFERENCES \`users\`(\`Id\`) ON DELETE RESTRICT ON UPDATE CASCADE`);
         await queryRunner.query(`ALTER TABLE \`inventorysubcategories\` ADD CONSTRAINT \`FK_2fd272dc59df5df791fb564c37f\` FOREIGN KEY (\`CategoryId\`) REFERENCES \`inventorycategories\`(\`Id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`inventoryitems\` ADD CONSTRAINT \`FK_203c2bf7b80e6fd4d8154782dc5\` FOREIGN KEY (\`CategoryId\`) REFERENCES \`inventorycategories\`(\`Id\`) ON DELETE SET NULL ON UPDATE NO ACTION`);
@@ -300,7 +318,6 @@ export class  $MIGRATIONNAME1759310200315 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`inventoryitems\` DROP FOREIGN KEY \`FK_203c2bf7b80e6fd4d8154782dc5\``);
         await queryRunner.query(`ALTER TABLE \`inventorysubcategories\` DROP FOREIGN KEY \`FK_2fd272dc59df5df791fb564c37f\``);
         await queryRunner.query(`ALTER TABLE \`auditlogs\` DROP FOREIGN KEY \`FK_002a4d398ca4c20bd2d2a60f6f1\``);
-        await queryRunner.query(`DROP INDEX \`IDX_140833f21152c0c440bc772f86\` ON \`orderevent\``);
         await queryRunner.query(`ALTER TABLE \`productionconsumption\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`productionconsumption\` CHANGE \`CreatedOn\` \`CreatedOn\` datetime NULL DEFAULT CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`productionorders\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
@@ -322,6 +339,8 @@ export class  $MIGRATIONNAME1759310200315 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`orderservices\` CHANGE \`CreatedOn\` \`CreatedOn\` datetime NULL DEFAULT CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`orderevent\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`orderevent\` CHANGE \`CreatedOn\` \`CreatedOn\` datetime NULL DEFAULT CURRENT_TIMESTAMP`);
+        await queryRunner.query(`ALTER TABLE \`orderevent\` DROP INDEX \`IDX_140833f21152c0c440bc772f86\``);
+        await queryRunner.query(`ALTER TABLE \`orderevent\` CHANGE \`EventName\` \`EventName\` varchar(255) COLLATE "utf8mb4_general_ci" NOT NULL`);
         await queryRunner.query(`ALTER TABLE \`orderdoc\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`orderdoc\` CHANGE \`CreatedOn\` \`CreatedOn\` datetime NULL DEFAULT CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`ordercategory\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
@@ -438,6 +457,22 @@ export class  $MIGRATIONNAME1759310200315 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`client\` CHANGE \`Phone\` \`Phone\` varchar(255) COLLATE "utf8mb4_general_ci" NOT NULL`);
         await queryRunner.query(`ALTER TABLE \`auditlogs\` CHANGE \`CreatedAt\` \`CreatedAt\` timestamp(0) NOT NULL DEFAULT CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP`);
+        await queryRunner.query(`ALTER TABLE \`media\` DROP COLUMN \`typeId\``);
+        await queryRunner.query(`CREATE INDEX \`fk_product_region\` ON \`sizeoptions\` (\`ProductRegionId\`)`);
+        await queryRunner.query(`CREATE INDEX \`fk_sizemeasurements_productcategory\` ON \`sizemeasurements\` (\`ProductCategoryId\`)`);
+        await queryRunner.query(`CREATE INDEX \`FK_qachecklist_products\` ON \`qachecklist\` (\`productId\`)`);
+        await queryRunner.query(`CREATE INDEX \`fk_availablecoloroptions_coloroption\` ON \`availablecoloroptions\` (\`colorId\`)`);
+        await queryRunner.query(`CREATE INDEX \`FK_Product_Client\` ON \`product\` (\`ClientId\`)`);
+        await queryRunner.query(`CREATE INDEX \`FK_product_category\` ON \`product\` (\`ProductCategoryId\`)`);
+        await queryRunner.query(`CREATE INDEX \`FK_productprintingoptions_product\` ON \`productprintingoptions\` (\`ProductId\`)`);
+        await queryRunner.query(`CREATE INDEX \`FK_productprintingoptions_printingoption\` ON \`productprintingoptions\` (\`PrintingOptionId\`)`);
+        await queryRunner.query(`CREATE INDEX \`FK_ShipmentOrder_Shipment\` ON \`shipmentorders\` (\`ShipmentId\`)`);
+        await queryRunner.query(`CREATE INDEX \`FK_ShipmentOrder_Order\` ON \`shipmentorders\` (\`OrderId\`)`);
+        await queryRunner.query(`CREATE INDEX \`FK_ShipmentBoxItem_ShipmentBox\` ON \`shipmentboxitem\` (\`ShipmentBoxId\`)`);
+        await queryRunner.query(`CREATE INDEX \`FK_ShipmentBoxItem_OrderItem\` ON \`shipmentboxitem\` (\`OrderItemId\`)`);
+        await queryRunner.query(`CREATE INDEX \`FK_orderstatuslogs_status\` ON \`orderstatuslogs\` (\`StatusId\`)`);
+        await queryRunner.query(`CREATE INDEX \`FK_orderstatuslogs_order\` ON \`orderstatuslogs\` (\`OrderId\`)`);
+        await queryRunner.query(`CREATE INDEX \`FK_AuditLogs_Users\` ON \`auditlogs\` (\`UserId\`)`);
         await queryRunner.query(`CREATE INDEX \`RawMaterialId\` ON \`productionconsumption\` (\`RawMaterialId\`)`);
         await queryRunner.query(`CREATE INDEX \`ProductionOrderId\` ON \`productionconsumption\` (\`ProductionOrderId\`)`);
         await queryRunner.query(`CREATE INDEX \`FinishedGoodId\` ON \`productionorders\` (\`FinishedGoodId\`)`);
@@ -446,6 +481,7 @@ export class  $MIGRATIONNAME1759310200315 implements MigrationInterface {
         await queryRunner.query(`CREATE UNIQUE INDEX \`ServiceName\` ON \`orderservicesoption\` (\`ServiceName\`)`);
         await queryRunner.query(`CREATE INDEX \`OrderServicesId\` ON \`orderservicesmedia\` (\`OrderServicesId\`)`);
         await queryRunner.query(`CREATE INDEX \`OrderServiceOptionId\` ON \`orderservices\` (\`OrderServiceOptionId\`)`);
+        await queryRunner.query(`CREATE UNIQUE INDEX \`EventName\` ON \`orderevent\` (\`EventName\`)`);
         await queryRunner.query(`CREATE INDEX \`OrderItemId\` ON \`orderdoc\` (\`OrderItemId\`)`);
         await queryRunner.query(`CREATE INDEX \`OrderId\` ON \`orderdoc\` (\`OrderId\`)`);
         await queryRunner.query(`CREATE INDEX \`DocumentTypeId\` ON \`orderdoc\` (\`DocumentTypeId\`)`);

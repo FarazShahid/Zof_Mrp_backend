@@ -60,7 +60,6 @@ export class OrderDoc {
 
 
 @Entity('orderevent')
-@Unique('EventName', ['EventName']) // matches UNIQUE KEY `EventName` (`EventName`)
 export class OrderEvent {
     @PrimaryGeneratedColumn()
     Id: number;

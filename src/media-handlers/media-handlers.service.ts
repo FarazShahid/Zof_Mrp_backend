@@ -55,6 +55,7 @@ export class MediaHandlersService {
     referenceType: string,
     referenceId: number,
     tag?: string,
+    typeId?: number
   ): Promise<any> {
     try {
       const extension = file.originalname.split('.').pop();
@@ -70,10 +71,23 @@ export class MediaHandlersService {
         blobHTTPHeaders: { blobContentType: file.mimetype },
       });
 
+      const FileTypesEnum = {
+        DESIGN: { id: 1, name: "Design File" },
+        MOCKUP: { id: 2, name: "Mockup File" },
+        REQUIREMENT: { id: 3, name: "Product Requirement File" },
+      };
+
+      const isValidTypeId = Object.values(FileTypesEnum).some(type => type.id === typeId);
+
+      if (typeId && !isValidTypeId) {
+        throw new Error('Invalid typeId provided');
+      }
+
       const document = this.mediaRepository.create({
         file_name: nameWithoutExtension,
         file_type: extension,
         file_url: blockBlobClient.url,
+        typeId: typeId || null,
         uploaded_by: createdBy,
       });
 
@@ -103,11 +117,18 @@ export class MediaHandlersService {
   async getDocumentsByReference(
     referenceType: string,
     referenceId: number,
+    typeId?: number,
   ): Promise<any[]> {
     const links = await this.mediaLinkRepository.find({
-      where: { reference_type: referenceType, reference_id: referenceId },
+      where: { reference_type: referenceType, reference_id: referenceId, media: typeId ? { typeId } : {} },
       relations: ['media'],
     });
+
+     const FileTypesEnum = {
+        DESIGN: { id: 1, name: "Design File" },
+        MOCKUP: { id: 2, name: "Mockup File" },
+        REQUIREMENT: { id: 3, name: "Product Requirement File" },
+      };
 
     return links.map((link) => ({
       id: link.id,
@@ -116,6 +137,8 @@ export class MediaHandlersService {
       fileType: link.media?.file_type,
       fileUrl: link.media?.file_url,
       tag: link.tag || null,
+      typeId: link.media?.typeId || null,
+      typeName: link.media?.typeId ? Object.values(FileTypesEnum).find(type => type.id === link.media.typeId)?.name : null,
       uploadedBy: link.media?.uploaded_by,
       uploadedOn: link.media?.uploaded_on,
       referenceType: link.reference_type,
