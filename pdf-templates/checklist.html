@@ -14,7 +14,7 @@
       }
       body {
         font-family: Arial, sans-serif;
-        font-size: 12px;
+        font-size: 10px;
         color: #111827; /* gray-900 */
         margin: 0;
       }
@@ -92,7 +92,11 @@
         margin: 0 0 8px 0;
         color: var(--ink);
       }
-
+      .flexContainer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
       /* Tables - soft grid */
       table {
         width: 100%;
@@ -157,6 +161,9 @@
         border-bottom: 1px dashed var(--ink);
         transform: translateY(-2px);
       }
+      .text-center{
+        text-align: center;
+      }
 
       /* Page breaks */
       .page-break {
@@ -205,7 +212,6 @@
         {{/if}}
       </div>
       <div class="document-title">QA SHEET</div>
-      <div><span class="status-badge">{{order.StatusName}}</span></div>
     </div>
 
     <!-- Divider -->
@@ -213,21 +219,54 @@
 
     <!-- Meta block -->
     <div class="meta">
-      <div class="meta-label">Order Number</div>
+      <div class="meta-label">Order Name</div>
       <div class="meta-value">{{order.OrderNumber}}</div>
 
       <div class="meta-label">Client Name</div>
       <div class="meta-value">{{order.ClientName}}</div>
 
+      {{#if order.EventName}}
       <div class="meta-label">Event</div>
       <div class="meta-value">{{order.EventName}}</div>
+      {{/if}}
+
+       {{#if order.ProductName}}
+      <div class="meta-label">Product Name</div>
+      <div class="meta-value">{{order.ProductName}}</div>
+        {{/if}}
+
+        {{#if order.ProductName}}
+      <div class="meta-label">Total Qunatity</div>
+      <div class="meta-value">{{order.TotalQuantity}}</div>
+        {{/if}}
     </div>
 
     <!-- Measurement groups -->
     {{#each item.measurementGroups}}
-    <div class="section ">
-      <div class="section-title">QA Checklist — {{name}}</div>
+    <div class="section">
+      <div class="section-title">Size Chart — {{name}}</div>
 
+      <div class="sig-row">
+          To be Produced: <span class="underline text-center">{{totalQuantity}}</span>
+      </div>
+
+
+      <div class="flexContainer">
+        <div class="sig-row">
+          Accepted Pieces: <span class="underline"></span>
+        </div>
+        <div class="sig-row">
+          Rejected Pieces: <span class="underline"></span>
+        </div>
+      </div>
+      <div class="flexContainer">
+        <div class="sig-row">
+          Total Produced: <span class="underline"></span>
+        </div>
+         <div class="sig-row">
+          Date & Time: <span class="underline"></span>
+        </div>
+      </div>
       <table>
         <thead>
           <tr>
