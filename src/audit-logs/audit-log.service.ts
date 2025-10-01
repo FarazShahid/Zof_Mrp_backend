@@ -22,7 +22,7 @@ export class AuditLogService {
       .leftJoinAndSelect(User, 'user', 'user.Id = log.UserId')
       .select([
         'log.Id as id',
-        'log.ModuleId as moduleId',
+        'log.Module as module',
         'log.Action as action',
         'log.Details as details',
         'log.EntityId as entityId',
