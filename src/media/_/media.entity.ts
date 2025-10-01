@@ -21,6 +21,9 @@ export class Media {
   @Column({ type: 'text' })
   file_url: string;
 
+  @Column({ type: 'int', nullable: true })
+  typeId: number | null;
+
   @Column({ type: 'varchar', length: 100, nullable: true })
   uploaded_by: string | null;
 

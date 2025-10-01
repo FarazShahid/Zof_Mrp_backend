@@ -38,6 +38,7 @@ export class MediaHandlersController {
     example: 'order',
   })
   @ApiQuery({ name: 'referenceId', required: true, type: Number, example: 1 })
+  @ApiQuery({ name: 'typeId', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'tag', required: false, type: String, example: 'invoice' })
   @ApiBody({
     schema: {
@@ -56,6 +57,7 @@ export class MediaHandlersController {
     @Query('referenceType') referenceType: string,
     @Query('referenceId') referenceId: number,
     @Query('tag') tag: string,
+    @Query('typeId') typeId: number,
     @CurrentUser() currentUser: any,
   ) {
     const url = await this.mediaHandlersService.uploadFileAndLink(
@@ -64,6 +66,7 @@ export class MediaHandlersController {
       referenceType,
       referenceId,
       tag,
+      typeId,
     );
     return url ?? null;
   }
