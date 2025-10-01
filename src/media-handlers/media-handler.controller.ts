@@ -80,13 +80,16 @@ export class MediaHandlersController {
     example: 'order',
   })
   @ApiQuery({ name: 'referenceId', required: true, type: Number, example: 1 })
+  @ApiQuery({ name: 'typeId', required: false, type: Number, example: 1 })
   async getDocumentsByReference(
     @Query('referenceType') referenceType: string,
     @Query('referenceId') referenceId: number,
+    @Query('typeId') typeId: number,  
   ) {
     return this.mediaHandlersService.getDocumentsByReference(
       referenceType,
       referenceId,
+      typeId,
     );
   }
 }

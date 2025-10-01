@@ -117,9 +117,10 @@ export class MediaHandlersService {
   async getDocumentsByReference(
     referenceType: string,
     referenceId: number,
+    typeId?: number,
   ): Promise<any[]> {
     const links = await this.mediaLinkRepository.find({
-      where: { reference_type: referenceType, reference_id: referenceId },
+      where: { reference_type: referenceType, reference_id: referenceId, media: typeId ? { typeId } : {} },
       relations: ['media'],
     });
 
