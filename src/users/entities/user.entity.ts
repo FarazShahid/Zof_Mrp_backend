@@ -6,6 +6,12 @@ export class User {
   @PrimaryGeneratedColumn()
   Id: number;
 
+  @Column({ type: 'varchar', length: 100 })
+  firstName: string;
+
+  @Column({ type: 'varchar', length: 100 })
+  lastName: string;
+
   @Column({ type: 'varchar', length: 255, unique: true })
   Email: string;
 
@@ -33,4 +39,7 @@ export class User {
   @ManyToOne(() => AppRole, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'roleId', referencedColumnName: 'id' })
   role: AppRole;
+
+  @Column({ type: 'json', nullable: true })
+  assignedClients: number[];
 }
