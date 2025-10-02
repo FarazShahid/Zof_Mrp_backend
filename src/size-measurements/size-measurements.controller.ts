@@ -8,12 +8,15 @@ import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-p
 import { ApiBody } from '@nestjs/swagger';
 import { ApiQuery } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { HasRight } from 'src/auth/has-right-guard';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 
 @ControllerAuthProtector('Size Measurements', 'size-measurements')
 @UseInterceptors(AuditInterceptor)
 export class SizeMeasurementsController {
   constructor(private readonly sizeMeasurementsService: SizeMeasurementsService) { }
 
+  @HasRight(AppRightsEnum.AddProductDefinition)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiBody({ type: CreateSizeMeasurementDto })
@@ -26,6 +29,7 @@ export class SizeMeasurementsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all size measurements')
@@ -46,6 +50,7 @@ export class SizeMeasurementsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a size measurement by id')
@@ -57,6 +62,7 @@ export class SizeMeasurementsController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateProductDefinition)
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a size measurement by id')
@@ -72,6 +78,7 @@ export class SizeMeasurementsController {
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteProductDefinition)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a size measurement by id')
@@ -83,6 +90,7 @@ export class SizeMeasurementsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get('by-client/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get All measurement by client id')

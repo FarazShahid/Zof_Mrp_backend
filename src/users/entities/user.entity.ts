@@ -1,5 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn} from 'typeorm';
-
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { AppRole } from 'src/roles-rights/roles.rights.entity';
 @Entity({ name: 'users' })
 
 export class User {
@@ -27,4 +27,10 @@ export class User {
   @Column({ type: 'varchar', length: 100 })
   UpdatedBy: string;
 
+  @Column({ type: 'int', nullable: true })
+  roleId: number;
+
+  @ManyToOne(() => AppRole, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'roleId', referencedColumnName: 'id' })
+  role: AppRole;
 }

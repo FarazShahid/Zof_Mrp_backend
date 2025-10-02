@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseInterceptors } from '@nestjs/common';
+import { Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { ShipmentService } from './shipment.service';
 import { CreateShipmentDto } from './dto/create-shipment.dto';
 import { UpdateShipmentDto } from './dto/update-shipment.dto';
@@ -8,6 +8,8 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { CreateOrderDto } from 'src/orders/dto/create-orders.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { HasRight } from 'src/auth/has-right-guard';
 
 
 @ControllerAuthProtector('Shipment', 'shipment')
@@ -15,6 +17,7 @@ import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 export class ShipmentController {
   constructor(private readonly shipmentService: ShipmentService) { }
 
+  @HasRight(AppRightsEnum.AddShipment)
   @Post()
   @ApiBody({ type: CreateShipmentDto })
   @HttpCode(HttpStatus.CREATED)
@@ -23,6 +26,7 @@ export class ShipmentController {
     return await this.shipmentService.create(createShipmentDto, currentUser.email);
   }
 
+  @HasRight(AppRightsEnum.ViewShipment)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all shipments')
@@ -30,6 +34,7 @@ export class ShipmentController {
     return await this.shipmentService.findAll();
   }
 
+  @HasRight(AppRightsEnum.ViewShipment)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get shipment by id')
@@ -37,6 +42,7 @@ export class ShipmentController {
     return this.shipmentService.findOne(+id);
   }
 
+  @HasRight(AppRightsEnum.UpdateShipment)
   @Patch(':id')
   @ApiBody({ type: UpdateShipmentDto })
   @HttpCode(HttpStatus.OK)
@@ -45,6 +51,7 @@ export class ShipmentController {
     return this.shipmentService.update(+id, updateShipmentDto, currentUser.email);
   }
 
+  @HasRight(AppRightsEnum.DeleteShipment)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete shipment by id')

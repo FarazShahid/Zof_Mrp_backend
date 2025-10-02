@@ -8,12 +8,15 @@ import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { HasRight } from 'src/auth/has-right-guard';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 
 @ControllerAuthProtector('Product Region Standards', 'product-region-standard')
 @UseInterceptors(AuditInterceptor)
 export class ProductRegionStandardController {
   constructor(private readonly service: ProductRegionStandardService) {}
 
+  @HasRight(AppRightsEnum.AddProductDefinition)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new product region standard')
@@ -25,6 +28,7 @@ export class ProductRegionStandardController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all product region standards')
@@ -36,6 +40,7 @@ export class ProductRegionStandardController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a product region standard by id')
@@ -47,6 +52,7 @@ export class ProductRegionStandardController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateProductDefinition)
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a product region standard by id')
@@ -58,6 +64,7 @@ export class ProductRegionStandardController {
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteProductDefinition)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a product region standard by id')

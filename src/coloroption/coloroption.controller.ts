@@ -7,11 +7,14 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { HasRight } from 'src/auth/has-right-guard';
 @ControllerAuthProtector('Color Options', 'coloroption')
 @UseInterceptors(AuditInterceptor)
 export class ColorOptionController {
   constructor(private readonly colorOptionService: ColorOptionService) {}
 
+  @HasRight(AppRightsEnum.AddProductDefinition)
   @Post()
   @ApiBody({ type: CreateColorOptionDto })
   @HttpCode(HttpStatus.CREATED)
@@ -24,6 +27,7 @@ export class ColorOptionController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all color options')
@@ -35,6 +39,7 @@ export class ColorOptionController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a color option by id')
@@ -46,6 +51,7 @@ export class ColorOptionController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateProductDefinition)
   @Put(':id')
   @ApiBody({ type: CreateColorOptionDto })
   @HttpCode(HttpStatus.OK)
@@ -58,6 +64,7 @@ export class ColorOptionController {
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteProductDefinition)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a color option by id')

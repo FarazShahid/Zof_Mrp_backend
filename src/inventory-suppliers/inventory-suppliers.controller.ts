@@ -18,6 +18,8 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { HasRight } from 'src/auth/has-right-guard';
 
 @ControllerAuthProtector('Inventory Supplier', 'inventory-suppliers')
 @UseInterceptors(AuditInterceptor)
@@ -25,6 +27,7 @@ export class InventorySupplierController {
 
   constructor(private readonly InventorySupplierService: InventorySupplierService) { }
 
+  @HasRight(AppRightsEnum.AddInventory)
   @Post()
   @ApiBody({ type: CreateInventorySuppliersDto })
   @HttpCode(HttpStatus.CREATED)
@@ -43,20 +46,22 @@ export class InventorySupplierController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewInventory)
   @Get()
   @HttpCode(HttpStatus.OK)
-  @CommonApiResponses('Get all Inventory Categories')
+  @CommonApiResponses('Get all Inventory Suppliers')
   async findAll() {
     try {
       return await this.InventorySupplierService.findAll();
     } catch (error) {
-      throw new BadRequestException(`Failed to get Inventory Categories: ${error.message}`);
+      throw new BadRequestException(`Failed to get Inventory Suppliers: ${error.message}`);
     }
   }
 
+  @HasRight(AppRightsEnum.ViewInventory)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  @CommonApiResponses('Get a Inventory Categories by id')
+  @CommonApiResponses('Get a Inventory Supplier by id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     try {
       return await this.InventorySupplierService.findOne(id);
@@ -65,6 +70,7 @@ export class InventorySupplierController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateInventory)
   @Put(':id')
   @ApiBody({ type: CreateInventorySuppliersDto })
   @HttpCode(HttpStatus.OK)
@@ -85,6 +91,7 @@ export class InventorySupplierController {
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteInventory)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a Inventory Supplier by id')

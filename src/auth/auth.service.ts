@@ -20,13 +20,13 @@ export class AuthService {
       const user = await this.userRepository.findOne({ where: { Email: email } });
 
       if (!user) {
-        throw new UnauthorizedException('Invalid email or password');
+        throw new UnauthorizedException('User not found');
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.Password);
       if (!isPasswordValid) {
         this.logger.warn(`Invalid password for user with email: ${email}`);
-        throw new UnauthorizedException('Invalid email or password');
+        throw new UnauthorizedException('Invalid password');
       }
 
       const { Password: _, ...result } = user;
@@ -38,13 +38,21 @@ export class AuthService {
 
   async login(user: any) {
     try {
-      const payload = { email: user.Email, sub: user.Id }; 
+      const payload = {
+        email: user.Email,
+        sub: user.Id,
+        roleId: user.roleId,
+        isActive: user.isActive,
+        userId: user.Id
+      }; 
       
       return {
         access_token: this.jwtService.sign(payload),
         user: {
           id: user.Id,
-          email: user.Email
+          email: user.Email,
+          roleId: user.roleId,
+          isActive: user.isActive,
         }
       };
     } catch (error) {

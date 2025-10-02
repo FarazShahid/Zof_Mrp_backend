@@ -10,6 +10,8 @@ import { ApiBody } from '@nestjs/swagger';
 import { CommonApiResponses, CommonApiResponseModal } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { HasRight } from 'src/auth/has-right-guard';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 
 @ControllerAuthProtector('Clients', 'clients')
 @UseInterceptors(AuditInterceptor)
@@ -18,6 +20,7 @@ export class ClientsController {
 
   constructor(private readonly clientsService: ClientsService) {}
 
+  @HasRight(AppRightsEnum.AddAdminSettings)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiBody({ type: CreateClientDto })
@@ -33,6 +36,7 @@ export class ClientsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewAdminSettings)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponseModal([CreateClientDto])
@@ -47,6 +51,7 @@ export class ClientsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewAdminSettings)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a client by id')
@@ -60,6 +65,7 @@ export class ClientsController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateAdminSettings)
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   @ApiBody({ type: CreateClientDto })
@@ -78,6 +84,7 @@ export class ClientsController {
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteAdminSettings)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a client by id')

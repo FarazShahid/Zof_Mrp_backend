@@ -19,6 +19,8 @@ import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-p
 import { ApiBody } from '@nestjs/swagger';
 import { UpdateInventoryItemDto } from './_/update-inventory-items.dto';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { HasRight } from 'src/auth/has-right-guard';
 
 @ControllerAuthProtector('Inventory Items', 'inventory-items')
 @UseInterceptors(AuditInterceptor)
@@ -26,6 +28,7 @@ export class InventoryItemController {
 
   constructor(private readonly inventoryItemService: inventoryItemService) { }
 
+  @HasRight(AppRightsEnum.AddInventory)
   @Post()
   @ApiBody({ type: CreateInventoryItemDto })
   @HttpCode(HttpStatus.CREATED)
@@ -44,6 +47,7 @@ export class InventoryItemController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewInventory)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all Inventory Items')
@@ -55,6 +59,7 @@ export class InventoryItemController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewInventory)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a Inventory Item by id')
@@ -66,6 +71,7 @@ export class InventoryItemController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateInventory)
   @Put(':id')
   @ApiBody({ type: UpdateInventoryItemDto })
   @HttpCode(HttpStatus.OK)
@@ -86,6 +92,7 @@ export class InventoryItemController {
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteInventory)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a Inventory Item by id')

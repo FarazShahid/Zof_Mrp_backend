@@ -32,6 +32,8 @@ import { ApiOperation } from '@nestjs/swagger';
 import { ApiResponse } from '@nestjs/swagger';
 import { OrderQualityCheck } from './entities/order-checklist.entity';
 import { GenerateQaChecklistZipDto } from './dto/qa-checklist-zip.dto';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { HasRight } from 'src/auth/has-right-guard';
 
 
 @ControllerAuthProtector('Orders', 'orders')
@@ -42,6 +44,7 @@ export class OrdersController {
     private readonly pdfs: OrderPdfService
   ) { }
 
+  @HasRight(AppRightsEnum.AddOrders)
   @Post()
   @ApiBody({ type: CreateOrderDto })
   @HttpCode(HttpStatus.CREATED)
@@ -55,6 +58,7 @@ export class OrdersController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all orders')
@@ -67,7 +71,7 @@ export class OrdersController {
     }
   }
 
-
+  @HasRight(AppRightsEnum.ViewOrders)
   @Post('orders-items')
   @ApiBody({ type: GetOrdersItemsDto })
   @HttpCode(HttpStatus.OK)
@@ -83,6 +87,7 @@ export class OrdersController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get an order by client id')
@@ -95,6 +100,7 @@ export class OrdersController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateOrders)
   @Put(':id')
   @ApiBody({ type: CreateOrderDto })
   @HttpCode(HttpStatus.OK)
@@ -113,6 +119,7 @@ export class OrdersController {
     }
   }
 
+  @HasRight(AppRightsEnum.ReOrder)
   @Post(':id/reorder')
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Reorders an existing order by ID')
@@ -124,6 +131,7 @@ export class OrdersController {
   }
 
 
+  @HasRight(AppRightsEnum.DeleteOrders)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete an order by id')
@@ -136,6 +144,7 @@ export class OrdersController {
     }
   }
 
+  @HasRight(AppRightsEnum.AddOrders)
   @Get('order-status-log/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get order status log by order id')
@@ -148,6 +157,7 @@ export class OrdersController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Get('items/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get order items by order id')
@@ -160,6 +170,7 @@ export class OrdersController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Get('get-edit/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get edit order by id')
@@ -172,6 +183,7 @@ export class OrdersController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateOrders)
   @Post('change-status:id/:statusId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Update order status by id using DELETE route')
@@ -187,6 +199,7 @@ export class OrdersController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Post('generate-download-pdf')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Generate and download order pdf')
@@ -199,6 +212,7 @@ export class OrdersController {
     file.getStream().pipe(res);
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Post(':id/qa-checklist-zip')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Generate ZIP of QA checklist PDFs for selected order item IDs')
@@ -217,6 +231,7 @@ export class OrdersController {
     file.getStream().pipe(res);
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Post(':id/qa-checklist')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create QA checklist entries for an orderItemId' })
@@ -263,6 +278,7 @@ export class OrdersController {
     return this.ordersService.createManyChecklist(id, dtos, currentUser.email);
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Get(':id/qa-checklist')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get QA checklist by orderItemId and optional filters' })
@@ -290,6 +306,7 @@ export class OrdersController {
     return this.ordersService.getQaChecklist(orderItemId, productId, measurementId);
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Get(':id/execute-qa-checklist')
   @HttpCode(HttpStatus.OK)
   async generateQaChecklist(

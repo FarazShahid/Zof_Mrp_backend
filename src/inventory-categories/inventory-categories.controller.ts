@@ -18,6 +18,8 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { HasRight } from 'src/auth/has-right-guard';
 
 @ControllerAuthProtector('Inventory Categories', 'inventory-categories')
 @UseInterceptors(AuditInterceptor)
@@ -25,6 +27,7 @@ export class InventoryCategoryController {
 
   constructor(private readonly InventoryCategoryService: InventoryCategoryService) { }
 
+  @HasRight(AppRightsEnum.AddInventory)
   @Post()
   @ApiBody({ type: CreateInventoryCategoryDto })
   @HttpCode(HttpStatus.CREATED)
@@ -43,6 +46,7 @@ export class InventoryCategoryController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewInventory)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all Inventory Categories')
@@ -54,6 +58,7 @@ export class InventoryCategoryController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewInventory)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a Inventory Categories by id')
@@ -65,6 +70,7 @@ export class InventoryCategoryController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateInventory)
   @Put(':id')
   @ApiBody({ type: CreateInventoryCategoryDto })
   @HttpCode(HttpStatus.OK)
@@ -85,6 +91,7 @@ export class InventoryCategoryController {
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteInventory)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a Inventory Category by id')

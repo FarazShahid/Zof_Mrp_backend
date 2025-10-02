@@ -19,6 +19,8 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { HasRight } from 'src/auth/has-right-guard';
 
 @ControllerAuthProtector('Inventory Transections', 'inventory-transections')
 @UseInterceptors(AuditInterceptor)
@@ -26,6 +28,7 @@ export class InventoryTransectionController {
 
     constructor(private readonly inventoryTransectionService: inventoryTransectionService) { }
 
+    @HasRight(AppRightsEnum.AddInventory)
     @Post()
     @ApiBody({ type: CreateInventoryTransectionsDto })
     @HttpCode(HttpStatus.CREATED)
@@ -44,6 +47,7 @@ export class InventoryTransectionController {
         }
     }
 
+    @HasRight(AppRightsEnum.ViewInventory)
     @Get()
     @HttpCode(HttpStatus.OK)
     @CommonApiResponses('Get all Inventory Transections')
@@ -55,6 +59,7 @@ export class InventoryTransectionController {
         }
     }
 
+    @HasRight(AppRightsEnum.ViewInventory)
     @Get(':id')
     @HttpCode(HttpStatus.OK)
     @CommonApiResponses('Get a Inventory Transection by id')
@@ -66,6 +71,7 @@ export class InventoryTransectionController {
         }
     }
 
+    @HasRight(AppRightsEnum.UpdateInventory)
     @Put(':id')
     @ApiBody({ type: CreateInventoryTransectionsDto })
     @HttpCode(HttpStatus.OK)
@@ -82,6 +88,7 @@ export class InventoryTransectionController {
         }
     }
 
+    @HasRight(AppRightsEnum.DeleteInventory)
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     @CommonApiResponses('Delete a Inventory Transection by id')

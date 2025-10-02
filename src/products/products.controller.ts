@@ -9,12 +9,15 @@ import { ApiBody } from '@nestjs/swagger';
 import { UpdateProductStatusDto } from './dto/update-status-dto';
 import { ApiQuery } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { HasRight } from 'src/auth/has-right-guard';
 
 @ControllerAuthProtector('Products', 'products')
 @UseInterceptors(AuditInterceptor)
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) { }
 
+  @HasRight(AppRightsEnum.AddProduct)
   @Post()
   @ApiBody({ type: CreateProductDto })
   @HttpCode(HttpStatus.CREATED)
@@ -27,6 +30,7 @@ export class ProductsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProduct)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all products')
@@ -42,6 +46,7 @@ export class ProductsController {
   }
 
 
+  @HasRight(AppRightsEnum.ViewProduct)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a product by id')
@@ -53,6 +58,7 @@ export class ProductsController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateProduct)
   @Put(':id')
   @ApiBody({ type: CreateProductDto })
   @HttpCode(HttpStatus.OK)
@@ -66,6 +72,7 @@ export class ProductsController {
   }
 
 
+  @HasRight(AppRightsEnum.DeleteProduct)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a product by id')
@@ -77,6 +84,7 @@ export class ProductsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ChangeProductStatus)
   @Patch('archive-status/:id')
   @ApiBody({ type: UpdateProductStatusDto })
   @HttpCode(HttpStatus.OK)
@@ -89,6 +97,7 @@ export class ProductsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProduct)
   @Get('available-printing-options/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get available printing options by product id')
@@ -100,6 +109,7 @@ export class ProductsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProduct)
   @Get('availablecolors/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get available colors by product id')
@@ -111,6 +121,7 @@ export class ProductsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProduct)
   @Get('cut-options/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get available cut options by product id')
@@ -122,6 +133,7 @@ export class ProductsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProduct)
   @Get('sleeve-types/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get available sleeve types by product id')
@@ -133,6 +145,7 @@ export class ProductsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProduct)
   @Get('available-sizes/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get available sleeve types by product id')

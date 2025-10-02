@@ -6,11 +6,14 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { HasRight } from 'src/auth/has-right-guard';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 @ControllerAuthProtector('Printing Options', 'printingoptions')
 @UseInterceptors(AuditInterceptor)
 export class PrintingoptionsController {
   constructor(private readonly printingOptionsService: PrintingoptionsService) { }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all printing options')
@@ -22,6 +25,7 @@ export class PrintingoptionsController {
     }
   }
 
+  @HasRight(AppRightsEnum.AddProductDefinition)
   @Post()
   @ApiBody({ type: CreatePrintingOptionDto })
   @HttpCode(HttpStatus.CREATED)
@@ -34,6 +38,7 @@ export class PrintingoptionsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a printing option by id')
@@ -45,6 +50,7 @@ export class PrintingoptionsController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateProductDefinition)
   @Put(':id')
   @ApiBody({ type: CreatePrintingOptionDto })
   @HttpCode(HttpStatus.OK)
@@ -57,6 +63,7 @@ export class PrintingoptionsController {
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteProductDefinition)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a printing option by id')

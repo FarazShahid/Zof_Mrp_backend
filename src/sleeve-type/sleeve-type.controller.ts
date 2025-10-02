@@ -6,12 +6,15 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { HasRight } from 'src/auth/has-right-guard';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 
 @ControllerAuthProtector('Sleeve Types', 'sleeve-type')
 @UseInterceptors(AuditInterceptor)
 export class SleeveTypeController {
   constructor(private readonly sleeveService: SleeveTypeService) { }
 
+  @HasRight(AppRightsEnum.AddProductDefinition)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new sleeve type')
@@ -23,6 +26,7 @@ export class SleeveTypeController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all sleeve types')
@@ -34,6 +38,7 @@ export class SleeveTypeController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a sleeve type by id')
@@ -45,6 +50,7 @@ export class SleeveTypeController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateProductDefinition)
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a sleeve type by id')
@@ -60,6 +66,7 @@ export class SleeveTypeController {
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteProductDefinition)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a sleeve type by id')

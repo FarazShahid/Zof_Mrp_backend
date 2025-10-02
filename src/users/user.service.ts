@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { AppRole } from 'src/roles-rights/roles.rights.entity';
 
 @Injectable()
 export class UserService {
@@ -11,10 +12,12 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(AppRole)
+    private roleRepository: Repository<AppRole>,
   ) {}
 
-  async createUser(data: any): Promise<User> {
-    const { Email, Password, createdBy } = data;
+  async createUser(data: any): Promise<any> {
+    const { Email, Password, createdBy, roleId } = data;
 
     this.logger.log(`Creating user with email: ${Email}`);
     
@@ -23,12 +26,23 @@ export class UserService {
       throw new ConflictException(['Email already in use']);
     }
 
+    let roleName = null;
+
+    if (roleId) {
+      const existingRole = await this.roleRepository.findOne({ where: { id: roleId } });
+      if (!existingRole) {
+        throw new NotFoundException([`Role with ID ${roleId} not found`]);
+      }
+      roleName = existingRole.name;
+    }
+
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(Password, saltRounds);
 
     const newUser = this.userRepository.create({
       Email,
       Password: hashedPassword,
+      roleId: roleId || null,
       CreatedBy: createdBy,
       UpdatedBy: createdBy,
       isActive: data.isActive !== undefined ? data.isActive : true
@@ -36,16 +50,20 @@ export class UserService {
 
     const savedUser = await this.userRepository.save(newUser);
     
-    return { ...savedUser, Password: '' };
+    return { ...savedUser, roleId: roleId, roleName: roleName, Password: '' };
   }
 
-  async getAllUsers(): Promise<User[]> {
+  async getAllUsers(): Promise<any[]> {
     this.logger.log('Finding all users');
     const users = await this.userRepository.find();
+    const roles = await this.roleRepository.find();
+
+    const roleMap = new Map<number, string>();
+    roles.forEach(role => roleMap.set(role.id, role.name));
     
     // Mask passwords
     return users.map(user => {
-      const userWithoutPassword = { ...user };
+      const userWithoutPassword = { ...user, roleName: roleMap.get(user.roleId) || null };
       userWithoutPassword.Password = '';
       return userWithoutPassword;
     });
@@ -59,8 +77,14 @@ export class UserService {
       throw new NotFoundException([`User with ID ${id} not found`]);
     }
 
+    const role = await this.roleRepository.findOne({ where: { id: user.roleId } });
+    const roleMap = new Map<number, string>();
+    if (role) {
+      roleMap.set(role.id, role.name);
+    }
+
     // Mask password
-    const userWithoutPassword = { ...user };
+    const userWithoutPassword = { ...user, roleName: roleMap.get(user.roleId) || null };
     userWithoutPassword.Password = '';
     return userWithoutPassword;
   }
@@ -78,6 +102,12 @@ export class UserService {
 
       if (!user) {
         throw new NotFoundException([`User with ID ${id} not found`]);
+      }
+
+      const role = await this.roleRepository.findOne({ where: { id: user.roleId } });
+      const roleMap = new Map<number, string>();
+      if (role) {
+        roleMap.set(role.id, role.name);
       }
 
       if (Email) {
@@ -102,7 +132,19 @@ export class UserService {
       if (isActive !== undefined) {
         user.isActive = isActive;
       }
-      
+
+      if (data.roleId !== undefined) {
+        if (data.roleId === null) {
+          user.roleId = null;
+        } else {
+          const existingRole = await this.roleRepository.findOne({ where: { id: data.roleId } });
+          if (!existingRole) {
+            throw new NotFoundException([`Role with ID ${data.roleId} not found`]);
+          }
+          user.roleId = existingRole.id;
+        }
+      }
+
       user.UpdatedBy = updatedBy || 'system';
       this.logger.log(`${user.UpdatedOn}`);
 

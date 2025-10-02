@@ -7,6 +7,8 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { HasRight } from 'src/auth/has-right-guard';
 @ControllerAuthProtector('Events', 'events')
 @UseInterceptors(AuditInterceptor)
 export class EventController {
@@ -14,6 +16,7 @@ export class EventController {
     private readonly eventService: EventService,
   ) { }
 
+  @HasRight(AppRightsEnum.AddAdminSettings)
   @Post()
   @ApiBody({ type: CreateEventDto })
   @HttpCode(HttpStatus.CREATED)
@@ -27,6 +30,7 @@ export class EventController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewAdminSettings)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all events')
@@ -39,6 +43,7 @@ export class EventController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewAdminSettings)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get an event by id')
@@ -51,6 +56,7 @@ export class EventController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateAdminSettings)
   @Put(':id')
   @ApiBody({ type: CreateEventDto })
   @HttpCode(HttpStatus.OK)
@@ -64,6 +70,7 @@ export class EventController {
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteAdminSettings)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete an event by id')

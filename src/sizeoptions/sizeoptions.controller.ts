@@ -7,12 +7,15 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { HasRight } from 'src/auth/has-right-guard';
 
 @ControllerAuthProtector('Size Options', 'sizeoptions')
 @UseInterceptors(AuditInterceptor)
 export class SizeoptionsController {
   constructor(private readonly sizeoptionsService: SizeoptionsService) { }
 
+  @HasRight(AppRightsEnum.AddProductDefinition)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new size option')
@@ -24,6 +27,7 @@ export class SizeoptionsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all size options')
@@ -35,6 +39,7 @@ export class SizeoptionsController {
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteProductDefinition)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a size option by id')
@@ -46,6 +51,7 @@ export class SizeoptionsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a size option by id')
@@ -57,6 +63,7 @@ export class SizeoptionsController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateProductDefinition)
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a size option by id')

@@ -18,6 +18,8 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { HasRight } from 'src/auth/has-right-guard';
 
 @ControllerAuthProtector('Unit of Measures', 'unit-measures')
 @UseInterceptors(AuditInterceptor)
@@ -25,6 +27,7 @@ export class UnitofMeasuresController {
 
   constructor(private readonly InventoryUnitOfMeasuresService: InventoryUnitOfMeasuresService) { }
 
+  @HasRight(AppRightsEnum.AddInventory)
   @Post()
   @ApiBody({ type: CreateInventoryUnitMeasuresDto })
   @HttpCode(HttpStatus.CREATED)
@@ -43,6 +46,7 @@ export class UnitofMeasuresController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewInventory)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all Inventory Categories')
@@ -54,6 +58,7 @@ export class UnitofMeasuresController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewInventory)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a Inventory Categories by id')
@@ -65,10 +70,11 @@ export class UnitofMeasuresController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateInventory)
   @Put(':id')
   @ApiBody({ type: CreateInventoryUnitMeasuresDto })
   @HttpCode(HttpStatus.OK)
-  @CommonApiResponses('Update a  by id')
+  @CommonApiResponses('Update a Unit of Measures by id')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateData: any,
@@ -85,6 +91,7 @@ export class UnitofMeasuresController {
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteInventory)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a Unit of Measures by id')

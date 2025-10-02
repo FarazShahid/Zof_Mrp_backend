@@ -7,6 +7,8 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { HasRight } from 'src/auth/has-right-guard';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 
 
 @ControllerAuthProtector('Shipment Carrier', 'shipment-carrier')
@@ -15,6 +17,7 @@ import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 export class ShipmentCarrierController {
   constructor(private readonly ShipmentCarrierService: ShipmentCarrierService) { }
 
+  @HasRight(AppRightsEnum.AddAdminSettings)
   @Post()
   @ApiBody({ type: CreateShipmentCarrierDto })
   @HttpCode(HttpStatus.CREATED)
@@ -26,6 +29,7 @@ export class ShipmentCarrierController {
     return this.ShipmentCarrierService.create(createShipmentCarrierDto, user.email);
   }
 
+  @HasRight(AppRightsEnum.ViewAdminSettings)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all carriers')
@@ -33,6 +37,7 @@ export class ShipmentCarrierController {
     return this.ShipmentCarrierService.findAll();
   }
 
+  @HasRight(AppRightsEnum.ViewAdminSettings)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get carrier id')
@@ -40,6 +45,7 @@ export class ShipmentCarrierController {
     return this.ShipmentCarrierService.findOne(+id);
   }
 
+  @HasRight(AppRightsEnum.UpdateAdminSettings)
   @Put(':id')
   @ApiBody({ type: UpdateShipmentCarrierDto })
   @HttpCode(HttpStatus.OK)
@@ -52,6 +58,7 @@ export class ShipmentCarrierController {
     return this.ShipmentCarrierService.update(+id, updateShipmentCarrierDto, user.email);
   }
 
+  @HasRight(AppRightsEnum.DeleteAdminSettings)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete carrier by id')
