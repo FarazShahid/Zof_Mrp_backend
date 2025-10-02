@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, DeleteDateColumn, ManyToMany, JoinTable, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, DeleteDateColumn } from 'typeorm';
 
 @Entity('app_rights')
 export class AppRights {
@@ -11,19 +11,19 @@ export class AppRights {
     @Column({ type: 'varchar', length: 50, nullable: true })
     group_by: string;
 
-    @CreateDateColumn({ type: 'timestamp', name: 'CreatedOn' })
+    @CreateDateColumn({ type: 'timestamp' })
     CreatedOn: Date;
 
-    @Column({ type: 'varchar', length: 100, nullable: true, name: 'CreatedBy' })
+    @Column({ type: 'varchar', length: 100, nullable: true })
     createdBy: string;
 
-    @UpdateDateColumn({ type: 'timestamp', name: 'UpdatedOn' })
+    @UpdateDateColumn({ type: 'timestamp' })
     UpdatedOn: Date;
 
-    @Column({ type: 'varchar', length: 100, nullable: true, name: 'UpdatedBy' })
+    @Column({ type: 'varchar', length: 100, nullable: true })
     updatedBy: string;
 
-    @DeleteDateColumn({ type: 'timestamp', nullable: true, name: 'deletedOn' })
+    @DeleteDateColumn({ type: 'timestamp', nullable: true })
     deletedOn: Date;
 }
 
@@ -36,19 +36,19 @@ export class AppRole {
     @Column({ type: 'varchar', length: 50, nullable: true })
     name: string;
 
-    @CreateDateColumn({ type: 'timestamp', name: 'CreatedOn' })
+    @CreateDateColumn({ type: 'timestamp' })
     CreatedOn: Date;
 
-    @Column({ type: 'varchar', length: 100, nullable: true, name: 'CreatedBy' })
+    @Column({ type: 'varchar', length: 100, nullable: true })
     createdBy: string;
 
-    @UpdateDateColumn({ type: 'timestamp', name: 'UpdatedOn' })
+    @UpdateDateColumn({ type: 'timestamp' })
     UpdatedOn: Date;
 
-    @Column({ type: 'varchar', length: 100, nullable: true, name: 'UpdatedBy' })
+    @Column({ type: 'varchar', length: 100, nullable: true })
     updatedBy: string;
 
-    @DeleteDateColumn({ type: 'timestamp', nullable: true, name: 'deletedOn' })
+    @DeleteDateColumn({ type: 'timestamp', nullable: true })
     deletedOn: Date;
 }
 
@@ -63,19 +63,19 @@ export class AppRoleRight {
     @Column({ type: 'int' })
     rightId: number;
 
-    @CreateDateColumn({ type: 'timestamp', name: 'CreatedOn' })
+    @CreateDateColumn({ type: 'timestamp' })
     CreatedOn: Date;
 
-    @Column({ type: 'varchar', length: 100, nullable: true, name: 'CreatedBy' })
+    @Column({ type: 'varchar', length: 100, nullable: true })
     createdBy: string;
 
-    @UpdateDateColumn({ type: 'timestamp', name: 'UpdatedOn' })
+    @UpdateDateColumn({ type: 'timestamp' })
     UpdatedOn: Date;
 
-    @Column({ type: 'varchar', length: 100, nullable: true, name: 'UpdatedBy' })
+    @Column({ type: 'varchar', length: 100, nullable: true })
     updatedBy: string;
 
-    @DeleteDateColumn({ type: 'timestamp', nullable: true, name: 'deletedOn' })
+    @DeleteDateColumn({ type: 'timestamp', nullable: true })
     deletedOn: Date;
 
     @ManyToOne(() => AppRole, (role) => role.id, { onDelete: 'CASCADE' })

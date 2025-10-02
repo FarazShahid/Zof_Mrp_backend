@@ -15,6 +15,7 @@ export class CreateUserDto {
   Password?: string;
 
   @CommonApiProperty('User Role Id goes here', '1')
+  @IsNotEmpty()
   @IsInt()
   @Min(1)
   roleId: number;

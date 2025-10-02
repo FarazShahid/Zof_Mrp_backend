@@ -5,7 +5,7 @@ export class CreateProductCategoryDto {
   @CommonApiProperty('Product Category Name', 'Test Category')
   @IsString()
   @IsNotEmpty()
-  type: string;
+  Type: string;
 
   @CommonApiProperty('IsTopUnit?', true)
   @IsBoolean()
