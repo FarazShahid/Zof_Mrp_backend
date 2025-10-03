@@ -51,7 +51,7 @@ export class OrdersController {
   @CommonApiResponses('Create a new order')
   async create(@Body() createOrderDto: CreateOrderDto, @CurrentUser() currentUser: any): Promise<any> {
     try {
-      return this.ordersService.createOrder(createOrderDto, currentUser.email);
+      return this.ordersService.createOrder(createOrderDto, currentUser.email, currentUser.userId);
     } catch (error) {
       console.error('Error creating order:', error);
       throw error;
@@ -62,9 +62,9 @@ export class OrdersController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all orders')
-  async findAll(): Promise<any> {
+  async findAll(@CurrentUser() currentUser: any): Promise<any> {
     try {
-      return this.ordersService.getAllOrders();
+      return this.ordersService.getAllOrders(currentUser.userId);
     } catch (error) {
       console.error('Error fetching orders:', error);
       throw error;
@@ -91,9 +91,9 @@ export class OrdersController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get an order by client id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<any> {
+  async findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: any): Promise<any> {
     try {
-      return this.ordersService.getOrdersByClientId(id);
+      return this.ordersService.getOrdersByClientId(id, currentUser.userId);
     } catch (error) {
       console.error('Error fetching orders:', error);
       throw error;
@@ -111,8 +111,7 @@ export class OrdersController {
     @Req() req,
   ): Promise<any> {
     try {
-      const userId = req.user.id;
-      return this.ordersService.updateOrder(id, updateOrderDto, currentUser.email);
+      return this.ordersService.updateOrder(id, updateOrderDto, currentUser.email, currentUser.userId);
     } catch (error) {
       console.error('Error updating order:', error);
       throw error;
@@ -127,7 +126,7 @@ export class OrdersController {
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() currentUser: any
   ): Promise<any> {
-    return this.ordersService.reorder(id, currentUser.email);
+    return this.ordersService.reorder(id, currentUser.email, currentUser.userId);
   }
 
 
@@ -135,9 +134,9 @@ export class OrdersController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete an order by id')
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  async remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: any): Promise<void> {
     try {
-      return this.ordersService.deleteOrder(id);
+      return this.ordersService.deleteOrder(id, currentUser.userId);
     } catch (error) {
       console.error('Error deleting order:', error);
       throw error;
@@ -174,9 +173,9 @@ export class OrdersController {
   @Get('get-edit/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get edit order by id')
-  async getOrdersEdit(@Param('id', ParseIntPipe) orderId: number): Promise<any> {
+  async getOrdersEdit(@Param('id', ParseIntPipe) orderId: number, @CurrentUser() currentUser: any): Promise<any> {
     try {
-      return this.ordersService.getEditOrder(orderId);
+      return this.ordersService.getEditOrder(orderId, currentUser.userId);
     } catch (error) {
       console.error('Error fetching edit order:', error);
       throw error;
@@ -188,11 +187,12 @@ export class OrdersController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Update order status by id using DELETE route')
   async updateStatusViaDelete(
+    @CurrentUser() currentUser: any,
     @Param('id', ParseIntPipe) id: number,
     @Param('statusId', ParseIntPipe) statusId: number
   ): Promise<void> {
     try {
-      await this.ordersService.updateOrderStatus(id, statusId);
+      await this.ordersService.updateOrderStatus(id, statusId, currentUser.userId);
     } catch (error) {
       console.error('Error updating order status via DELETE route:', error);
       throw error;

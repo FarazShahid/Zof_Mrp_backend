@@ -11,9 +11,10 @@ import { OrderItem } from 'src/orders/entities/order-item.entity';
 import { ShipmentOrder } from './entities/shipment-order.entity';
 import { OrderItemDetails } from 'src/orders/entities/order-item-details';
 import { AuditModule } from 'src/audit-logs/audit.module';
+import { User } from 'src/users/entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ShipmentCarrier, Shipment, ShipmentBox, ShipmentBoxItem, Order, OrderItem, ShipmentOrder , OrderItemDetails]), AuditModule],
+  imports: [TypeOrmModule.forFeature([ShipmentCarrier, Shipment, ShipmentBox, ShipmentBoxItem, Order, OrderItem, ShipmentOrder , OrderItemDetails, User]), AuditModule],
   controllers: [ShipmentController],
   providers: [ShipmentService],
 })

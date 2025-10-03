@@ -41,7 +41,7 @@ export class InventoryTransectionController {
             const data = {
                 ...CreateInventoryTransectionsDto
             };
-            return await this.inventoryTransectionService.create(data, user.email);
+            return await this.inventoryTransectionService.create(data, user.email, user.userId);
         } catch (error) {
             throw new BadRequestException(error.message);
         }
@@ -51,9 +51,9 @@ export class InventoryTransectionController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @CommonApiResponses('Get all Inventory Transections')
-    async findAll() {
+    async findAll(@CurrentUser() user: any) {
         try {
-            return await this.inventoryTransectionService.findAll();
+            return await this.inventoryTransectionService.findAll(user.userId);
         } catch (error) {
             throw new BadRequestException(error.message);
         }
@@ -63,9 +63,9 @@ export class InventoryTransectionController {
     @Get(':id')
     @HttpCode(HttpStatus.OK)
     @CommonApiResponses('Get a Inventory Transection by id')
-    async findOne(@Param('id', ParseIntPipe) id: number) {
+    async findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: any) {
         try {
-            return await this.inventoryTransectionService.findOne(id);
+            return await this.inventoryTransectionService.findOne(id, user.userId);
         } catch (error) {
             throw error;
         }
@@ -82,7 +82,7 @@ export class InventoryTransectionController {
         @CurrentUser() user: any
     ) {
         try {
-            return await this.inventoryTransectionService.update(id, updateData, user.email);
+            return await this.inventoryTransectionService.update(id, updateData, user.email, user.userId);
         } catch (error) {
             throw error;
         }
@@ -92,9 +92,9 @@ export class InventoryTransectionController {
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     @CommonApiResponses('Delete a Inventory Transection by id')
-    async delete(@Param('id', ParseIntPipe) id: number) {
+    async delete(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: any) {
         try {
-            return await this.inventoryTransectionService.delete(id);
+            return await this.inventoryTransectionService.delete(id, user.userId);
         } catch (error) {
             throw error;
         }

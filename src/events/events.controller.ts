@@ -23,7 +23,7 @@ export class EventController {
   @CommonApiResponses('Create a new event')
   async create(@Body() createEventDto: CreateEventDto, @CurrentUser() user: any): Promise<any> {
     try {
-      const event = await this.eventService.create(createEventDto, user.email);
+      const event = await this.eventService.create(createEventDto, user.email, user.userId);
       return event;
     } catch (error) {
       throw error;
@@ -34,9 +34,9 @@ export class EventController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all events')
-  async findAll(): Promise<any> {
+  async findAll(@CurrentUser() user: any): Promise<any> {
     try {
-      const events = await this.eventService.getAllEvents();
+      const events = await this.eventService.getAllEvents(user.userId);
       return events;
     } catch (error) {
       throw error;
@@ -47,9 +47,9 @@ export class EventController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get an event by id')
-  async findOne(@Param('id') id: string): Promise<any> {
+  async findOne(@Param('id') id: string, @CurrentUser() user: any): Promise<any> {
     try {
-      const event = await this.eventService.findOne(+id);
+      const event = await this.eventService.findOne(+id, user.userId);
       return event;
     } catch (error) {
       throw error;
@@ -63,7 +63,7 @@ export class EventController {
   @CommonApiResponses('Update an event by id')
   async update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto, @CurrentUser() user: any): Promise<any> {
     try {
-      const event = await this.eventService.update(+id, updateEventDto, user.email);
+      const event = await this.eventService.update(+id, updateEventDto, user.email, user.userId);
       return event;
     } catch (error) {
       throw error;
@@ -74,9 +74,9 @@ export class EventController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete an event by id')
-  async remove(@Param('id') id: string): Promise<void> {
+  async remove(@Param('id') id: string, @CurrentUser() user: any): Promise<void> {
     try {
-      await this.eventService.remove(+id);
+      await this.eventService.remove(+id, user.userId);
     } catch (error) {
       throw error;
     }

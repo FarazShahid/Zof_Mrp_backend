@@ -5,6 +5,7 @@ import { ClientEvent } from './entities/clientevent.entity';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Client } from 'src/clients/entities/client.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class EventService {
@@ -14,10 +15,34 @@ export class EventService {
     private clientEventRepository: Repository<ClientEvent>,
     @InjectRepository(Client)
     private clientRepository: Repository<Client>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
-  async create(createEventDto: CreateEventDto, createdBy: string): Promise<ClientEvent> {
+   private async getClientsForUser(userId: number): Promise<number[]> {
+
+    const user = await this.userRepository.findOne({
+      where: { Id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const assignedClientIds: number[] = user.assignedClients || [];
+
+    if (!assignedClientIds.length) {
+      return [];
+    }
+    return assignedClientIds;
+  }
+
+  async create(createEventDto: CreateEventDto, createdBy: string, userId: number): Promise<ClientEvent> {
     try {
+        const assignedClientIds = await this.getClientsForUser(userId);
+        if (createEventDto.ClientId && !assignedClientIds.includes(createEventDto.ClientId)) {
+          throw new NotFoundException(`Client with ID ${createEventDto.ClientId} not found or not assigned to the user`);
+        }
       const newEvent = this.clientEventRepository.create({
         ...createEventDto,
         ClientId: createEventDto.ClientId ?? null,
@@ -31,9 +56,11 @@ export class EventService {
     }
   }
 
-  async getAllEvents(): Promise<ClientEvent[]> {
+  async getAllEvents(userId: number): Promise<ClientEvent[]> {
     try {
+      const assignedClientIds = await this.getClientsForUser(userId);
       const response = await this.clientEventRepository.find({
+        where: assignedClientIds.length > 0 ? { ClientId: In(assignedClientIds) } : {},
         order: {
           CreatedOn: 'DESC'
         }
@@ -61,12 +88,15 @@ export class EventService {
     }
   }
 
-  async findOne(id: number): Promise<any> {
+  async findOne(id: number, userId: number): Promise<any> {
     try {
-      const event = await this.clientEventRepository.findOne({ where: { Id: id } });
-      if (!event) {
-        throw new NotFoundException(`Event with ID ${id} not found`);
-      }
+      const assignedClientIds = await this.getClientsForUser(userId);
+      const event = await this.clientEventRepository.findOne({
+        where: {
+          Id: id,
+          ...(assignedClientIds.length > 0 ? { ClientId: In(assignedClientIds) } : {}),
+        },
+      });
 
       const client = await this.clientRepository.findOne({
         where: {
@@ -91,9 +121,9 @@ export class EventService {
     }
   }
 
-  async update(id: number, updateEventDto: UpdateEventDto, updatedBy: string): Promise<ClientEvent> {
+  async update(id: number, updateEventDto: UpdateEventDto, updatedBy: string, userId: number): Promise<ClientEvent> {
     try {
-      const event = await this.findOne(id);
+      const event = await this.findOne(id, userId);
 
       const updatedEvent = await this.clientEventRepository.save({
         ...event,
@@ -108,9 +138,9 @@ export class EventService {
     }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, userId: number): Promise<void> {
     try {
-      const event = await this.findOne(id);
+      const event = await this.findOne(id, userId);
       await this.clientEventRepository.remove(event);
     } catch (error) {
       throw error;
