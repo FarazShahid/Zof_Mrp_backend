@@ -193,7 +193,6 @@ export class ShipmentService {
         'Boxes.ShipmentBoxItems',
         'ShipmentOrders',
         'ShipmentOrders.Order',
-        'ShipmentOrders.Order.Client'
       ],
       order: {
         ShipmentDate: 'DESC',
