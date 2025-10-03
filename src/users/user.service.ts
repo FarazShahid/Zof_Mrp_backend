@@ -61,7 +61,7 @@ export class UserService {
 
     const savedUser = await this.userRepository.save(newUser);
 
-    return { ...savedUser, roleId: roleId, roleName: roleName, Password: '' };
+    return { ...savedUser, roleId: roleId, roleName: roleName, Password: '****' };
   }
 
   async getAllUsers(): Promise<any[]> {
@@ -78,7 +78,7 @@ export class UserService {
 
     return users.map(user => {
       const userWithoutPassword = { ...user, roleName: roleMap.get(user.roleId) || null, assignedClients: [] };
-      userWithoutPassword.Password = '';
+      userWithoutPassword.Password = '****';
       userWithoutPassword.assignedClients = (user.assignedClients || [])
         .map(clientId => ({
           clientId,
@@ -114,7 +114,7 @@ export class UserService {
     };
 
     // Mask password
-    userWithoutPassword.Password = '';
+    userWithoutPassword.Password = '****';
     return userWithoutPassword;
   }
 
@@ -150,7 +150,7 @@ export class UserService {
         user.Email = Email;
       }
 
-      if (Password && Password.trim() !== '') {
+      if (Password && Password.trim() !== '****') {
         this.logger.log(`Updating password for user with id: ${id}`);
         const saltRounds = 10;
         user.Password = await bcrypt.hash(Password, saltRounds);
@@ -194,7 +194,7 @@ export class UserService {
       const savedUser = await this.userRepository.save(user);
       
       const userWithoutPassword = { ...savedUser };
-      userWithoutPassword.Password = '';
+      userWithoutPassword.Password = '****';
       return userWithoutPassword;
     } catch (error) {
       this.logger.error(`Error updating user: ${error.message}`, error.stack);
