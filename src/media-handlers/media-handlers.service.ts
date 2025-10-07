@@ -186,4 +186,83 @@ export class MediaHandlersService {
       referenceId: link.reference_id,
     }));
   }
+
+  async migrateLegacyAzureToS3(): Promise<{ migrated: number; failed: number; details: { id: number; status: 'migrated' | 'skipped' | 'failed'; reason?: string }[] }> {
+    const details: { id: number; status: 'migrated' | 'skipped' | 'failed'; reason?: string }[] = [];
+    let migrated = 0;
+    let failed = 0;
+
+    // Find media entries that still point to Azure Blob URLs
+    const legacyMedia = await this.mediaRepository.find({
+      where: {
+        // crude filter via Like; TypeORM syntax differs per DB, so fallback to post-filter
+      } as any,
+    });
+
+    const candidates = legacyMedia.filter((m) => typeof (m as any).file_url === 'string' && (m as any).file_url.includes('blob.core.windows.net')) as any[];
+
+    for (const media of candidates) {
+      const mediaId = (media as any).id as number;
+      const legacyUrl = (media as any).file_url as string;
+      try {
+        // Download from Azure via SAS URL
+        const response = await fetch(legacyUrl);
+        if (!response.ok) {
+          throw new Error(`Download failed with status ${response.status}`);
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        const fileBuffer = Buffer.from(arrayBuffer);
+
+        // Build S3 key
+        const guid = uuidv4();
+        const nameWithoutExtension: string = (media as any).file_name || 'file';
+        const extensionFromDb: string | undefined = (media as any).file_type;
+        let extension = extensionFromDb;
+        if (!extension) {
+          try {
+            const urlObj = new URL(legacyUrl);
+            const path = urlObj.pathname;
+            const last = path.split('/')?.pop() || '';
+            const ext = last.includes('.') ? last.split('.').pop() : '';
+            extension = ext || undefined;
+          } catch {}
+        }
+        const safeExt = extension ? `.${extension}` : '';
+        const originalName = `${nameWithoutExtension}${safeExt}`;
+        const key = `${guid}-${originalName}`;
+
+        // Content type: best-effort
+        const contentType = response.headers.get('content-type') || 'application/octet-stream';
+
+        // Upload to S3 (private)
+        await this.s3Client.send(new PutObjectCommand({
+          Bucket: this.bucketName,
+          Key: key,
+          Body: fileBuffer,
+          ContentType: contentType,
+          CacheControl: 'public, max-age=31536000, immutable',
+        }));
+
+        // Update DB record to proxy URL
+        const publicBase =
+          this.configService.get<string>('APP_PUBLIC_URL') ||
+          this.configService.get<string>('APP_URL') ||
+          '';
+        const proxyPath = `/media-handler/${encodeURIComponent(key)}`;
+        const newUrl = publicBase ? `${publicBase.replace(/\/$/, '')}${proxyPath}` : proxyPath;
+
+        (media as any).file_url = newUrl;
+        await this.mediaRepository.save(media);
+
+        details.push({ id: mediaId, status: 'migrated' });
+        migrated += 1;
+      } catch (err: any) {
+        this.logger.error(`Migration failed for media ${mediaId}: ${err?.message || err}`);
+        details.push({ id: mediaId, status: 'failed', reason: err?.message || 'unknown' });
+        failed += 1;
+      }
+    }
+
+    return { migrated, failed, details };
+  }
 }

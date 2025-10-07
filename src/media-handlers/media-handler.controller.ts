@@ -128,4 +128,12 @@ export class MediaHandlersController {
       res.status(404).send('File not found');
     }
   }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @Post('migrate-legacy-azure-to-s3')
+  @ApiOperation({ summary: 'Migrate legacy Azure blob media URLs to private S3 and update links' })
+  async migrateLegacy() {
+    return this.mediaHandlersService.migrateLegacyAzureToS3();
+  }
 }
