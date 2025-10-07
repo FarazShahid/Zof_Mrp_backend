@@ -28,7 +28,7 @@ export class InventoryItemController {
 
   constructor(private readonly inventoryItemService: inventoryItemService) { }
 
-  @HasRight(AppRightsEnum.AddInventory)
+  @HasRight(AppRightsEnum.AddInventoryItems)
   @Post()
   @ApiBody({ type: CreateInventoryItemDto })
   @HttpCode(HttpStatus.CREATED)
@@ -47,7 +47,7 @@ export class InventoryItemController {
     }
   }
 
-  @HasRight(AppRightsEnum.ViewInventory)
+  @HasRight(AppRightsEnum.ViewInventoryItems)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all Inventory Items')
@@ -59,7 +59,7 @@ export class InventoryItemController {
     }
   }
 
-  @HasRight(AppRightsEnum.ViewInventory)
+  @HasRight(AppRightsEnum.ViewInventoryItems)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a Inventory Item by id')
@@ -71,7 +71,7 @@ export class InventoryItemController {
     }
   }
 
-  @HasRight(AppRightsEnum.UpdateInventory)
+  @HasRight(AppRightsEnum.UpdateInventoryItems)
   @Put(':id')
   @ApiBody({ type: UpdateInventoryItemDto })
   @HttpCode(HttpStatus.OK)
@@ -92,7 +92,7 @@ export class InventoryItemController {
     }
   }
 
-  @HasRight(AppRightsEnum.DeleteInventory)
+  @HasRight(AppRightsEnum.DeleteInventoryItems)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a Inventory Item by id')

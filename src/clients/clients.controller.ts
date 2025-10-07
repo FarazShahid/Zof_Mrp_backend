@@ -20,7 +20,7 @@ export class ClientsController {
 
   constructor(private readonly clientsService: ClientsService) {}
 
-  @HasRight(AppRightsEnum.AddAdminSettings)
+  @HasRight(AppRightsEnum.AddClients)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiBody({ type: CreateClientDto })
@@ -36,7 +36,7 @@ export class ClientsController {
     }
   }
 
-  @HasRight(AppRightsEnum.ViewAdminSettings)
+  @HasRight(AppRightsEnum.ViewClients)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponseModal([CreateClientDto])
@@ -51,7 +51,7 @@ export class ClientsController {
     }
   }
 
-  @HasRight(AppRightsEnum.ViewAdminSettings)
+  @HasRight(AppRightsEnum.ViewClients)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a client by id')
@@ -65,7 +65,7 @@ export class ClientsController {
     }
   }
 
-  @HasRight(AppRightsEnum.UpdateAdminSettings)
+  @HasRight(AppRightsEnum.UpdateClients)
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   @ApiBody({ type: CreateClientDto })
@@ -84,7 +84,7 @@ export class ClientsController {
     }
   }
 
-  @HasRight(AppRightsEnum.DeleteAdminSettings)
+  @HasRight(AppRightsEnum.DeleteClients)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a client by id')

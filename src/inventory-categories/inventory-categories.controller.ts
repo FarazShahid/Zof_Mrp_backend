@@ -27,7 +27,7 @@ export class InventoryCategoryController {
 
   constructor(private readonly InventoryCategoryService: InventoryCategoryService) { }
 
-  @HasRight(AppRightsEnum.AddInventory)
+  @HasRight(AppRightsEnum.AddInventoryCategory)
   @Post()
   @ApiBody({ type: CreateInventoryCategoryDto })
   @HttpCode(HttpStatus.CREATED)
@@ -46,7 +46,7 @@ export class InventoryCategoryController {
     }
   }
 
-  @HasRight(AppRightsEnum.ViewInventory)
+  @HasRight(AppRightsEnum.ViewInventoryCategory)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all Inventory Categories')
@@ -58,7 +58,7 @@ export class InventoryCategoryController {
     }
   }
 
-  @HasRight(AppRightsEnum.ViewInventory)
+  @HasRight(AppRightsEnum.ViewInventoryCategory)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a Inventory Categories by id')
@@ -70,7 +70,7 @@ export class InventoryCategoryController {
     }
   }
 
-  @HasRight(AppRightsEnum.UpdateInventory)
+  @HasRight(AppRightsEnum.UpdateInventoryCategory)
   @Put(':id')
   @ApiBody({ type: CreateInventoryCategoryDto })
   @HttpCode(HttpStatus.OK)
@@ -91,7 +91,7 @@ export class InventoryCategoryController {
     }
   }
 
-  @HasRight(AppRightsEnum.DeleteInventory)
+  @HasRight(AppRightsEnum.DeleteInventoryCategory)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a Inventory Category by id')

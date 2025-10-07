@@ -27,7 +27,7 @@ export class InventorySupplierController {
 
   constructor(private readonly InventorySupplierService: InventorySupplierService) { }
 
-  @HasRight(AppRightsEnum.AddInventory)
+  @HasRight(AppRightsEnum.AddSuppliers)
   @Post()
   @ApiBody({ type: CreateInventorySuppliersDto })
   @HttpCode(HttpStatus.CREATED)
@@ -46,7 +46,7 @@ export class InventorySupplierController {
     }
   }
 
-  @HasRight(AppRightsEnum.ViewInventory)
+  @HasRight(AppRightsEnum.ViewSuppliers)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all Inventory Suppliers')
@@ -58,7 +58,7 @@ export class InventorySupplierController {
     }
   }
 
-  @HasRight(AppRightsEnum.ViewInventory)
+  @HasRight(AppRightsEnum.ViewSuppliers)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a Inventory Supplier by id')
@@ -70,7 +70,7 @@ export class InventorySupplierController {
     }
   }
 
-  @HasRight(AppRightsEnum.UpdateInventory)
+  @HasRight(AppRightsEnum.UpdateSuppliers)
   @Put(':id')
   @ApiBody({ type: CreateInventorySuppliersDto })
   @HttpCode(HttpStatus.OK)
@@ -91,7 +91,7 @@ export class InventorySupplierController {
     }
   }
 
-  @HasRight(AppRightsEnum.DeleteInventory)
+  @HasRight(AppRightsEnum.DeleteSuppliers)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a Inventory Supplier by id')

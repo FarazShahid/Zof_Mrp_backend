@@ -16,7 +16,7 @@ export class EventController {
     private readonly eventService: EventService,
   ) { }
 
-  @HasRight(AppRightsEnum.AddAdminSettings)
+  @HasRight(AppRightsEnum.AddEvents)
   @Post()
   @ApiBody({ type: CreateEventDto })
   @HttpCode(HttpStatus.CREATED)
@@ -30,7 +30,7 @@ export class EventController {
     }
   }
 
-  @HasRight(AppRightsEnum.ViewAdminSettings)
+  @HasRight(AppRightsEnum.ViewEvents)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all events')
@@ -43,7 +43,7 @@ export class EventController {
     }
   }
 
-  @HasRight(AppRightsEnum.ViewAdminSettings)
+  @HasRight(AppRightsEnum.ViewEvents)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get an event by id')
@@ -56,7 +56,7 @@ export class EventController {
     }
   }
 
-  @HasRight(AppRightsEnum.UpdateAdminSettings)
+  @HasRight(AppRightsEnum.UpdateEvents)
   @Put(':id')
   @ApiBody({ type: CreateEventDto })
   @HttpCode(HttpStatus.OK)
@@ -70,7 +70,7 @@ export class EventController {
     }
   }
 
-  @HasRight(AppRightsEnum.DeleteAdminSettings)
+  @HasRight(AppRightsEnum.DeleteEvents)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete an event by id')

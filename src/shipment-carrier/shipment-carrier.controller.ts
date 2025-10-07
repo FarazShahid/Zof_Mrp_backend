@@ -17,7 +17,7 @@ import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 export class ShipmentCarrierController {
   constructor(private readonly ShipmentCarrierService: ShipmentCarrierService) { }
 
-  @HasRight(AppRightsEnum.AddAdminSettings)
+  @HasRight(AppRightsEnum.AddCarriers)
   @Post()
   @ApiBody({ type: CreateShipmentCarrierDto })
   @HttpCode(HttpStatus.CREATED)
@@ -29,7 +29,7 @@ export class ShipmentCarrierController {
     return this.ShipmentCarrierService.create(createShipmentCarrierDto, user.email);
   }
 
-  @HasRight(AppRightsEnum.ViewAdminSettings)
+  @HasRight(AppRightsEnum.ViewCarriers)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all carriers')
@@ -37,7 +37,7 @@ export class ShipmentCarrierController {
     return this.ShipmentCarrierService.findAll();
   }
 
-  @HasRight(AppRightsEnum.ViewAdminSettings)
+  @HasRight(AppRightsEnum.ViewCarriers)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get carrier id')
@@ -45,7 +45,7 @@ export class ShipmentCarrierController {
     return this.ShipmentCarrierService.findOne(+id);
   }
 
-  @HasRight(AppRightsEnum.UpdateAdminSettings)
+  @HasRight(AppRightsEnum.UpdateCarriers)
   @Put(':id')
   @ApiBody({ type: UpdateShipmentCarrierDto })
   @HttpCode(HttpStatus.OK)
@@ -58,7 +58,7 @@ export class ShipmentCarrierController {
     return this.ShipmentCarrierService.update(+id, updateShipmentCarrierDto, user.email);
   }
 
-  @HasRight(AppRightsEnum.DeleteAdminSettings)
+  @HasRight(AppRightsEnum.DeleteCarriers)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete carrier by id')

@@ -28,7 +28,7 @@ export class InventoryTransectionController {
 
     constructor(private readonly inventoryTransectionService: inventoryTransectionService) { }
 
-    @HasRight(AppRightsEnum.AddInventory)
+    @HasRight(AppRightsEnum.AddInventoryTransactions)
     @Post()
     @ApiBody({ type: CreateInventoryTransectionsDto })
     @HttpCode(HttpStatus.CREATED)
@@ -47,7 +47,7 @@ export class InventoryTransectionController {
         }
     }
 
-    @HasRight(AppRightsEnum.ViewInventory)
+    @HasRight(AppRightsEnum.ViewInventoryTransactions)
     @Get()
     @HttpCode(HttpStatus.OK)
     @CommonApiResponses('Get all Inventory Transections')
@@ -59,7 +59,7 @@ export class InventoryTransectionController {
         }
     }
 
-    @HasRight(AppRightsEnum.ViewInventory)
+    @HasRight(AppRightsEnum.ViewInventoryTransactions)
     @Get(':id')
     @HttpCode(HttpStatus.OK)
     @CommonApiResponses('Get a Inventory Transection by id')
@@ -71,7 +71,7 @@ export class InventoryTransectionController {
         }
     }
 
-    @HasRight(AppRightsEnum.UpdateInventory)
+    @HasRight(AppRightsEnum.UpdateInventoryTransactions)
     @Put(':id')
     @ApiBody({ type: CreateInventoryTransectionsDto })
     @HttpCode(HttpStatus.OK)
@@ -88,7 +88,7 @@ export class InventoryTransectionController {
         }
     }
 
-    @HasRight(AppRightsEnum.DeleteInventory)
+    @HasRight(AppRightsEnum.DeleteInventoryTransactions)
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     @CommonApiResponses('Delete a Inventory Transection by id')

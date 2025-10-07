@@ -18,7 +18,7 @@ export class UserController {
 
   constructor(private readonly userService: UserService) {}
 
-  @HasRight(AppRightsEnum.AddAdminSettings)
+  @HasRight(AppRightsEnum.AddUsers)
   @Post()
   @ApiBody({ type: CreateUserDto })
   @HttpCode(HttpStatus.CREATED)
@@ -42,7 +42,7 @@ export class UserController {
     }
   }
 
-  @HasRight(AppRightsEnum.ViewAdminSettings)
+  @HasRight(AppRightsEnum.ViewUsers)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all users')
@@ -56,7 +56,7 @@ export class UserController {
     }
   }
 
-  @HasRight(AppRightsEnum.ViewAdminSettings)
+  @HasRight(AppRightsEnum.ViewUsers)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a user by id')
@@ -70,7 +70,7 @@ export class UserController {
     }
   }
 
-  @HasRight(AppRightsEnum.UpdateAdminSettings)
+  @HasRight(AppRightsEnum.UpdateUsers)
   @Put(':id')
   @ApiBody({ type: UpdateUserDto })
   @HttpCode(HttpStatus.OK)
@@ -98,7 +98,7 @@ export class UserController {
     }
   }
 
-  @HasRight(AppRightsEnum.DeleteAdminSettings)
+  @HasRight(AppRightsEnum.DeleteUsers)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a user by id')

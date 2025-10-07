@@ -21,7 +21,7 @@ import { HasRight } from 'src/auth/has-right-guard';
 export class RolesRightsController {
     constructor(private readonly rolesRightsService: RolesRightsService) { }
 
-    @HasRight(AppRightsEnum.AddAdminSettings)
+    @HasRight(AppRightsEnum.AddRolesRights)
     @Post()
     @ApiBody({ type: CreateRoleWithRightsDto })
     @HttpCode(HttpStatus.CREATED)
@@ -38,7 +38,7 @@ export class RolesRightsController {
         }
     }
 
-    @HasRight(AppRightsEnum.ViewAdminSettings)
+    @HasRight(AppRightsEnum.ViewRolesRights)
     @Get()
     @HttpCode(HttpStatus.OK)
     @CommonApiResponses('Get All roles rights')
@@ -51,7 +51,7 @@ export class RolesRightsController {
         }
     }
 
-    @HasRight(AppRightsEnum.ViewAdminSettings)
+    @HasRight(AppRightsEnum.ViewRolesRights)
     @Get(':id')
     @HttpCode(HttpStatus.OK)
     @CommonApiResponses('Get rights of a role by role id')
@@ -64,7 +64,7 @@ export class RolesRightsController {
         }
     }
 
-    @HasRight(AppRightsEnum.UpdateAdminSettings)
+    @HasRight(AppRightsEnum.UpdateRolesRights)
     @Put(':id')
     @ApiBody({ type: CreateRoleWithRightsDto })
     @HttpCode(HttpStatus.OK)
@@ -82,7 +82,7 @@ export class RolesRightsController {
         }
     }
 
-    @HasRight(AppRightsEnum.DeleteAdminSettings)
+    @HasRight(AppRightsEnum.DeleteRolesRights)
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     @CommonApiResponses('Delete all rights of a role')
