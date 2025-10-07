@@ -23,7 +23,7 @@ export class SizeMeasurementsController {
   @CommonApiResponses('Create a new size measurement')
   create(@Body() createSizeMeasurementDto: CreateSizeMeasurementDto, @CurrentUser() user: any) {
     try {
-      return this.sizeMeasurementsService.create(createSizeMeasurementDto, user.email);
+      return this.sizeMeasurementsService.create(createSizeMeasurementDto, user.email, user.userId);
     } catch (error) {
       throw error;
     }
@@ -38,13 +38,14 @@ export class SizeMeasurementsController {
   @ApiQuery({ name: 'SizeOptionId', required: false, description: 'Filter by Size Option Id' })
   @ApiQuery({ name: 'ProductCategoryId', required: false, description: 'Filter by Product Category Id' })
   findAll(
+    @CurrentUser() user: any,
     @Query('CutOptionId') CutOptionId?: number,
     @Query('ClientId') ClientId?: number,
     @Query('SizeOptionId') SizeOptionId?: number,
     @Query('ProductCategoryId') ProductCategoryId?: number,
   ) {
     try {
-      return this.sizeMeasurementsService.findAll(CutOptionId, SizeOptionId, ClientId, ProductCategoryId);
+      return this.sizeMeasurementsService.findAll(CutOptionId, SizeOptionId, ClientId, ProductCategoryId, user.userId);
     } catch (error) {
       throw error;
     }
@@ -54,9 +55,9 @@ export class SizeMeasurementsController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a size measurement by id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string, @CurrentUser() user: any) {
     try {
-      return this.sizeMeasurementsService.findOne(+id);
+      return this.sizeMeasurementsService.findOne(+id, user.userId);
     } catch (error) {
       throw error;
     }
@@ -72,7 +73,7 @@ export class SizeMeasurementsController {
     @CurrentUser() user: any,
   ) {
     try {
-      return this.sizeMeasurementsService.update(+id, updateSizeMeasurementDto, user.email);
+      return this.sizeMeasurementsService.update(+id, updateSizeMeasurementDto, user.email, user.userId);
     } catch (error) {
       throw error;
     }
@@ -82,9 +83,9 @@ export class SizeMeasurementsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a size measurement by id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
     try {
-      return this.sizeMeasurementsService.remove(+id);
+      return this.sizeMeasurementsService.remove(+id, user.userId);
     } catch (error) {
       throw error;
     }

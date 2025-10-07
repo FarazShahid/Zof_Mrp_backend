@@ -4,9 +4,10 @@ import { ClientsController } from './clients.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Client } from './entities/client.entity';
 import { AuditModule } from 'src/audit-logs/audit.module';
+import { User } from 'src/users/entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Client]),
+  imports: [TypeOrmModule.forFeature([Client, User]),
  AuditModule,
 ],
   controllers: [ClientsController],

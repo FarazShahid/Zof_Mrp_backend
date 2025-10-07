@@ -41,10 +41,10 @@ export class ClientsController {
   @HttpCode(HttpStatus.OK)
   @CommonApiResponseModal([CreateClientDto])
   @CommonApiResponses('Get all clients')
-  findAll() {
+  findAll( @CurrentUser() user: any) {
     this.logger.log('Getting all clients');
     try {
-      return this.clientsService.findAll();
+      return this.clientsService.findAll(user.userId);
     } catch (error) {
       this.logger.error(`Error getting clients: ${error.message}`, error.stack);
       throw new BadRequestException(`Failed to get clients: ${error.message}`);
@@ -55,10 +55,10 @@ export class ClientsController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a client by id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string, @CurrentUser() user: any) {
     this.logger.log(`Getting client with id: ${id}`);
     try {
-      return this.clientsService.findOne(+id);
+      return this.clientsService.findOne(+id, user.userId);
     } catch (error) {
       this.logger.error(`Error getting client: ${error.message}`, error.stack);
       throw new BadRequestException(`Failed to get client: ${error.message}`);
@@ -77,7 +77,7 @@ export class ClientsController {
   ) {
     this.logger.log(`Updating client with id: ${id}, data: ${JSON.stringify(updateClientDto)}, User: ${JSON.stringify(user)}`);
     try {
-      return this.clientsService.update(+id, updateClientDto, user.email);
+      return this.clientsService.update(+id, updateClientDto, user.email, user.userId);
     } catch (error) {
       this.logger.error(`Error updating client: ${error.message}`, error.stack);
       throw new BadRequestException(`Failed to update client: ${error.message}`);
@@ -88,10 +88,10 @@ export class ClientsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a client by id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
     this.logger.log(`Deleting client with id: ${id}`);
     try {
-      return this.clientsService.remove(+id);
+      return this.clientsService.remove(+id, user.userId);
     } catch (error) {
       this.logger.error(`Error deleting client: ${error.message}`, error.stack);
       throw new BadRequestException(`Failed to delete client: ${error.message}`);
