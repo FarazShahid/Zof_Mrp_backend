@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BlobServiceClient } from '@azure/storage-blob';
+// import { BlobServiceClient } from '@azure/storage-blob';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
-import * as stream from 'stream';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { Media } from 'src/media/_/media.entity';
@@ -11,7 +11,10 @@ import { MediaLink } from 'src/media-link/_/media-link.entity';
 @Injectable()
 export class MediaHandlersService {
   private readonly logger = new Logger(MediaHandlersService.name);
-  private containerClient;
+  // private containerClient;
+
+  private s3Client: S3Client;   // ✅ declare S3 client
+  private bucketName: string;   // ✅ declare bucket name
 
   constructor(
     private configService: ConfigService,
@@ -22,27 +25,40 @@ export class MediaHandlersService {
     private readonly mediaLinkRepository: Repository<MediaLink>,
   ) {
     try {
-      const sasUrl = this.configService.get<string>('AZURE_STORAGE_SAS_URL');
-      const containerName = this.configService.get<string>(
-        'AZURE_STORAGE_CONTAINER_NAME',
-      );
+      // const sasUrl = this.configService.get<string>('AZURE_STORAGE_SAS_URL');
+      // const containerName = this.configService.get<string>(
+      //   'AZURE_STORAGE_CONTAINER_NAME',
+      // );
 
-      if (!sasUrl || !containerName) {
-        throw new Error('Azure Storage configuration is missing');
-      }
+      // if (!sasUrl || !containerName) {
+      //   throw new Error('Azure Storage configuration is missing');
+      // }
 
-      if (!sasUrl.startsWith('https://') || !sasUrl.includes('?')) {
-        throw new Error('Invalid Azure Storage SAS URL format');
-      }
+      // if (!sasUrl.startsWith('https://') || !sasUrl.includes('?')) {
+      //   throw new Error('Invalid Azure Storage SAS URL format');
+      // }
 
-      const blobServiceClient = new BlobServiceClient(sasUrl);
-      this.containerClient =
-        blobServiceClient.getContainerClient(containerName);
+      // const blobServiceClient = new BlobServiceClient(sasUrl);
+      // this.containerClient =
+      //   blobServiceClient.getContainerClient(containerName);
 
-      this.logger.log('Azure Storage connection initialized successfully');
+      // this.logger.log('Azure Storage connection initialized successfully');
+
+      this.s3Client = new S3Client({
+        region: this.configService.get<string>('AWS_REGION'),
+        credentials: {
+          accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID'),
+          secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY'),
+        },
+      });
+
+      this.bucketName = this.configService.get<string>('AWS_S3_BUCKET_NAME');
+
+
+      this.logger.log('S3 Storage connection initialized successfully');
     } catch (error) {
       this.logger.error(
-        'Failed to initialize Azure Storage connection:',
+        'Failed to initialize S3 Storage connection:',
         error.message,
       );
       throw error;
@@ -61,15 +77,39 @@ export class MediaHandlersService {
       const extension = file.originalname.split('.').pop();
       const nameWithoutExtension = file.originalname.replace(/\.[^/.]+$/, '');
       const guid = uuidv4();
-      const blobName = `${guid}-${file.originalname}`;
+      const key = `${guid}-${file.originalname}`;
 
-      const blockBlobClient = this.containerClient.getBlockBlobClient(blobName);
-      const bufferStream = new stream.PassThrough();
-      bufferStream.end(file.buffer);
+      // Commenting out Azure Blob Storage code
 
-      await blockBlobClient.uploadStream(bufferStream, file.size, undefined, {
-        blobHTTPHeaders: { blobContentType: file.mimetype },
-      });
+      // const blobName = `${guid}-${file.originalname}`;
+
+      // const blockBlobClient = this.containerClient.getBlockBlobClient(blobName);
+      // const bufferStream = new stream.PassThrough();
+      // bufferStream.end(file.buffer);
+
+      // await blockBlobClient.uploadStream(bufferStream, file.size, undefined, {
+      //   blobHTTPHeaders: { blobContentType: file.mimetype },
+      // });
+
+      // Replacing with AWS S3 upload code
+      await this.s3Client.send(new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+        CacheControl: 'public, max-age=31536000, immutable',
+      }));
+
+      // Store a backend-proxied URL to keep S3 private
+      // Prefer explicit public URL, then APP_URL; fallback to relative path
+      const publicBase =
+        this.configService.get<string>('APP_PUBLIC_URL') ||
+        this.configService.get<string>('APP_URL') ||
+        '';
+      const proxyPath = `/media-handler/${encodeURIComponent(key)}`;
+      const fileUrl = publicBase
+        ? `${publicBase.replace(/\/$/, '')}${proxyPath}`
+        : proxyPath;
 
       const FileTypesEnum = {
         DESIGN: { id: 1, name: "Design File" },
@@ -87,7 +127,8 @@ export class MediaHandlersService {
       const document = this.mediaRepository.create({
         file_name: nameWithoutExtension,
         file_type: extension,
-        file_url: blockBlobClient.url,
+        // file_url: blockBlobClient.url,
+        file_url: fileUrl,
         typeId: typeId || null,
         uploaded_by: createdBy,
       });
