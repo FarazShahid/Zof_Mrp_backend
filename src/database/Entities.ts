@@ -41,7 +41,7 @@ import { InventoryBillOfMaterial } from "src/unused-entities/inventory";
 import { OrderCategory, OrderDoc, OrderEvent, OrderService, OrderServicesMedia, OrderServicesOption, OrderServiceUnits, OrderType } from "src/unused-entities/order";
 import { ProductionConsumption, ProductionOrder } from "src/unused-entities/product";
 import { User } from "src/users/entities/user.entity";
-
+import { AppRole, AppRights, AppRoleRight } from "src/roles-rights/roles.rights.entity";
 export const ENTITIES = [
     AuditLog,
     AvailableColorOption,
@@ -98,7 +98,8 @@ export const ENTITIES = [
     DocStatus,
     DocType,
     ClientStatus,
-    ClientAssociate
-
-
+    ClientAssociate,
+    AppRole,
+    AppRights,
+    AppRoleRight
 ]
