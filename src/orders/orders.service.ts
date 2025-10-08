@@ -31,6 +31,7 @@ import * as archiver from 'archiver';
 import puppeteer from 'puppeteer';
 import { StreamableFile } from '@nestjs/common';
 import Handlebars from 'handlebars';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class OrdersService {
@@ -61,13 +62,43 @@ export class OrdersService {
     private readonly qualityCheckRepo: Repository<OrderQualityCheck>,
     @InjectRepository(QAChecklist)
     private qAChecklistRepository: Repository<QAChecklist>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     private dataSource: DataSource,
   ) { }
+
+  private async getClientsForUser(userId: number): Promise<number[]> {
+
+    const user = await this.userRepository.findOne({
+      where: { Id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const assignedClientIds: number[] = user.assignedClients || [];
+
+    if (!assignedClientIds.length) {
+      return [];
+    }
+    return assignedClientIds;
+  }
 
   async createOrder(
     createOrderDto: CreateOrderDto,
     createdBy: any,
+    userId: number,
   ): Promise<Order> {
+
+    const assignedClientIds = await this.getClientsForUser(userId);
+
+    if (assignedClientIds.length > 0 && !assignedClientIds.includes(createOrderDto.ClientId)) {
+      throw new BadRequestException(
+        `You are not assigned to the client with ID ${createOrderDto.ClientId}`,
+      );
+    }
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -238,7 +269,7 @@ export class OrdersService {
     }
   }
 
-  async reorder(orderId: number, createdBy: string): Promise<Order> {
+  async reorder(orderId: number, createdBy: string, userId: number): Promise<Order> {
     const existingOrder = await this.orderRepository.findOne({
       where: { Id: orderId },
       relations: [
@@ -290,12 +321,14 @@ export class OrdersService {
     }
 
     // Create new order using the existing createOrder() logic
-    return this.createOrder(reorderDto, createdBy);
+    return this.createOrder(reorderDto, createdBy, userId);
   }
 
-  async getAllOrders(): Promise<any> {
+  async getAllOrders(userId: number): Promise<any> {
     try {
-      const result = await this.orderRepository
+      const assignedClientIds = await this.getClientsForUser(userId);
+
+      let query = this.orderRepository
         .createQueryBuilder('order')
         .leftJoin('client', 'client', 'order.ClientId = client.Id')
         .leftJoin('clientevent', 'event', 'order.OrderEventId = event.Id')
@@ -318,8 +351,15 @@ export class OrdersService {
           'order.CreatedOn AS CreatedOn',
           'order.UpdatedOn AS UpdatedOn',
         ])
-        .orderBy('order.CreatedOn', 'DESC')
-        .getRawMany();
+        .orderBy('order.CreatedOn', 'DESC');
+
+      if (assignedClientIds.length > 0) {
+        query = query.where('order.ClientId IN (:...assignedClientIds)', {
+          assignedClientIds,
+        });
+      }
+
+      const result = await query.getRawMany();
 
       const total = await this.orderRepository
         .createQueryBuilder('order')
@@ -351,7 +391,13 @@ export class OrdersService {
     }
   }
 
-  async getOrdersByClientId(clientId: number): Promise<any[]> {
+  async getOrdersByClientId(clientId: number, userId: number): Promise<any[]> {
+    const assignedClientIds = await this.getClientsForUser(userId);
+    if (assignedClientIds.length > 0 && !assignedClientIds.includes(clientId)) {
+      throw new BadRequestException(
+        `You are not assigned to the client with ID ${clientId}`,
+      );
+    }
     const orders = await this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndMapOne(
@@ -416,7 +462,11 @@ export class OrdersService {
     id: number,
     updateOrderDto: any,
     updatedBy: any,
+    userId: number,
   ): Promise<Order> {
+
+      const assignedClientIds = await this.getClientsForUser(userId);
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -427,6 +477,12 @@ export class OrdersService {
       });
       if (!order) {
         throw new NotFoundException(`Order with ID ${id} not found`);
+      }
+
+      if (assignedClientIds.length > 0 && !assignedClientIds.includes(order.ClientId)) {
+        throw new BadRequestException(
+          `You are not assigned to the client with ID ${order.ClientId}`,
+        );
       }
 
       const { items, ...updateData } = updateOrderDto;
@@ -650,11 +706,19 @@ export class OrdersService {
     }
   }
 
-  async deleteOrder(id: number): Promise<void> {
+  async deleteOrder(id: number, userId: number): Promise<void> {
+
+    const assignedClientIds = await this.getClientsForUser(userId);
     const order = await this.orderRepository.findOne({ where: { Id: id } });
 
     if (!order) {
       throw new NotFoundException([`Order with ID ${id} not found`]);
+    }
+
+    if (assignedClientIds.length > 0 && !assignedClientIds.includes(order.ClientId)) {
+      throw new BadRequestException(
+        `You are not assigned to the client with ID ${order.ClientId}`,
+      );
     }
 
     const orderItems = await this.orderItemRepository.find({
@@ -693,10 +757,12 @@ export class OrdersService {
     return orderStatusLogs.map(({ id, UpdatedOn, ...rest }) => rest);
   }
 
-  async getEditOrder(id: number): Promise<any> {
+  async getEditOrder(id: number, userId: number): Promise<any> {
     try {
       // Fetch order main data
-      const orderData = await this.orderRepository
+      const assignedClientIds = await this.getClientsForUser(userId);
+
+      let query = this.orderRepository
         .createQueryBuilder('order')
         .leftJoin('client', 'client', 'order.ClientId = client.Id')
         .leftJoin('clientevent', 'event', 'order.OrderEventId = event.Id')
@@ -717,8 +783,16 @@ export class OrdersService {
           'order.OrderName AS OrderName',
           'order.ExternalOrderId AS ExternalOrderId',
         ])
-        .where('order.Id = :id', { id })
-        .getRawOne();
+        .where('order.Id = :id', { id });
+
+      // 🚨 Restrict access if user has assigned clients
+      if (assignedClientIds.length > 0) {
+        query = query.andWhere('order.ClientId IN (:...assignedClientIds)', {
+          assignedClientIds,
+        });
+      }
+
+      const orderData = await query.getRawOne();
 
       if (!orderData) {
         throw new NotFoundException([`Order with ID ${id} not found`]);
@@ -1050,10 +1124,19 @@ export class OrdersService {
     return formattedItems;
   }
 
-  async updateOrderStatus(id: number, status: number): Promise<Order> {
+  async updateOrderStatus(id: number, status: number, userId: number): Promise<Order> {
+    
+    const assignedClientIds = await this.getClientsForUser(userId);
+
     const order = await this.orderRepository.findOne({ where: { Id: id } });
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
+    }
+
+    if (assignedClientIds.length > 0 && !assignedClientIds.includes(order.ClientId)) {
+      throw new BadRequestException(
+        `You are not assigned to the client with ID ${order.ClientId}`,
+      );
     }
 
     const OrderStatus = await this.orderStatusRepository.findOne({

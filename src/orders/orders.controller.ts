@@ -32,6 +32,8 @@ import { ApiOperation } from '@nestjs/swagger';
 import { ApiResponse } from '@nestjs/swagger';
 import { OrderQualityCheck } from './entities/order-checklist.entity';
 import { GenerateQaChecklistZipDto } from './dto/qa-checklist-zip.dto';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { HasRight } from 'src/auth/has-right-guard';
 
 
 @ControllerAuthProtector('Orders', 'orders')
@@ -42,32 +44,34 @@ export class OrdersController {
     private readonly pdfs: OrderPdfService
   ) { }
 
+  @HasRight(AppRightsEnum.AddOrders)
   @Post()
   @ApiBody({ type: CreateOrderDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new order')
   async create(@Body() createOrderDto: CreateOrderDto, @CurrentUser() currentUser: any): Promise<any> {
     try {
-      return this.ordersService.createOrder(createOrderDto, currentUser.email);
+      return this.ordersService.createOrder(createOrderDto, currentUser.email, currentUser.userId);
     } catch (error) {
       console.error('Error creating order:', error);
       throw error;
     }
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all orders')
-  async findAll(): Promise<any> {
+  async findAll(@CurrentUser() currentUser: any): Promise<any> {
     try {
-      return this.ordersService.getAllOrders();
+      return this.ordersService.getAllOrders(currentUser.userId);
     } catch (error) {
       console.error('Error fetching orders:', error);
       throw error;
     }
   }
 
-
+  @HasRight(AppRightsEnum.ViewOrders)
   @Post('orders-items')
   @ApiBody({ type: GetOrdersItemsDto })
   @HttpCode(HttpStatus.OK)
@@ -83,18 +87,20 @@ export class OrdersController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get an order by client id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<any> {
+  async findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: any): Promise<any> {
     try {
-      return this.ordersService.getOrdersByClientId(id);
+      return this.ordersService.getOrdersByClientId(id, currentUser.userId);
     } catch (error) {
       console.error('Error fetching orders:', error);
       throw error;
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateOrders)
   @Put(':id')
   @ApiBody({ type: CreateOrderDto })
   @HttpCode(HttpStatus.OK)
@@ -105,14 +111,14 @@ export class OrdersController {
     @Req() req,
   ): Promise<any> {
     try {
-      const userId = req.user.id;
-      return this.ordersService.updateOrder(id, updateOrderDto, currentUser.email);
+      return this.ordersService.updateOrder(id, updateOrderDto, currentUser.email, currentUser.userId);
     } catch (error) {
       console.error('Error updating order:', error);
       throw error;
     }
   }
 
+  @HasRight(AppRightsEnum.ReOrder)
   @Post(':id/reorder')
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Reorders an existing order by ID')
@@ -120,22 +126,24 @@ export class OrdersController {
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() currentUser: any
   ): Promise<any> {
-    return this.ordersService.reorder(id, currentUser.email);
+    return this.ordersService.reorder(id, currentUser.email, currentUser.userId);
   }
 
 
+  @HasRight(AppRightsEnum.DeleteOrders)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete an order by id')
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  async remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: any): Promise<void> {
     try {
-      return this.ordersService.deleteOrder(id);
+      return this.ordersService.deleteOrder(id, currentUser.userId);
     } catch (error) {
       console.error('Error deleting order:', error);
       throw error;
     }
   }
 
+  @HasRight(AppRightsEnum.AddOrders)
   @Get('order-status-log/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get order status log by order id')
@@ -148,6 +156,7 @@ export class OrdersController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Get('items/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get order items by order id')
@@ -160,33 +169,37 @@ export class OrdersController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Get('get-edit/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get edit order by id')
-  async getOrdersEdit(@Param('id', ParseIntPipe) orderId: number): Promise<any> {
+  async getOrdersEdit(@Param('id', ParseIntPipe) orderId: number, @CurrentUser() currentUser: any): Promise<any> {
     try {
-      return this.ordersService.getEditOrder(orderId);
+      return this.ordersService.getEditOrder(orderId, currentUser.userId);
     } catch (error) {
       console.error('Error fetching edit order:', error);
       throw error;
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateOrders)
   @Post('change-status:id/:statusId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Update order status by id using DELETE route')
   async updateStatusViaDelete(
+    @CurrentUser() currentUser: any,
     @Param('id', ParseIntPipe) id: number,
     @Param('statusId', ParseIntPipe) statusId: number
   ): Promise<void> {
     try {
-      await this.ordersService.updateOrderStatus(id, statusId);
+      await this.ordersService.updateOrderStatus(id, statusId, currentUser.userId);
     } catch (error) {
       console.error('Error updating order status via DELETE route:', error);
       throw error;
     }
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Post('generate-download-pdf')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Generate and download order pdf')
@@ -199,6 +212,7 @@ export class OrdersController {
     file.getStream().pipe(res);
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Post(':id/qa-checklist-zip')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Generate ZIP of QA checklist PDFs for selected order item IDs')
@@ -217,6 +231,7 @@ export class OrdersController {
     file.getStream().pipe(res);
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Post(':id/qa-checklist')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create QA checklist entries for an orderItemId' })
@@ -263,6 +278,7 @@ export class OrdersController {
     return this.ordersService.createManyChecklist(id, dtos, currentUser.email);
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Get(':id/qa-checklist')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get QA checklist by orderItemId and optional filters' })
@@ -290,6 +306,7 @@ export class OrdersController {
     return this.ordersService.getQaChecklist(orderItemId, productId, measurementId);
   }
 
+  @HasRight(AppRightsEnum.ViewOrders)
   @Get(':id/execute-qa-checklist')
   @HttpCode(HttpStatus.OK)
   async generateQaChecklist(

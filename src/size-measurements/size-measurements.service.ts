@@ -6,6 +6,7 @@ import { CreateSizeMeasurementDto, HatFusion } from './dto/create-size-measureme
 import { UpdateSizeMeasurementDto } from './dto/update-size-measurement.dto';
 import { ProductCutOption } from 'src/productcutoptions/entity/productcutoptions.entity';
 import { ProductCategory } from 'src/product-category/entities/product-category.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class SizeMeasurementsService {
@@ -17,18 +18,39 @@ export class SizeMeasurementsService {
 
     @InjectRepository(ProductCategory)
     private productCategoryRepository: Repository<ProductCategory>,
+
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+
   ) { }
 
-  async create(createSizeMeasurementDto: CreateSizeMeasurementDto, createdBy: string): Promise<SizeMeasurement> {
+  private async getClientsForUser(userId: number): Promise<number[]> {
+
+    const user = await this.userRepository.findOne({
+      where: { Id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const assignedClientIds: number[] = user.assignedClients || [];
+
+    if (!assignedClientIds.length) {
+      return [];
+    }
+    return assignedClientIds;
+  }
+
+  async create(createSizeMeasurementDto: CreateSizeMeasurementDto, createdBy: string, userId: number): Promise<SizeMeasurement> {
     try {
       // Get size option name from sizeoptions table
-      const sizeOption = await this.sizeMeasurementRepository
-        .createQueryBuilder('sm')
-        .select('so.OptionSizeOptions as SizeOptionName')
-        .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.OptionSizeOptions')
-        .where('so.OptionSizeOptions = :sizeOptionId', { sizeOptionId: createSizeMeasurementDto.SizeOptionId })
-        .getRawOne();
 
+      const assignedClientIds = await this.getClientsForUser(userId);
+      if(assignedClientIds.length> 0 && createSizeMeasurementDto.ClientId && !assignedClientIds.includes(createSizeMeasurementDto.ClientId)){
+        throw new BadRequestException(`Client is not assigned to you`)
+
+      }
       const productCategoryId = await this.productCategoryRepository.findOne({ where: { Id: createSizeMeasurementDto.ProductCategoryId } })
       if (!productCategoryId) {
         throw new BadRequestException(`Product category with id ${createSizeMeasurementDto.ProductCategoryId} does not exist`)
@@ -60,7 +82,7 @@ export class SizeMeasurementsService {
     }
   }
 
-  async findAll(cutOptionId?: number, clientId?: number, sizeOptionId?: number, productCategoryId?: number): Promise<SizeMeasurement[]> {
+  async findAll(cutOptionId?: number, clientId?: number, sizeOptionId?: number, productCategoryId?: number, userId?: number): Promise<SizeMeasurement[]> {
     try {
       const queryBuilder = this.sizeMeasurementRepository
         .createQueryBuilder('sm')
@@ -108,7 +130,10 @@ export class SizeMeasurementsService {
 
       const cutOptionsMap = new Map(cutOptions.map(co => [co.Id, co]));
 
-      return items.map(e => ({
+      const userAssignedClientIds = await this.getClientsForUser(userId);
+      const filteredItems = userAssignedClientIds.length > 0 ? items.filter(item => userAssignedClientIds.includes(item.ClientId)) : items;
+
+      return filteredItems.map(e => ({
         ...e,
         H_FusionInside: e?.H_FusionInside ? HatFusion.YES : HatFusion.NO ?? HatFusion.NO,
         cutOptionName: cutOptionsMap.get(e.CutOptionId)?.OptionProductCutOptions || null
@@ -120,7 +145,7 @@ export class SizeMeasurementsService {
     }
   }
 
-  async findOne(id: number): Promise<SizeMeasurement> {
+  async findOne(id: number, userId: number): Promise<SizeMeasurement> {
     try {
       // Step 1: Fetch size measurement with client and size option names
       const sizeMeasurement = await this.sizeMeasurementRepository
@@ -153,6 +178,11 @@ export class SizeMeasurementsService {
         cutOptionName = cutOption?.OptionProductCutOptions || null;
       }
 
+      const userAssignedClientIds = await this.getClientsForUser(userId);
+      if (userAssignedClientIds.length > 0 && !userAssignedClientIds.includes(sizeMeasurement.ClientId)) {
+        throw new NotFoundException(`Size measurement with ID ${id} not found`);
+      }
+
       // Step 3: Return the result, adding cutOptionName
       return {
         ...sizeMeasurement,
@@ -169,7 +199,7 @@ export class SizeMeasurementsService {
     }
   }
 
-  async update(id: number, updateSizeMeasurementDto: UpdateSizeMeasurementDto, updatedBy: string): Promise<any> {
+  async update(id: number, updateSizeMeasurementDto: UpdateSizeMeasurementDto, updatedBy: string, userId: number): Promise<any> {
     try {
       let sizeOptionName = null;
       let cutOptionName = null;
@@ -203,7 +233,7 @@ export class SizeMeasurementsService {
         cutOptionName = CutOption?.OptionProductCutOptions || null;
       }
 
-      const sizeMeasurement = await this.findOne(id);
+      const sizeMeasurement = await this.findOne(id, userId);
 
       const updatedSizeMeasurement = this.sizeMeasurementRepository.merge(sizeMeasurement, {
         ...updateSizeMeasurementDto,
@@ -226,8 +256,9 @@ export class SizeMeasurementsService {
   }
 
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, userId: number): Promise<void> {
     try {
+      await this.findOne(id, userId); // Verify existence and user access
       const result = await this.sizeMeasurementRepository.delete(id);
       if (result.affected === 0) {
         throw new NotFoundException(`Size measurement with ID ${id} not found`);

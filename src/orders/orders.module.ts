@@ -20,6 +20,7 @@ import { OrderPdfService } from './order.pdf.service';
 import { AuditModule } from 'src/audit-logs/audit.module';
 import { OrderQualityCheck } from './entities/order-checklist.entity';
 import { QAChecklist } from 'src/products/entities/qa-checklist.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Module({
   imports: [
@@ -38,7 +39,8 @@ import { QAChecklist } from 'src/products/entities/qa-checklist.entity';
       SizeMeasurement,
       ShipmentOrder,
       OrderQualityCheck,
-      QAChecklist
+      QAChecklist,
+      User,
     ]),
     AuditModule,
     UserModule,

@@ -9,6 +9,7 @@ import { Client } from 'src/clients/entities/client.entity';
 import { Order } from 'src/orders/entities/orders.entity';
 import { InventorySuppliers } from 'src/inventory-suppliers/_/inventory-suppliers.entity';
 import { AuditModule } from 'src/audit-logs/audit.module';
+import { User } from 'src/users/entities/user.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -17,7 +18,8 @@ import { AuditModule } from 'src/audit-logs/audit.module';
       UnitOfMeasures,
       Client,
       Order,
-      InventorySuppliers
+      InventorySuppliers,
+      User
     ]),
     AuditModule
   ],

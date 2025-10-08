@@ -19,6 +19,8 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { HasRight } from 'src/auth/has-right-guard';
 
 @ControllerAuthProtector('Fabric Types', 'fabrictype')
 @UseInterceptors(AuditInterceptor)
@@ -27,6 +29,7 @@ export class FabricTypeController {
 
   constructor(private readonly fabricTypeService: FabricTypeService) {}
 
+  @HasRight(AppRightsEnum.AddProductDefinition)
   @Post()
   @ApiBody({ type: CreateFabricTypeDto })
   @HttpCode(HttpStatus.CREATED)
@@ -49,6 +52,7 @@ export class FabricTypeController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all fabric types')
@@ -62,6 +66,7 @@ export class FabricTypeController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a fabric type by id')
@@ -75,6 +80,7 @@ export class FabricTypeController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateProductDefinition)
   @Put(':id')
   @ApiBody({ type: CreateFabricTypeDto })
   @HttpCode(HttpStatus.OK)
@@ -97,6 +103,7 @@ export class FabricTypeController {
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteProductDefinition)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a fabric type by id')

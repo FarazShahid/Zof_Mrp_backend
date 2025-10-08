@@ -1,5 +1,5 @@
 import { DataSource, EntityManager } from 'typeorm';
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateShipmentDto, ShipmentResponseDto } from './dto/create-shipment.dto';
 import { UpdateShipmentDto } from './dto/update-shipment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,6 +11,7 @@ import { ShipmentOrder } from './entities/shipment-order.entity';
 import { OrderItem, OrderItemShipmentEnum } from 'src/orders/entities/order-item.entity';
 import { OrderItemDetails } from 'src/orders/entities/order-item-details';
 import { Order } from 'src/orders/entities/orders.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ShipmentService {
@@ -36,10 +37,32 @@ export class ShipmentService {
     @InjectRepository(ShipmentOrder)
     private readonly shipmentOrderRepository: Repository<ShipmentOrder>,
 
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+
     private dataSource: DataSource
 
   ) { }
-  async create(createShipmentDto: CreateShipmentDto, createdBy: any) {
+
+  private async getClientsForUser(userId: number): Promise<number[]> {
+
+    const user = await this.userRepository.findOne({
+      where: { Id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const assignedClientIds: number[] = user.assignedClients || [];
+
+    if (!assignedClientIds.length) {
+      return [];
+    }
+    return assignedClientIds;
+  }
+
+  async create(createShipmentDto: CreateShipmentDto, createdBy: any, userId: number) {
     const {
       ShipmentCode,
       TrackingId,
@@ -64,11 +87,22 @@ export class ShipmentService {
       throw new NotFoundException(`Shipment Carrier with ID ${ShipmentCarrierId} not found`);
     }
 
+    const assignedClientIds = await this.getClientsForUser(userId);
+
     const orderIds = new Set(createShipmentDto.OrderIds);
     const verifiedOrder = await this.orderRepository.findBy({ Id: In(Array.from(orderIds)) });
     if (verifiedOrder.length !== Array.from(orderIds).length) {
       throw new BadRequestException('Some Orders are invalid.');
     }
+
+    if (assignedClientIds.length > 0) {
+    const unauthorizedOrder = verifiedOrder.find(order => !assignedClientIds.includes(order.ClientId));
+    if (unauthorizedOrder) {
+      throw new ForbiddenException(
+        `Order ${unauthorizedOrder.Id} is not accessible for this user`
+      );
+    }
+  }
 
     const orderItemIds = new Set(
       boxes.flatMap(box => box.items?.map(it => it?.OrderItemId) ?? [])
@@ -148,7 +182,10 @@ export class ShipmentService {
     });
   }
 
-  async findAll(): Promise<ShipmentResponseDto[]> {
+  async findAll(userId: number): Promise<ShipmentResponseDto[]> {
+
+    const assignedClientIds = await this.getClientsForUser(userId);
+
     const shipments = await this.shipmentRepository.find({
       relations: [
         'ShipmentCarrier',
@@ -162,7 +199,12 @@ export class ShipmentService {
       },
     });
 
-    return shipments.map((shipmentItem) => ({
+    const filteredShipments = shipments.filter(shipment => {
+      if (assignedClientIds.length === 0) return true;
+      return shipment.ShipmentOrders?.some(so => assignedClientIds.includes(so.Order?.ClientId));
+    });
+
+    return filteredShipments.map((shipmentItem) => ({
       Id: shipmentItem.Id,
       OrderIds: shipmentItem.ShipmentOrders?.map(so => so.OrderId) ?? [],
       Orders: shipmentItem.ShipmentOrders?.map(so => ({ Id: so.OrderId, OrderName: so.Order?.OrderName ?? '', OrderNumber: so.Order?.OrderNumber ?? '' })) ?? [],
@@ -197,7 +239,10 @@ export class ShipmentService {
     }))
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, userId: number) {
+
+    const assignedClientIds = await this.getClientsForUser(userId);
+
     const shippment = await this.shipmentRepository.findOne({
       where: { Id: id },
       relations: [
@@ -205,7 +250,7 @@ export class ShipmentService {
         'Boxes',
         'Boxes.ShipmentBoxItems',
         'Boxes.ShipmentBoxItems.OrderItem',
-        'Boxes.ShipmentBoxItems.OrderItem.product', 
+        'Boxes.ShipmentBoxItems.OrderItem.product',
         'ShipmentOrders',
         'ShipmentOrders.Order',
       ],
@@ -214,6 +259,15 @@ export class ShipmentService {
       },
     });
     if (!shippment) throw new NotFoundException(`Shipment with ${id} not found`)
+    if (assignedClientIds.length > 0) {
+      const hasAccess = shippment.ShipmentOrders?.every(
+        so => assignedClientIds.includes(so.Order?.ClientId)
+      );
+
+      if (!hasAccess) {
+        throw new ForbiddenException(`You don't have access to this shipment`);
+      }
+    }
   
     return {
       ShipmentCode: shippment?.ShipmentCode ?? '',
@@ -251,9 +305,20 @@ export class ShipmentService {
     }
   }
 
-  async update(id: number, updateShipmentDto: UpdateShipmentDto, updatedBy: string) {
+  async update(id: number, updateShipmentDto: UpdateShipmentDto, updatedBy: string, userId: number) {
     const existingShipment = await this.shipmentRepository.findOne({ where: { Id: id } });
     if (!existingShipment) throw new NotFoundException(`Shipment with ID ${id} not found`);
+
+    const assignedClientIds = await this.getClientsForUser(userId);
+
+    if (assignedClientIds.length > 0) {
+      const hasAccess = existingShipment.ShipmentOrders.every(
+        so => assignedClientIds.includes(so.Order?.ClientId)
+      );
+      if (!hasAccess) {
+        throw new ForbiddenException(`You don't have access to update this shipment`);
+      }
+    }
 
     return await this.dataSource.transaction(async manager => {
       const shipmentRepo = manager.getRepository(Shipment);
@@ -425,8 +490,9 @@ export class ShipmentService {
     });
   }
 
-  async remove(id: number) {
-    await this.findOne(id);
+  async remove(id: number, userId: number) {
+
+    await this.findOne(id, userId);
 
     await this.dataSource.transaction(async manager => {
       const boxRepo = manager.getRepository(ShipmentBox);

@@ -26,6 +26,7 @@ import { InventoryUnitOfMeasuresModule } from './inventory-unit-measures/invento
 import { MediaHandlersModule } from './media-handlers/media-handlers.module';
 import { ShipmentCarrierModule } from './shipment-carrier/shipment-carrier.module';
 import { ShipmentModule } from './shipment/shipment.module';
+import { RolesRightsModule } from './roles-rights/roles.rights.module';
 
 @Module({
   imports: [
@@ -77,7 +78,8 @@ import { ShipmentModule } from './shipment/shipment.module';
     UserModule,
     MediaHandlersModule,
     ShipmentCarrierModule,
-    ShipmentModule
+    ShipmentModule,
+    RolesRightsModule
   ],
   controllers: []
 })

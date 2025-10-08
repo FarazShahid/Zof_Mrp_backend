@@ -3,15 +3,17 @@ import {
   BadRequestException,
   NotFoundException,
   InternalServerErrorException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { UpdateProductStatusDto } from './dto/update-status-dto';
 import { Client } from 'src/clients/entities/client.entity';
 import { ProductPrintingOptions } from './entities/product-printing-options.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ProductsService {
@@ -25,12 +27,35 @@ export class ProductsService {
     @InjectRepository(Client)
     private readonly clientRepository: Repository<Client>,
 
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+
     private dataSource: DataSource,
   ) { }
+
+
+  private async getClientsForUser(userId: number): Promise<number[]> {
+
+    const user = await this.userRepository.findOne({
+      where: { Id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const assignedClientIds: number[] = user.assignedClients || [];
+
+    if (!assignedClientIds.length) {
+      return [];
+    }
+    return assignedClientIds;
+  }
 
   async create(
     createProductDto: CreateProductDto,
     createdBy: string,
+    userId: number,
   ): Promise<Product> {
     try {
       const client = await this.clientRepository.findOne({
@@ -41,6 +66,14 @@ export class ProductsService {
         throw new BadRequestException(
           `Client with ID ${createProductDto.ClientId} not found`,
         );
+
+     const assignedClientIds = await this.getClientsForUser(userId);
+
+      if (assignedClientIds.length > 0 && !assignedClientIds.includes(createProductDto.ClientId)) {
+        throw new BadRequestException(
+          `You are not assigned to the client with ID ${createProductDto.ClientId}`,
+        );
+      }
 
       const newProduct = this.productRepository.create({
         ...createProductDto,
@@ -163,7 +196,10 @@ export class ProductsService {
     }
   }
 
-  async getAllProducts(filter?: string | undefined | null): Promise<any[]> {
+  async getAllProducts(userId: number, filter?: string | undefined | null): Promise<any[]> {
+
+    const assignedClientIds = await this.getClientsForUser(userId);
+    
     try {
       let query = this.productRepository
         .createQueryBuilder('product')
@@ -201,6 +237,10 @@ export class ProductsService {
         query.where('product.isArchived = :isArchived', { isArchived: false });
       }
 
+      if (assignedClientIds.length > 0) {
+        query.andWhere('product.ClientId IN (:...ids)', { ids: assignedClientIds });
+      }
+
       const products = await query.getRawMany();
 
       return products.map((product) => ({
@@ -228,7 +268,7 @@ export class ProductsService {
     }
   }
 
-  async findOne(id: number): Promise<any> {
+  async findOne(id: number, userId: number): Promise<any> {
     const product = await this.productRepository.findOne({ where: { Id: id } });
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
@@ -238,6 +278,12 @@ export class ProductsService {
       where: { Product: { Id: product.Id } },
       relations: ['Product', 'PrintingOption'],
     });
+
+    const assignedClientIds = await this.getClientsForUser(userId);
+
+    if (assignedClientIds.length > 0 && !assignedClientIds.includes(product.ClientId)) {
+      throw new ForbiddenException(`You do not have access to this product`);
+    }
 
     const productColors = await this.dataSource.query(
       `SELECT * FROM availablecoloroptions WHERE ProductId = ?`,
@@ -282,10 +328,17 @@ export class ProductsService {
     id: number,
     updateProductDto: UpdateProductDto,
     updatedBy: string,
+    userId: number,
   ): Promise<any> {
     const product = await this.productRepository.findOne({ where: { Id: id } });
     if (!product)
       throw new NotFoundException(`Product with ID ${id} not found`);
+
+    const assignedClientIds = await this.getClientsForUser(userId);
+
+    if (assignedClientIds.length > 0 && !assignedClientIds.includes(product.ClientId)) {
+      throw new ForbiddenException(`You do not have access to this product`);
+    }
 
     const isClientIdUpdated = product.ClientId !== updateProductDto.ClientId;
     if (isClientIdUpdated) {
@@ -534,12 +587,20 @@ export class ProductsService {
     id: number,
     updateProductStatusDto: UpdateProductStatusDto,
     updatedBy: string,
+    userId: number,
   ): Promise<any> {
     const { isArchived } = updateProductStatusDto;
     const product = await this.productRepository.findOne({ where: { Id: id } });
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
+
+    const assignedClientIds = await this.getClientsForUser(userId);
+
+    if (assignedClientIds.length > 0 && !assignedClientIds.includes(product.ClientId)) {
+      throw new ForbiddenException(`You do not have access to this product`);
+    }
+
     product.isArchived = isArchived;
     product.UpdatedBy = updatedBy;
     const updatedProduct = await this.productRepository.save(product);
@@ -550,7 +611,7 @@ export class ProductsService {
     return { message: 'Updated Successfully' };
   }
 
-  async remove(id: number): Promise<{ message: string }> {
+  async remove(id: number, userId: number): Promise<{ message: string }> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -562,6 +623,12 @@ export class ProductsService {
 
       if (!product) {
         throw new NotFoundException(`Product with ID ${id} not found`);
+      }
+
+      const assignedClientIds = await this.getClientsForUser(userId);
+
+      if (assignedClientIds.length > 0 && !assignedClientIds.includes(product.ClientId)) {
+        throw new ForbiddenException(`You do not have access to this product`);
       }
 
       // Delete related available color options

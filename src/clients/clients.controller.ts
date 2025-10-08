@@ -10,6 +10,8 @@ import { ApiBody } from '@nestjs/swagger';
 import { CommonApiResponses, CommonApiResponseModal } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { HasRight } from 'src/auth/has-right-guard';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 
 @ControllerAuthProtector('Clients', 'clients')
 @UseInterceptors(AuditInterceptor)
@@ -18,6 +20,7 @@ export class ClientsController {
 
   constructor(private readonly clientsService: ClientsService) {}
 
+  @HasRight(AppRightsEnum.AddClients)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiBody({ type: CreateClientDto })
@@ -33,33 +36,36 @@ export class ClientsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewClients)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponseModal([CreateClientDto])
   @CommonApiResponses('Get all clients')
-  findAll() {
+  findAll( @CurrentUser() user: any) {
     this.logger.log('Getting all clients');
     try {
-      return this.clientsService.findAll();
+      return this.clientsService.findAll(user.userId);
     } catch (error) {
       this.logger.error(`Error getting clients: ${error.message}`, error.stack);
       throw new BadRequestException(`Failed to get clients: ${error.message}`);
     }
   }
 
+  @HasRight(AppRightsEnum.ViewClients)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a client by id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string, @CurrentUser() user: any) {
     this.logger.log(`Getting client with id: ${id}`);
     try {
-      return this.clientsService.findOne(+id);
+      return this.clientsService.findOne(+id, user.userId);
     } catch (error) {
       this.logger.error(`Error getting client: ${error.message}`, error.stack);
       throw new BadRequestException(`Failed to get client: ${error.message}`);
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateClients)
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   @ApiBody({ type: CreateClientDto })
@@ -71,20 +77,21 @@ export class ClientsController {
   ) {
     this.logger.log(`Updating client with id: ${id}, data: ${JSON.stringify(updateClientDto)}, User: ${JSON.stringify(user)}`);
     try {
-      return this.clientsService.update(+id, updateClientDto, user.email);
+      return this.clientsService.update(+id, updateClientDto, user.email, user.userId);
     } catch (error) {
       this.logger.error(`Error updating client: ${error.message}`, error.stack);
       throw new BadRequestException(`Failed to update client: ${error.message}`);
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteClients)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a client by id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
     this.logger.log(`Deleting client with id: ${id}`);
     try {
-      return this.clientsService.remove(+id);
+      return this.clientsService.remove(+id, user.userId);
     } catch (error) {
       this.logger.error(`Error deleting client: ${error.message}`, error.stack);
       throw new BadRequestException(`Failed to delete client: ${error.message}`);

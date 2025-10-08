@@ -18,6 +18,8 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { HasRight } from 'src/auth/has-right-guard';
 
 @ControllerAuthProtector('Unit of Measures', 'unit-measures')
 @UseInterceptors(AuditInterceptor)
@@ -25,6 +27,7 @@ export class UnitofMeasuresController {
 
   constructor(private readonly InventoryUnitOfMeasuresService: InventoryUnitOfMeasuresService) { }
 
+  @HasRight(AppRightsEnum.AddUnitofMeasure)
   @Post()
   @ApiBody({ type: CreateInventoryUnitMeasuresDto })
   @HttpCode(HttpStatus.CREATED)
@@ -43,20 +46,22 @@ export class UnitofMeasuresController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewUnitofMeasure)
   @Get()
   @HttpCode(HttpStatus.OK)
-  @CommonApiResponses('Get all Inventory Categories')
+  @CommonApiResponses('Get all Unit of Measures')
   async findAll() {
     try {
       return await this.InventoryUnitOfMeasuresService.findAll();
     } catch (error) {
-      throw new BadRequestException(`Failed to get Inventory Categories: ${error.message}`);
+      throw new BadRequestException(`Failed to get Unit of Measures: ${error.message}`);
     }
   }
 
+  @HasRight(AppRightsEnum.ViewUnitofMeasure)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  @CommonApiResponses('Get a Inventory Categories by id')
+  @CommonApiResponses('Get a Unit of Measures by id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     try {
       return await this.InventoryUnitOfMeasuresService.findOne(id);
@@ -65,10 +70,11 @@ export class UnitofMeasuresController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateUnitofMeasure)
   @Put(':id')
   @ApiBody({ type: CreateInventoryUnitMeasuresDto })
   @HttpCode(HttpStatus.OK)
-  @CommonApiResponses('Update a  by id')
+  @CommonApiResponses('Update a Unit of Measures by id')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateData: any,
@@ -85,6 +91,7 @@ export class UnitofMeasuresController {
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteUnitofMeasure)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a Unit of Measures by id')

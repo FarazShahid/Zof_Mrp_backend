@@ -12,6 +12,7 @@ import { UnitOfMeasures } from 'src/inventory-unit-measures/_/inventory-unit-mea
 import { Client } from 'src/clients/entities/client.entity';
 import { Order } from 'src/orders/entities/orders.entity';
 import { InventorySuppliers } from 'src/inventory-suppliers/_/inventory-suppliers.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class inventoryTransectionService {
@@ -28,13 +29,41 @@ export class inventoryTransectionService {
     private readonly ordersRepository: Repository<Order>,
     @InjectRepository(InventorySuppliers)
     private readonly inventorySupplierRepository: Repository<InventorySuppliers>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) { }
 
-  async create(data: CreateInventoryTransectionsDto, createdBy: string) {
+  private async getClientsForUser(userId: number): Promise<number[]> {
+
+    const user = await this.userRepository.findOne({
+      where: { Id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const assignedClientIds: number[] = user.assignedClients || [];
+
+    if (!assignedClientIds.length) {
+      return [];
+    }
+    return assignedClientIds;
+  }
+
+  async create(data: CreateInventoryTransectionsDto, createdBy: string, userId: number) {
     const item = await this.inventoryItemsRepository.findOneBy({
       Id: data.InventoryItemId,
     });
     if (!item) throw new NotFoundException('Item not found');
+
+    const assignedClientIds = await this.getClientsForUser(userId);
+
+    if (assignedClientIds.length > 0 && !assignedClientIds.includes(data.ClientId)) {
+      throw new BadRequestException(
+        `You are not assigned to the client with ID ${data.ClientId}`,
+      );
+    }
 
     const existingTransaction = await this.inventoryTransactionsRepository.find(
       {
@@ -88,8 +117,11 @@ export class inventoryTransectionService {
     return this.inventoryTransactionsRepository.save(transection);
   }
 
-  async findAll() {
+  async findAll(userId: number) {
+    const assignedClientIds = await this.getClientsForUser(userId);
+ 
     const transactions = await this.inventoryTransactionsRepository.find({
+      where: assignedClientIds.length > 0 ? { ClientId: In(assignedClientIds) } : {},
       order: { TransactionDate: 'DESC' },
     });
 
@@ -170,9 +202,12 @@ export class inventoryTransectionService {
     });
   }
 
-  async findOne(Id: number) {
+  async findOne(Id: number, userId?: number) {
+        const assignedClientIds = await this.getClientsForUser(userId);
+
     const transaction = await this.inventoryTransactionsRepository.findOneBy({
       Id,
+      ...(assignedClientIds.length > 0 ? { ClientId: In(assignedClientIds) } : {}),
     });
     if (!transaction) {
       throw new NotFoundException(`Transaction with ID ${Id} not found`);
@@ -246,10 +281,11 @@ export class inventoryTransectionService {
     };
   }
 
-  async update(Id: number, data: any, updatedBy: string) {
+  async update(Id: number, data: any, updatedBy: string, userId: number) {
     try {
+      const assignedClientIds = await this.getClientsForUser(userId);
       const existingTransaction =
-        await this.inventoryTransactionsRepository.findOneBy({ Id });
+        await this.inventoryTransactionsRepository.findOneBy({ Id, ...(assignedClientIds.length > 0 ? { ClientId: In(assignedClientIds) } : {}) });
 
       if (!existingTransaction) {
         throw new NotFoundException(`Transaction with ID ${Id} not found`);
@@ -343,9 +379,13 @@ export class inventoryTransectionService {
     }
   }
 
-  async delete(id: number) {
+  async delete(id: number, userId: number) {
+    
+    const assignedClientIds = await this.getClientsForUser(userId);
+
     const transaction = await this.inventoryTransactionsRepository.findOneBy({
       Id: id,
+      ...(assignedClientIds.length > 0 ? { ClientId: In(assignedClientIds) } : {}),
     });
 
     if (!transaction) {

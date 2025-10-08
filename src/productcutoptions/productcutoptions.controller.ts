@@ -8,11 +8,14 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { HasRight } from 'src/auth/has-right-guard';
 @ControllerAuthProtector('Product Cut Options', 'productcutoptions')
 @UseInterceptors(AuditInterceptor)
 export class ProductcutoptionsController {
   constructor(private readonly productcutoptionsService: ProductcutoptionsService) { }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all product cut options')
@@ -24,6 +27,7 @@ export class ProductcutoptionsController {
     }
   }
 
+  @HasRight(AppRightsEnum.AddProductDefinition)
   @Post()
   @ApiBody({ type: CreateProductCutOptionDto })
   @HttpCode(HttpStatus.CREATED)
@@ -36,6 +40,7 @@ export class ProductcutoptionsController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateProductDefinition)
   @Put(':id')
   @ApiBody({ type: CreateProductCutOptionDto })
   @HttpCode(HttpStatus.OK)
@@ -51,17 +56,19 @@ export class ProductcutoptionsController {
     }
   }
 
-   @Delete(':id')
-   @HttpCode(HttpStatus.NO_CONTENT)
-   @CommonApiResponses('Delete a product cut option by id')
-    remove(@Param('id') id: string) {
-      try {
-        return this.productcutoptionsService.remove(+id);
-      } catch (error) {
-        throw error;
-      }
+  @HasRight(AppRightsEnum.DeleteProductDefinition)
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @CommonApiResponses('Delete a product cut option by id')
+  remove(@Param('id') id: string) {
+    try {
+      return this.productcutoptionsService.remove(+id);
+    } catch (error) {
+      throw error;
     }
+  }
 
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a product cut option by id')

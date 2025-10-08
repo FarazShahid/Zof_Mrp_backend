@@ -3,7 +3,8 @@ import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Client } from './entities/client.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ClientsService {
@@ -12,7 +13,27 @@ export class ClientsService {
   constructor(
     @InjectRepository(Client)
     private readonly clientRepository: Repository<Client>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) { }
+
+    private async getClientsForUser(userId: number): Promise<number[]> {
+
+    const user = await this.userRepository.findOne({
+      where: { Id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const assignedClientIds: number[] = user.assignedClients || [];
+
+    if (!assignedClientIds.length) {
+      return [];
+    }
+    return assignedClientIds;
+  }
 
   async create(createClientDto: CreateClientDto, userEmail: string) {
     this.logger.log(`Creating client with data: ${JSON.stringify(createClientDto)}, createdBy: ${userEmail}`);
@@ -36,13 +57,22 @@ export class ClientsService {
     return await this.clientRepository.save(client);
   }
 
-  findAll() {
+  async findAll(userId: number) {
     this.logger.log('Finding all clients');
-    return this.clientRepository.find();
+    const assignedClientIds = await this.getClientsForUser(userId);
+    const results = await this.clientRepository.find({
+      where: assignedClientIds.length ? { Id: In(assignedClientIds) } : {},
+      order: { Name: 'ASC' },
+    });
+    return results;
   }
 
-  async findOne(Id: number) {
+  async findOne(Id: number, userId: number) {
     this.logger.log(`Finding client with id: ${Id}`);
+    const assignedClientIds = await this.getClientsForUser(userId);
+    if (assignedClientIds.length && !assignedClientIds.includes(Id)) {
+      throw new NotFoundException(`Client with ID ${Id} not found`);
+    }
     const client = await this.clientRepository.findOneBy({ Id });
     if (!client) {
       throw new NotFoundException(`Client with ID ${Id} not found`);
@@ -50,12 +80,17 @@ export class ClientsService {
     return client;
   }
 
-  async update(Id: number, updateClientDto: UpdateClientDto, userEmail: string) {
+  async update(Id: number, updateClientDto: UpdateClientDto, userEmail: string, userId: number) {
     this.logger.log(`Updating client with id: ${Id}, data: ${JSON.stringify(updateClientDto)}, updatedBy: ${userEmail}`);
 
     // First check if the client exists
     const client = await this.clientRepository.findOneBy({ Id });
     if (!client) {
+      throw new NotFoundException(`Client with ID ${Id} not found`);
+    }
+
+    const assignedClientIds = await this.getClientsForUser(userId);
+    if (assignedClientIds.length && !assignedClientIds.includes(Id)) {
       throw new NotFoundException(`Client with ID ${Id} not found`);
     }
 
@@ -84,8 +119,13 @@ export class ClientsService {
     return this.clientRepository.findOneBy({ Id });
   }
 
-  async remove(Id: number) {
+  async remove(Id: number, userId: number) {
     this.logger.log(`Removing client with id: ${Id}`);
+
+    const assignedClientIds = await this.getClientsForUser(userId);
+    if (assignedClientIds.length && !assignedClientIds.includes(Id)) {
+      throw new NotFoundException(`Client with ID ${Id} not found`);
+    }
     const result = await this.clientRepository.delete(Id);
     if (result.affected === 0) {
       throw new NotFoundException(`Client with ID ${Id} not found`);

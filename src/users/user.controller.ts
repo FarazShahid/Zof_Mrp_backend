@@ -8,6 +8,8 @@ import { CommonApiResponses } from 'src/common/decorators/common-api-response.de
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
+import { HasRight } from 'src/auth/has-right-guard';
+import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 
 @ControllerAuthProtector('Users', 'users')
 @UseInterceptors(AuditInterceptor)
@@ -16,6 +18,7 @@ export class UserController {
 
   constructor(private readonly userService: UserService) {}
 
+  @HasRight(AppRightsEnum.AddUsers)
   @Post()
   @ApiBody({ type: CreateUserDto })
   @HttpCode(HttpStatus.CREATED)
@@ -39,6 +42,7 @@ export class UserController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewUsers)
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all users')
@@ -52,6 +56,7 @@ export class UserController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewUsers)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a user by id')
@@ -65,6 +70,7 @@ export class UserController {
     }
   }
 
+  @HasRight(AppRightsEnum.UpdateUsers)
   @Put(':id')
   @ApiBody({ type: UpdateUserDto })
   @HttpCode(HttpStatus.OK)
@@ -92,6 +98,7 @@ export class UserController {
     }
   }
 
+  @HasRight(AppRightsEnum.DeleteUsers)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a user by id')

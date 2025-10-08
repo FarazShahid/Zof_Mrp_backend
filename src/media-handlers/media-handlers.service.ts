@@ -75,6 +75,7 @@ export class MediaHandlersService {
         DESIGN: { id: 1, name: "Design File" },
         MOCKUP: { id: 2, name: "Mockup File" },
         REQUIREMENT: { id: 3, name: "Product Requirement File" },
+        QASHEET: { id: 4, name: "QA Sheet" },
       };
 
       const isValidTypeId = Object.values(FileTypesEnum).some(type => type.id === typeId);
@@ -128,6 +129,7 @@ export class MediaHandlersService {
         DESIGN: { id: 1, name: "Design File" },
         MOCKUP: { id: 2, name: "Mockup File" },
         REQUIREMENT: { id: 3, name: "Product Requirement File" },
+        QASHEET: { id: 4, name: "QA Sheet" },
       };
 
     return links.map((link) => ({
