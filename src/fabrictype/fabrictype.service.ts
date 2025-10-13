@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { FabricType } from './_/fabrictype.entity';
 import { ProductCategory } from 'src/product-category/entities/product-category.entity';
+import { Product } from 'src/products/entities/product.entity';
 @Injectable()
 export class FabricTypeService {
   constructor(
@@ -10,6 +11,8 @@ export class FabricTypeService {
     private readonly fabricTypeRepository: Repository<FabricType>,
     @InjectRepository(ProductCategory)
     private readonly productCategoryRepository: Repository<ProductCategory>,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
   ) { }
 
   async create(data: { type: string; name: string; gsm: number; CategoryId: number; createdBy: string }) {
@@ -100,6 +103,24 @@ export class FabricTypeService {
   }
 
   async delete(id: number) {
+    // First check if the fabric type exists
+    const fabricType = await this.fabricTypeRepository.findOne({ where: { Id: id } });
+    if (!fabricType) {
+      throw new NotFoundException(`Fabric type with ID ${id} not found`);
+    }
+
+    // Check if any products are using this fabric type
+    const productsUsingFabricType = await this.productRepository.find({
+      where: { FabricTypeId: id }
+    });
+
+    if (productsUsingFabricType.length > 0) {
+      throw new BadRequestException(
+        `Fabric type "${fabricType.Name}" cannot be deleted because it is associated to products.`
+      );
+    }
+
+    // If no products are using this fabric type, proceed with deletion
     const result = await this.fabricTypeRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Fabric type with ID ${id} not found`);
