@@ -32,6 +32,12 @@ export class UpdateUserDto {
   @IsOptional()
   Password: string;
 
+  @CommonApiProperty('User Role Id goes here', '1')
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  roleId?: number;
+
   @CommonApiProperty('User isActive goes here', 'true')
   @IsBoolean({ message: 'isActive must be a boolean value (true or false)' })
   @IsOptional()
