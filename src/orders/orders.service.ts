@@ -1433,10 +1433,24 @@ export class OrdersService {
     const template = await this.loadTemplate();
     const zipDisplayName = `order-${order.OrderNumber}-checklists.zip`;
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-    });
+    let browser;
+    try {
+      browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+          '--disable-software-rasterizer',
+        ],
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Failed to launch browser for PDF generation: ${error.message}. ` +
+        'Please ensure Chrome is installed by running: npx puppeteer browsers install chrome'
+      );
+    }
 
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'qa-checklists-'));
     const zipPath = path.join(tempDir, zipDisplayName);
