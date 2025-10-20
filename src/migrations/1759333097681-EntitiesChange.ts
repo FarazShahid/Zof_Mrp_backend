@@ -125,7 +125,7 @@ export class EntitiesChange1759333097681 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`inventoryitems\` CHANGE \`CreatedOn\` \`CreatedOn\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`inventoryitems\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`inventoryitems\` CHANGE \`DeletedAt\` \`DeletedAt\` datetime(6) NULL`);
-        await queryRunner.query(`ALTER TABLE \`inventorytransactions\` CHANGE \`TransactionType\` \`TransactionType\` enum ('IN', 'OUT', 'Opening Balance', 'Return to Stock', 'Return to Supplier', 'Disposal') NOT NULL`);
+        await queryRunner.query(`ALTER TABLE \`inventorytransactions\` CHANGE \`TransactionType\` \`TransactionType\` enum ('IN', 'OUT', 'PRODUCTION', 'Opening Balance', 'Return to Stock', 'Return to Supplier', 'Disposal') NOT NULL`);
         await queryRunner.query(`ALTER TABLE \`inventorytransactions\` CHANGE \`CreatedOn\` \`CreatedOn\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`inventorytransactions\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`inventorytransactions\` CHANGE \`DeletedAt\` \`DeletedAt\` datetime(6) NULL`);
@@ -143,7 +143,7 @@ export class EntitiesChange1759333097681 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`shipmentcarriers\` CHANGE \`updatedOn\` \`updatedOn\` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)`);
         await queryRunner.query(`ALTER TABLE \`shipmentboxitem\` CHANGE \`Quantity\` \`Quantity\` int NOT NULL DEFAULT '1'`);
         await queryRunner.query(`ALTER TABLE \`shipment\` CHANGE \`ShipmentDate\` \`ShipmentDate\` timestamp NOT NULL`);
-        await queryRunner.query(`ALTER TABLE \`shipment\` CHANGE \`Status\` \`Status\` enum ('In Transit', 'Damaged', 'Delivered', 'Cancelled') NOT NULL`);
+        await queryRunner.query(`ALTER TABLE \`shipment\` CHANGE \`Status\` \`Status\` enum ('In Transit', 'Dispatched', 'Damaged', 'Delivered', 'Cancelled', 'Returned', 'Pending Pickup', 'Processing') NOT NULL`);
         await queryRunner.query(`ALTER TABLE \`shipment\` CHANGE \`CreatedOn\` \`CreatedOn\` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)`);
         await queryRunner.query(`ALTER TABLE \`shipment\` CHANGE \`UpdatedOn\` \`UpdatedOn\` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)`);
         await queryRunner.query(`ALTER TABLE \`orders\` CHANGE \`CreatedOn\` \`CreatedOn\` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)`);
@@ -405,7 +405,37 @@ export class EntitiesChange1759333097681 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`orders\` CHANGE \`CreatedOn\` \`CreatedOn\` timestamp(0) NOT NULL DEFAULT CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`shipment\` CHANGE \`UpdatedOn\` \`UpdatedOn\` timestamp(0) NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`shipment\` CHANGE \`CreatedOn\` \`CreatedOn\` timestamp(0) NOT NULL DEFAULT CURRENT_TIMESTAMP`);
-        await queryRunner.query(`ALTER TABLE \`shipment\` CHANGE \`Status\` \`Status\` enum COLLATE "utf8mb4_general_ci" ('Pending', 'Awaiting Pickup', 'Picked Up', 'Dispatched', 'In Transit', 'Arrived at Hub', 'Customs Hold', 'Customs Cleared', 'Delayed', 'Out for Delivery', 'Delivery Attempt Failed', 'Delivered', 'Returned to Sender', 'Cancelled', 'Lost', 'Damaged') NOT NULL`);
+
+        await queryRunner.query(`
+            UPDATE shipment
+            SET Status = 'Cancelled'
+            WHERE Status NOT IN ('In Transit', 'Damaged', 'Delivered', 'Cancelled');
+        `);
+
+        await queryRunner.query(`
+            ALTER TABLE \`shipment\`
+            CHANGE \`UpdatedOn\` \`UpdatedOn\` timestamp(0)
+            NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        `);
+                
+        await queryRunner.query(`
+            ALTER TABLE \`shipment\`
+            CHANGE \`CreatedOn\` \`CreatedOn\` timestamp(0)
+            NOT NULL DEFAULT CURRENT_TIMESTAMP
+        `);
+
+        await queryRunner.query(`
+            ALTER TABLE \`shipment\`
+            CHANGE \`Status\` \`Status\`
+            enum ('In Transit', 'Damaged', 'Delivered', 'Cancelled') NOT NUL
+        `);
+
+        await queryRunner.query(`
+            ALTER TABLE \`shipment\`
+            CHANGE \`ShipmentDate\` \`ShipmentDate\` timestamp
+            NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        `);
+
         await queryRunner.query(`ALTER TABLE \`shipment\` CHANGE \`ShipmentDate\` \`ShipmentDate\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`shipmentboxitem\` CHANGE \`Quantity\` \`Quantity\` int NULL DEFAULT '1'`);
         await queryRunner.query(`ALTER TABLE \`shipmentcarriers\` CHANGE \`updatedOn\` \`updatedOn\` timestamp(0) NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
@@ -423,7 +453,7 @@ export class EntitiesChange1759333097681 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`inventorytransactions\` CHANGE \`DeletedAt\` \`DeletedAt\` datetime(0) NULL`);
         await queryRunner.query(`ALTER TABLE \`inventorytransactions\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`inventorytransactions\` CHANGE \`CreatedOn\` \`CreatedOn\` datetime NULL DEFAULT CURRENT_TIMESTAMP`);
-        await queryRunner.query(`ALTER TABLE \`inventorytransactions\` CHANGE \`TransactionType\` \`TransactionType\` enum COLLATE "utf8mb4_general_ci" ('IN', 'OUT', 'PRODUCTION', 'Opening Balance', 'Disposal') NOT NULL`);
+        await queryRunner.query(`ALTER TABLE \`inventorytransactions\` CHANGE \`TransactionType\` \`TransactionType\` ENUM('IN', 'OUT', 'PRODUCTION', 'Opening Balance', 'Disposal') COLLATE utf8mb4_general_ci NOT NULL`);
         await queryRunner.query(`ALTER TABLE \`inventoryitems\` CHANGE \`DeletedAt\` \`DeletedAt\` datetime(0) NULL`);
         await queryRunner.query(`ALTER TABLE \`inventoryitems\` CHANGE \`UpdatedOn\` \`UpdatedOn\` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
         await queryRunner.query(`ALTER TABLE \`inventoryitems\` CHANGE \`CreatedOn\` \`CreatedOn\` datetime NULL DEFAULT CURRENT_TIMESTAMP`);
