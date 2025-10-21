@@ -79,7 +79,7 @@ export class ShipmentService {
     } = createShipmentDto;
 
     if (boxes.length !== NumberOfBoxes) {
-      throw new BadRequestException('NumberOfBoxes does not match boxes length.');
+      throw new BadRequestException('Number of boxes added must be same as Number of boxes selected in Information');
     }
 
     const carrier = await this.shipmentCarrierRepository.findOne({ where: { Id: ShipmentCarrierId } });
@@ -345,7 +345,7 @@ export class ShipmentService {
 
       // If boxes are provided, optionally ensure count matches NumberOfBoxes (when provided)
       if (boxes && Array.isArray(boxes) && NumberOfBoxes !== undefined && boxes.length !== NumberOfBoxes) {
-        throw new BadRequestException('NumberOfBoxes does not match boxes length.');
+        throw new BadRequestException('Number of boxes added must be same as Number of boxes selected in Information');
       }
 
       // If carrier changed, validate new carrier
