@@ -27,6 +27,7 @@ import { MediaHandlersModule } from './media-handlers/media-handlers.module';
 import { ShipmentCarrierModule } from './shipment-carrier/shipment-carrier.module';
 import { ShipmentModule } from './shipment/shipment.module';
 import { RolesRightsModule } from './roles-rights/roles.rights.module';
+import { DashboardReportModule } from './dashboard-reports/dashboard-report.module';
 
 @Module({
   imports: [
@@ -79,7 +80,8 @@ import { RolesRightsModule } from './roles-rights/roles.rights.module';
     MediaHandlersModule,
     ShipmentCarrierModule,
     ShipmentModule,
-    RolesRightsModule
+    RolesRightsModule,
+    DashboardReportModule
   ],
   controllers: []
 })
