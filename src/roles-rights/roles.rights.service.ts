@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AppRights, AppRole, AppRoleRight } from './roles.rights.entity';
 import { CreateRoleWithRightsDto } from './RolesRights.dto';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class RolesRightsService {
@@ -12,7 +13,9 @@ export class RolesRightsService {
     @InjectRepository(AppRole)
     private readonly roleRepo: Repository<AppRole>,
     @InjectRepository(AppRights)
-    private readonly rightRepo: Repository<AppRights>
+    private readonly rightRepo: Repository<AppRights>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>
   ) {
 
   }
@@ -110,6 +113,17 @@ export class RolesRightsService {
 
     if (!role) {
       throw new NotFoundException(`Role with ID ${roleId} not found`);
+    }
+
+    // Check if any users are associated with this role
+    const usersWithRole = await this.userRepo.find({ 
+      where: { roleId: roleId } 
+    });
+
+    if (usersWithRole.length > 0) {
+      throw new ConflictException(
+        `Cannot delete role '${role.name}' because it is associated with ${usersWithRole.length} user(s). Please reassign or remove users from this role first.`
+      );
     }
 
     // Soft delete associated rights first (if using soft delete)
