@@ -44,8 +44,8 @@ import { DashboardReportModule } from './dashboard-reports/dashboard-report.modu
         password: configService.get('DB_PASSWORD') === '""' ? '' : configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
         // entities: [],
-        // Make Sync False for Production
-        synchronize: configService.get('DB_FIRST_TECHNIQUE') === 'true',
+        // Make Sync False for Production - Always disabled to use migrations
+        synchronize: false,
         logging: false,
         autoLoadEntities: true,
         keepConnectionAlive: true,

@@ -41,6 +41,10 @@ export class AuditInterceptor implements NestInterceptor {
     const req = context.switchToHttp().getRequest();
     const { method, originalUrl: endpoint, ip, headers, body, params } = req;
 
+    // Skip audit logging for refresh and logout endpoints (they don't have user context yet)
+    const skipAuditPaths = ['/refresh', '/logout'];
+    const shouldSkipAudit = skipAuditPaths.some(path => endpoint.includes(path));
+
     // For login endpoint, get user email from body since no token exists yet
     let user = req.user || {};
     if (endpoint.includes('/login') && body?.email) {
@@ -87,6 +91,11 @@ export class AuditInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(async (response) => {
+        // Skip audit logging if flagged
+        if (shouldSkipAudit) {
+          return;
+        }
+
         // If this was a login call and response contains user info, prefer it
         if (method === 'POST' && endpoint.includes('/login') && response?.user) {
           user = {
@@ -94,9 +103,10 @@ export class AuditInterceptor implements NestInterceptor {
             userId: response.user.id ?? user.userId ?? 0,
           };
         }
-        if (method !== 'GET') {
+        
+        if (method !== 'GET' && user.userId && user.userId !== 0) {
           await this.auditLogService.createLog({
-            UserId: user.userId || 0,
+            UserId: user.userId,
             Module: module,
             Action: action,
             Details: details,

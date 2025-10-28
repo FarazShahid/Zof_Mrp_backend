@@ -8,6 +8,18 @@ export class LoginResponseDto {
     access_token: string;
 
     @ApiProperty({
+        description: 'JWT refresh token',
+        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+    })
+    refresh_token: string;
+
+    @ApiProperty({
+        description: 'Access token expiration time in seconds',
+        example: 900
+    })
+    expires_in: number;
+
+    @ApiProperty({
         description: 'User information',
         example: {
             id: 1,
