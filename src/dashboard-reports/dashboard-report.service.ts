@@ -306,9 +306,8 @@ export class DashboardReportService {
 
   // 5. Stock Level Dashboard APIs
   async getStockLevels(userId: number) {
-    const assignedClientIds = await this.getClientsForUser(userId);
-
-    let query = this.inventoryItemsRepository
+    // Note: Inventory items are shared across all clients, no client filtering applied
+    const query = this.inventoryItemsRepository
       .createQueryBuilder('inventory')
       .select([
         'inventory.Id as itemId',
@@ -324,14 +323,6 @@ export class DashboardReportService {
         'END as stockLevel',
       ])
       .where('inventory.DeletedAt IS NULL');
-
-    if (assignedClientIds.length > 0) {
-      // Note: This assumes inventory items are linked to clients somehow
-      // You may need to adjust this based on your actual schema
-      query = query.andWhere('inventory.ClientId IN (:...assignedClientIds)', {
-        assignedClientIds,
-      });
-    }
 
     const stockItems = await query.getRawMany();
 
