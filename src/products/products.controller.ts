@@ -157,4 +157,16 @@ export class ProductsController {
       throw error;
     }
   }
+
+  @HasRight(AppRightsEnum.ViewProduct)
+  @Get('with-attachments/all')
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get all products with their attachments and client information')
+  async getProductsWithAttachments(@CurrentUser() user: any) {
+    try {
+      return await this.productsService.getProductsWithAttachments(user.userId);
+    } catch (error) {
+      throw error;
+    }
+  }
 }
