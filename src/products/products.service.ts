@@ -49,7 +49,13 @@ export class ProductsService {
     if (!assignedClientIds.length) {
       return [];
     }
-    return assignedClientIds;
+    
+    // Filter out any invalid values (NaN, null, undefined) and ensure all are valid numbers
+    const validClientIds = assignedClientIds.filter(id => {
+      return id !== null && id !== undefined && !isNaN(Number(id)) && Number.isFinite(Number(id));
+    }).map(id => Number(id));
+
+    return validClientIds;
   }
 
   async create(
@@ -822,6 +828,76 @@ export class ProductsService {
     } catch (error) {
       console.error('Error fetching available Sleeve Types:', error);
       throw new BadRequestException('Error fetching sleeve types for product');
+    }
+  }
+
+  async getProductsWithAttachments(userId: number): Promise<any[]> {
+    try {
+      const assignedClientIds = await this.getClientsForUser(userId);
+
+      let query = this.productRepository
+        .createQueryBuilder('product')
+        .leftJoin('Client', 'client', 'client.Id = product.ClientId')
+        .leftJoin(
+          'media_links',
+          'mediaLink',
+          'mediaLink.reference_id = product.Id AND mediaLink.reference_type = :refType',
+          { refType: 'product' },
+        )
+        .leftJoin('media', 'media', 'media.id = mediaLink.media_id')
+        .select([
+          'product.Id AS productId',
+          'product.Name AS productName',
+          'product.Description AS description',
+          'product.ClientId AS clientId',
+          'client.Name AS clientName',
+          'media.id AS mediaId',
+          'media.file_name AS fileName',
+          'media.file_type AS fileType',
+          'media.file_url AS fileUrl',
+          'mediaLink.tag AS mediaTag',
+        ])
+        .orderBy('product.Id', 'ASC');
+
+      if (assignedClientIds.length > 0) {
+        query.andWhere('product.ClientId IN (:...ids)', { ids: assignedClientIds });
+      }
+
+      const results = await query.getRawMany();
+
+      // Group attachments by product
+      const productsMap = new Map<number, any>();
+
+      for (const row of results) {
+        const productId = row.productId;
+
+        if (!productsMap.has(productId)) {
+          productsMap.set(productId, {
+            productId: productId,
+            productName: row.productName,
+            description: row.description,
+            clientId: row.clientId,
+            clientName: row.clientName,
+            attachments: [],
+          });
+        }
+
+        // Add attachment if exists
+        if (row.mediaId) {
+          productsMap.get(productId).attachments.push({
+            mediaId: row.mediaId,
+            fileName: row.fileName,
+            fileType: row.fileType,
+            fileUrl: row.fileUrl,
+            tag: row.mediaTag,
+          });
+        }
+      }
+
+      return Array.from(productsMap.values());
+    } catch (error) {
+      console.error('Error fetching products with attachments:', error);
+      throw new BadRequestException('Error fetching products with attachments');
     }
   }
 }

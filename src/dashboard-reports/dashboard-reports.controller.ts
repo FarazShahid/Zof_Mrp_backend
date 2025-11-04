@@ -34,10 +34,10 @@ export class DashboardReportController {
   @ApiResponse({ status: 200, description: 'Order summary by month retrieved successfully' })
   async getOrderSummaryByMonth(
     @CurrentUser() currentUser: any,
-    @Query('year') year?: number,
+    @Query('year') year?: string | number,
   ) {
     const userId = currentUser.userId;
-    const targetYear = year || new Date().getFullYear();
+    const targetYear = year ? parseInt(year.toString(), 10) : new Date().getFullYear();
     return await this.dashboardReportService.getOrderSummaryByMonth(userId, targetYear);
   }
 
@@ -56,10 +56,10 @@ export class DashboardReportController {
   @ApiResponse({ status: 200, description: 'Top clients retrieved successfully' })
   async getTopClients(
     @CurrentUser() currentUser: any,
-    @Query('limit') limit?: number,
+    @Query('limit') limit?: string | number,
   ) {
     const userId = currentUser.userId;
-    const limitCount = limit || 10;
+    const limitCount = limit ? parseInt(limit.toString(), 10) : 10;
     return await this.dashboardReportService.getTopClients(userId, limitCount);
   }
 
@@ -88,10 +88,10 @@ export class DashboardReportController {
   @ApiResponse({ status: 200, description: 'Top products retrieved successfully' })
   async getTopProducts(
     @CurrentUser() currentUser: any,
-    @Query('limit') limit?: number,
+    @Query('limit') limit?: string | number,
   ) {
     const userId = currentUser.userId;
-    const limitCount = limit || 10;
+    const limitCount = limit ? parseInt(limit.toString(), 10) : 10;
     return await this.dashboardReportService.getTopProducts(userId, limitCount);
   }
 }

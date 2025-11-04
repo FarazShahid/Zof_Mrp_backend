@@ -59,7 +59,13 @@ export class ShipmentService {
     if (!assignedClientIds.length) {
       return [];
     }
-    return assignedClientIds;
+    
+    // Filter out any invalid values (NaN, null, undefined) and ensure all are valid numbers
+    const validClientIds = assignedClientIds.filter(id => {
+      return id !== null && id !== undefined && !isNaN(Number(id)) && Number.isFinite(Number(id));
+    }).map(id => Number(id));
+
+    return validClientIds;
   }
 
   async create(createShipmentDto: CreateShipmentDto, createdBy: any, userId: number) {
