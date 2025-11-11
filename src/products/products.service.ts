@@ -275,7 +275,10 @@ export class ProductsService {
   }
 
   async findOne(id: number, userId: number): Promise<any> {
-    const product = await this.productRepository.findOne({ where: { Id: id } });
+    const product = await this.productRepository.findOne({ 
+      where: { Id: id },
+      relations: ['client', 'fabricType']
+    });
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
@@ -292,7 +295,10 @@ export class ProductsService {
     }
 
     const productColors = await this.dataSource.query(
-      `SELECT * FROM availablecoloroptions WHERE ProductId = ?`,
+      `SELECT aco.*, co.Name AS ColorName 
+       FROM availablecoloroptions aco 
+       LEFT JOIN coloroption co ON aco.colorId = co.Id 
+       WHERE aco.ProductId = ?`,
       [id],
     );
 
@@ -305,7 +311,13 @@ export class ProductsService {
     );
 
     const productDetails = await this.dataSource.query(
-      `SELECT * FROM productdetails WHERE ProductId = ?`,
+      `SELECT pd.*, 
+       pco.OptionProductCutOptions, 
+       st.SleeveTypeName 
+       FROM productdetails pd 
+       LEFT JOIN productcutoptions pco ON pd.ProductCutOptionId = pco.Id 
+       LEFT JOIN sleevetype st ON pd.SleeveTypeId = st.Id 
+       WHERE pd.ProductId = ?`,
       [id],
     );
 
@@ -322,6 +334,9 @@ export class ProductsService {
 
     return {
       ...product,
+      ClientName: product.client?.Name || null,
+      FabricName: product.fabricType?.Name || null,
+      FabricType: product.fabricType?.Type || null,
       printingOptions,
       productColors,
       productDetails,
