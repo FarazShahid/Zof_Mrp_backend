@@ -355,7 +355,9 @@ export class OrdersService {
           'order.OrderName AS OrderName',
           'order.ExternalOrderId AS ExternalOrderId',
           'order.CreatedOn AS CreatedOn',
+          'order.CreatedBy AS CreatedBy',
           'order.UpdatedOn AS UpdatedOn',
+          'order.UpdatedBy AS UpdatedBy',
         ])
         .orderBy('order.CreatedOn', 'DESC');
 
@@ -387,7 +389,9 @@ export class OrdersService {
         OrderName: order.OrderName,
         ExternalOrderId: order.ExternalOrderId,
         CreatedOn: order.CreatedOn,
+        CreatedBy: order.CreatedBy,
         UpdatedOn: order.UpdatedOn,
+        UpdatedBy: order.UpdatedBy,
       }));
 
       return formattedOrders;
@@ -435,6 +439,10 @@ export class OrdersService {
         'order.OrderNumber  AS OrderNumber ',
         'order.OrderName AS OrderName',
         'order.ExternalOrderId AS ExternalOrderId',
+        'order.CreatedOn AS CreatedOn',
+        'order.CreatedBy AS CreatedBy',
+        'order.UpdatedOn AS UpdatedOn',
+        'order.UpdatedBy AS UpdatedBy',
         'event.EventName AS EventName',
         'client.Name AS ClientName',
         'status.StatusName AS StatusName',
@@ -458,6 +466,10 @@ export class OrdersService {
       OrderPriority: order.OrderPriority,
       OrderStatusId: order.order_OrderStatusId,
       Deadline: order.order_Deadline,
+      CreatedOn: order.CreatedOn,
+      CreatedBy: order.CreatedBy,
+      UpdatedOn: order.UpdatedOn,
+      UpdatedBy: order.UpdatedBy,
       EventName: order.EventName || null,
       ClientName: order.ClientName || null,
       StatusName: order.StatusName || null,
