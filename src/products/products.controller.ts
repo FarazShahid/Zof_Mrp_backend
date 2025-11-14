@@ -46,6 +46,20 @@ export class ProductsController {
     }
   }
 
+  @HasRight(AppRightsEnum.ViewProduct)
+  @Get('client/:clientId')
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get all products by client ID')
+  async getProductsByClientId(
+    @Param('clientId') clientId: string,
+    @CurrentUser() user: any,
+  ) {
+    try {
+      return await this.productsService.getProductsByClientId(+clientId, user.userId);
+    } catch (error) {
+      throw error;
+    }
+  }
 
   @HasRight(AppRightsEnum.ViewProduct)
   @Get(':id')

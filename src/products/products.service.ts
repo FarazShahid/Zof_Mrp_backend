@@ -274,6 +274,84 @@ export class ProductsService {
     }
   }
 
+  async getProductsByClientId(clientId: number, userId: number): Promise<any[]> {
+    try {
+      const assignedClientIds = await this.getClientsForUser(userId);
+
+      // Check if user has access to this client
+      if (assignedClientIds.length > 0 && !assignedClientIds.includes(clientId)) {
+        throw new ForbiddenException(
+          `You are not assigned to the client with ID ${clientId}`,
+        );
+      }
+
+      // Verify client exists
+      const client = await this.clientRepository.findOne({
+        where: { Id: clientId },
+      });
+
+      if (!client) {
+        throw new NotFoundException(`Client with ID ${clientId} not found`);
+      }
+
+      const query = this.productRepository
+        .createQueryBuilder('product')
+        .leftJoin('fabrictype', 'fabric', 'fabric.Id = product.FabricTypeId')
+        .leftJoin(
+          'productcategory',
+          'category',
+          'category.Id = product.ProductCategoryId',
+        )
+        .leftJoin('Client', 'client', 'client.Id = product.ClientId')
+        .select([
+          'product.Id AS Id',
+          'product.Name AS Name',
+          'product.ProductCategoryId AS ProductCategoryId',
+          'category.Type AS ProductCategoryName',
+          'product.FabricTypeId AS FabricTypeId',
+          'fabric.Type AS FabricType',
+          'fabric.Name AS FabricName',
+          'fabric.GSM AS GSM',
+          'product.Description AS Description',
+          'product.productStatus AS productStatus',
+          'product.isArchived AS isArchived',
+          'client.Id AS ClientId',
+          'client.Name AS ClientName',
+          'product.CreatedOn AS CreatedOn',
+          'product.UpdatedOn AS UpdatedOn',
+          'product.CreatedBy AS CreatedBy',
+          'product.UpdatedBy AS UpdatedBy',
+        ])
+        .where('product.ClientId = :clientId', { clientId })
+        .orderBy('product.CreatedOn', 'DESC');
+
+      const products = await query.getRawMany();
+
+      return products.map((product) => ({
+        Id: product?.Id,
+        Name: product?.Name,
+        ProductCategoryId: product?.ProductCategoryId,
+        ProductCategoryName: product?.ProductCategoryName,
+        FabricTypeId: product?.FabricTypeId || '',
+        FabricType: product?.FabricType || '',
+        FabricName: product?.FabricName || '',
+        GSM: product?.GSM || '',
+        Description: product?.Description || '',
+        productStatus: product?.productStatus || '',
+        isArchived: Boolean(product?.isArchived) || false,
+        ClientId: product?.ClientId || null,
+        ClientName: product?.ClientName || null,
+        CreatedBy: product?.CreatedBy || '',
+        UpdatedBy: product?.UpdatedBy || '',
+        CreatedOn: product?.CreatedOn || '',
+        UpdatedOn: product?.UpdatedOn || '',
+      }));
+    } catch (error) {
+      console.error('Error fetching products by clientId:', error);
+      throw error;
+    }
+  }
+
   async findOne(id: number, userId: number): Promise<any> {
     const product = await this.productRepository.findOne({ 
       where: { Id: id },
