@@ -29,7 +29,7 @@ export class ClientsController {
   create(@Body() createClientDto: CreateClientDto, @CurrentUser() user: any) {
     this.logger.log(`Creating client: ${JSON.stringify(createClientDto)}, User: ${JSON.stringify(user)}`);
     try {
-      return this.clientsService.create(createClientDto, user.email);
+      return this.clientsService.create(createClientDto, user.email, user.userId, user.roleId);
     } catch (error) {
       this.logger.error(`Error creating client: ${error.message}`, error.stack);
       throw new BadRequestException(`Failed to create client: ${error.message}`);
