@@ -32,6 +32,9 @@ import puppeteer from 'puppeteer';
 import { StreamableFile } from '@nestjs/common';
 import Handlebars from 'handlebars';
 import { User } from 'src/users/entities/user.entity';
+import { OrderComment } from './entities/order-comment.entity';
+import { CreateOrderCommentDto } from './dto/create-order-comment.dto';
+import { UpdateOrderCommentDto } from './dto/update-order-comment.dto';
 
 @Injectable()
 export class OrdersService {
@@ -64,6 +67,8 @@ export class OrdersService {
     private qAChecklistRepository: Repository<QAChecklist>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(OrderComment)
+    private orderCommentRepository: Repository<OrderComment>,
     private dataSource: DataSource,
   ) { }
 
@@ -1719,6 +1724,113 @@ export class OrdersService {
     setTimeout(() => fs.rm(tempDir, { recursive: true, force: true }).catch(() => { }), 2000);
 
     return { filename: zipDisplayName, file };
+  }
+
+  async createOrderComment(
+    orderId: number,
+    createOrderCommentDto: CreateOrderCommentDto,
+    userId: number,
+    createdBy: string,
+  ): Promise<OrderComment> {
+    const assignedClientIds = await this.getClientsForUser(userId);
+
+    const order = await this.orderRepository.findOne({
+      where: { Id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    }
+
+    if (assignedClientIds.length > 0 && !assignedClientIds.includes(order.ClientId)) {
+      throw new BadRequestException(
+        `You are not assigned to the client with ID ${order.ClientId}`,
+      );
+    }
+
+    const comment = this.orderCommentRepository.create({
+      OrderId: orderId,
+      Comment: createOrderCommentDto.Comment,
+      CreatedBy: createdBy,
+    });
+
+    return await this.orderCommentRepository.save(comment);
+  }
+
+  async getOrderComments(orderId: number, userId: number): Promise<OrderComment[]> {
+    const assignedClientIds = await this.getClientsForUser(userId);
+
+    const order = await this.orderRepository.findOne({
+      where: { Id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    }
+
+    if (assignedClientIds.length > 0 && !assignedClientIds.includes(order.ClientId)) {
+      throw new BadRequestException(
+        `You are not assigned to the client with ID ${order.ClientId}`,
+      );
+    }
+
+    return await this.orderCommentRepository.find({
+      where: { OrderId: orderId },
+      order: { CreatedOn: 'DESC' },
+    });
+  }
+
+  async updateOrderComment(
+    commentId: number,
+    updateOrderCommentDto: UpdateOrderCommentDto,
+    userId: number,
+    updatedBy: string,
+  ): Promise<OrderComment> {
+    const assignedClientIds = await this.getClientsForUser(userId);
+
+    const comment = await this.orderCommentRepository.findOne({
+      where: { Id: commentId },
+      relations: ['Order'],
+    });
+
+    if (!comment) {
+      throw new NotFoundException(`Comment with ID ${commentId} not found`);
+    }
+
+    if (assignedClientIds.length > 0 && !assignedClientIds.includes(comment.Order.ClientId)) {
+      throw new BadRequestException(
+        `You are not assigned to the client with ID ${comment.Order.ClientId}`,
+      );
+    }
+
+    if (updateOrderCommentDto.Comment !== undefined) {
+      comment.Comment = updateOrderCommentDto.Comment;
+    }
+
+    comment.UpdatedBy = updatedBy;
+
+    return await this.orderCommentRepository.save(comment);
+  }
+
+  async deleteOrderComment(commentId: number, userId: number): Promise<void> {
+    const assignedClientIds = await this.getClientsForUser(userId);
+
+    const comment = await this.orderCommentRepository.findOne({
+      where: { Id: commentId },
+      relations: ['Order'],
+    });
+
+    if (!comment) {
+      throw new NotFoundException(`Comment with ID ${commentId} not found`);
+    }
+
+    if (assignedClientIds.length > 0 && !assignedClientIds.includes(comment.Order.ClientId)) {
+      throw new BadRequestException(
+        `You are not assigned to the client with ID ${comment.Order.ClientId}`,
+      );
+    }
+
+    await this.orderCommentRepository.delete(commentId);
   }
 
 }

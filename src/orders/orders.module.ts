@@ -21,6 +21,7 @@ import { AuditModule } from 'src/audit-logs/audit.module';
 import { OrderQualityCheck } from './entities/order-checklist.entity';
 import { QAChecklist } from 'src/products/entities/qa-checklist.entity';
 import { User } from 'src/users/entities/user.entity';
+import { OrderComment } from './entities/order-comment.entity';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { User } from 'src/users/entities/user.entity';
       OrderQualityCheck,
       QAChecklist,
       User,
+      OrderComment,
     ]),
     AuditModule,
     UserModule,
