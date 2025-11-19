@@ -13,6 +13,7 @@ import { DocumentEntity } from "src/media-handlers/_/document.entity";
 import { MediaLink } from "src/media-link/_/media-link.entity";
 import { Media } from "src/media/_/media.entity";
 import { OrderQualityCheck } from "src/orders/entities/order-checklist.entity";
+import { OrderComment } from "src/orders/entities/order-comment.entity";
 import { OrderItemDetails } from "src/orders/entities/order-item-details";
 import { OrderItemsPrintingOption } from "src/orders/entities/order-item-printiing.option.entity";
 import { OrderItem } from "src/orders/entities/order-item.entity";
@@ -61,6 +62,7 @@ export const ENTITIES = [
     OrderItemDetails,
     OrderItem,
     OrderItemsPrintingOption,
+    OrderComment,
     OrderQualityCheck,
     Order,
     OrderStatus,

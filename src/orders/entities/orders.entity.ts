@@ -6,6 +6,7 @@ import { OrderStatus } from '../../orderstatus/entities/orderstatus.entity';
 import { OrderItem } from './order-item.entity';
 import { OrderStatusLogs } from './order-status-log.entity';
 import { ShipmentOrder } from 'src/shipment/entities/shipment-order.entity';
+import { OrderComment } from './order-comment.entity';
 
 enum OrderItemShipmentEnum {
   PENDING = 'Pending',
@@ -67,4 +68,7 @@ export class Order extends BaseEntity {
 
   @OneToMany(() => ShipmentOrder, so => so.Order)
   ShipmentOrders: ShipmentOrder[];
+
+  @OneToMany(() => OrderComment, comment => comment.Order)
+  comments: OrderComment[];
 }

@@ -17,7 +17,7 @@ export class ClientsService {
     private readonly userRepository: Repository<User>,
   ) { }
 
-    private async getClientsForUser(userId: number): Promise<number[]> {
+    private async getClientsForUser(userId: number): Promise<number[] | null> {
 
     const user = await this.userRepository.findOne({
       where: { Id: userId },
@@ -26,6 +26,9 @@ export class ClientsService {
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
+    if (user.roleId === 1) {
+      return null;
+    }
 
     const assignedClientIds: number[] = user.assignedClients || [];
 
@@ -33,7 +36,6 @@ export class ClientsService {
       return [];
     }
     
-    // Filter out any invalid values (NaN, null, undefined) and ensure all are valid numbers
     const validClientIds = assignedClientIds.filter(id => {
       return id !== null && id !== undefined && !isNaN(Number(id)) && Number.isFinite(Number(id));
     }).map(id => Number(id));
@@ -41,8 +43,8 @@ export class ClientsService {
     return validClientIds;
   }
 
-  async create(createClientDto: CreateClientDto, userEmail: string) {
-    this.logger.log(`Creating client with data: ${JSON.stringify(createClientDto)}, createdBy: ${userEmail}`);
+  async create(createClientDto: CreateClientDto, userEmail: string, userId: number, roleId: number) {
+    
     const client = this.clientRepository.create({
       Name: createClientDto.Name,
       Email: createClientDto.Email,
@@ -60,14 +62,42 @@ export class ClientsService {
       CreatedBy: userEmail,
       UpdatedBy: userEmail,
     });
-    return await this.clientRepository.save(client);
+    const savedClient = await this.clientRepository.save(client);
+  
+    if (roleId !== 1) {
+      const user = await this.userRepository.findOne({
+        where: { Id: userId },
+      });
+
+      if (user) {
+        const assignedClientIds: number[] = user.assignedClients || [];
+        
+        if (!assignedClientIds.includes(savedClient.Id)) {
+          assignedClientIds.push(savedClient.Id);
+          user.assignedClients = assignedClientIds;
+          await this.userRepository.save(user);
+          this.logger.log(`Auto-assigned client ${savedClient.Id} to user ${userId}`);
+        }
+      }
+    } else {
+      this.logger.log(`Super admin created client ${savedClient.Id} - no assignment needed`);
+    }
+
+    return savedClient;
   }
 
   async findAll(userId: number) {
     this.logger.log('Finding all clients');
     const assignedClientIds = await this.getClientsForUser(userId);
+    
+    const whereCondition = assignedClientIds === null 
+      ? {} 
+      : assignedClientIds.length > 0 
+        ? { Id: In(assignedClientIds) } 
+        : { Id: -1 }; 
+    
     const results = await this.clientRepository.find({
-      where: assignedClientIds.length ? { Id: In(assignedClientIds) } : {},
+      where: whereCondition,
       order: { Name: 'ASC' },
     });
     return results;
@@ -76,9 +106,11 @@ export class ClientsService {
   async findOne(Id: number, userId: number) {
     this.logger.log(`Finding client with id: ${Id}`);
     const assignedClientIds = await this.getClientsForUser(userId);
-    if (assignedClientIds.length && !assignedClientIds.includes(Id)) {
+    
+    if (assignedClientIds !== null && assignedClientIds.length > 0 && !assignedClientIds.includes(Id)) {
       throw new NotFoundException(`Client with ID ${Id} not found`);
     }
+    
     const client = await this.clientRepository.findOneBy({ Id });
     if (!client) {
       throw new NotFoundException(`Client with ID ${Id} not found`);
@@ -89,14 +121,14 @@ export class ClientsService {
   async update(Id: number, updateClientDto: UpdateClientDto, userEmail: string, userId: number) {
     this.logger.log(`Updating client with id: ${Id}, data: ${JSON.stringify(updateClientDto)}, updatedBy: ${userEmail}`);
 
-    // First check if the client exists
     const client = await this.clientRepository.findOneBy({ Id });
     if (!client) {
       throw new NotFoundException(`Client with ID ${Id} not found`);
     }
 
     const assignedClientIds = await this.getClientsForUser(userId);
-    if (assignedClientIds.length && !assignedClientIds.includes(Id)) {
+   
+    if (assignedClientIds !== null && assignedClientIds.length > 0 && !assignedClientIds.includes(Id)) {
       throw new NotFoundException(`Client with ID ${Id} not found`);
     }
 
@@ -129,7 +161,8 @@ export class ClientsService {
     this.logger.log(`Removing client with id: ${Id}`);
 
     const assignedClientIds = await this.getClientsForUser(userId);
-    if (assignedClientIds.length && !assignedClientIds.includes(Id)) {
+   
+    if (assignedClientIds !== null && assignedClientIds.length > 0 && !assignedClientIds.includes(Id)) {
       throw new NotFoundException(`Client with ID ${Id} not found`);
     }
     const result = await this.clientRepository.delete(Id);

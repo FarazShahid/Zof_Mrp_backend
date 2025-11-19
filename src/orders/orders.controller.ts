@@ -34,6 +34,9 @@ import { OrderQualityCheck } from './entities/order-checklist.entity';
 import { GenerateQaChecklistZipDto } from './dto/qa-checklist-zip.dto';
 import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 import { HasRight } from 'src/auth/has-right-guard';
+import { CreateOrderCommentDto } from './dto/create-order-comment.dto';
+import { UpdateOrderCommentDto } from './dto/update-order-comment.dto';
+import { OrderComment } from './entities/order-comment.entity';
 
 
 @ControllerAuthProtector('Orders', 'orders')
@@ -314,5 +317,63 @@ export class OrdersController {
     @CurrentUser() currentUser: any,
   ): Promise<OrderQualityCheck[]> {
     return this.ordersService.createChecklistForOrderItem(orderItemId, currentUser.email);
+  }
+
+  @HasRight(AppRightsEnum.ViewOrders)
+  @Post(':id/comments')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiBody({ type: CreateOrderCommentDto })
+  @CommonApiResponses('Create a comment for an order')
+  async createOrderComment(
+    @Param('id', ParseIntPipe) orderId: number,
+    @Body() createOrderCommentDto: CreateOrderCommentDto,
+    @CurrentUser() currentUser: any,
+  ): Promise<OrderComment> {
+    return this.ordersService.createOrderComment(
+      orderId,
+      createOrderCommentDto,
+      currentUser.userId,
+      currentUser.email,
+    );
+  }
+
+  @HasRight(AppRightsEnum.ViewOrders)
+  @Get(':id/comments')
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get all comments for an order')
+  async getOrderComments(
+    @Param('id', ParseIntPipe) orderId: number,
+    @CurrentUser() currentUser: any,
+  ): Promise<OrderComment[]> {
+    return this.ordersService.getOrderComments(orderId, currentUser.userId);
+  }
+
+  @HasRight(AppRightsEnum.UpdateOrders)
+  @Put('comments/:commentId')
+  @HttpCode(HttpStatus.OK)
+  @ApiBody({ type: UpdateOrderCommentDto })
+  @CommonApiResponses('Update an order comment')
+  async updateOrderComment(
+    @Param('commentId', ParseIntPipe) commentId: number,
+    @Body() updateOrderCommentDto: UpdateOrderCommentDto,
+    @CurrentUser() currentUser: any,
+  ): Promise<OrderComment> {
+    return this.ordersService.updateOrderComment(
+      commentId,
+      updateOrderCommentDto,
+      currentUser.userId,
+      currentUser.email,
+    );
+  }
+
+  @HasRight(AppRightsEnum.UpdateOrders)
+  @Delete('comments/:commentId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @CommonApiResponses('Delete an order comment')
+  async deleteOrderComment(
+    @Param('commentId', ParseIntPipe) commentId: number,
+    @CurrentUser() currentUser: any,
+  ): Promise<void> {
+    return this.ordersService.deleteOrderComment(commentId, currentUser.userId);
   }
 }
