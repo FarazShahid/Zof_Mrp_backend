@@ -52,6 +52,9 @@ export class Order extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   OrderName: string;
 
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  OrderType: string;
+
   @Column({ type: 'varchar', length: 255, nullable: true })
   ExternalOrderId: string;
 

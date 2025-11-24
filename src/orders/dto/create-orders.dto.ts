@@ -185,6 +185,12 @@ export class CreateOrderDto {
   @MaxLength(200)
   OrderName?: string;
 
+  @CommonApiProperty('Order Type', 'production')
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  OrderType?: string;
+
   @CommonApiProperty('External Order Id', 'RFC123')
   @IsString()
   @IsOptional()

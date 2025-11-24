@@ -123,6 +123,7 @@ export class OrdersService {
         ExternalOrderId,
         OrderName,
         OrderNumber,
+        OrderType,
         items,
       } = createOrderDto;
 
@@ -182,6 +183,7 @@ export class OrdersService {
         ExternalOrderId,
         OrderNumber,
         OrderName,
+        OrderType,
         CreatedBy: createdBy,
         UpdatedBy: createdBy,
       });
@@ -304,6 +306,7 @@ export class OrdersService {
       ExternalOrderId: existingOrder.ExternalOrderId,
       OrderNumber: existingOrder.OrderNumber,
       OrderName: existingOrder.OrderName,
+      OrderType: existingOrder.OrderType,
       items: [],
     };
 
@@ -358,6 +361,7 @@ export class OrdersService {
           'order.OrderPriority AS OrderPriority',
           'order.OrderNumber AS OrderNumber',
           'order.OrderName AS OrderName',
+          'order.OrderType AS OrderType',
           'order.ExternalOrderId AS ExternalOrderId',
           'order.CreatedOn AS CreatedOn',
           'order.CreatedBy AS CreatedBy',
@@ -392,6 +396,7 @@ export class OrdersService {
         OrderPriority: order.OrderPriority,
         OrderNumber: order.OrderNumber,
         OrderName: order.OrderName,
+        OrderType: order.OrderType,
         ExternalOrderId: order.ExternalOrderId,
         CreatedOn: order.CreatedOn,
         CreatedBy: order.CreatedBy,
@@ -443,6 +448,7 @@ export class OrdersService {
         'order.Deadline',
         'order.OrderNumber  AS OrderNumber ',
         'order.OrderName AS OrderName',
+        'order.OrderType AS OrderType',
         'order.ExternalOrderId AS ExternalOrderId',
         'order.CreatedOn AS CreatedOn',
         'order.CreatedBy AS CreatedBy',
@@ -464,6 +470,7 @@ export class OrdersService {
       Id: order.OrderId,
       OrderName: order.OrderName,
       OrderNumber: order.OrderNumber,
+      OrderType: order.OrderType,
       ExternalOrderId: order.ExternalOrderId,
       Description: order.order_Description,
       OrderEventId: order?.order_OrderEventId ?? null,
@@ -715,6 +722,9 @@ export class OrdersService {
       if (updateData.OrderName !== undefined) {
         orderPayload.OrderName = updateData.OrderName;
       }
+      if (updateData.OrderType !== undefined) {
+        orderPayload.OrderType = updateData.OrderType;
+      }
 
       const updatedOrder = await queryRunner.manager.save(Order, orderPayload);
 
@@ -804,6 +814,7 @@ export class OrdersService {
           'order.OrderPriority AS OrderPriority',
           'order.OrderNumber AS OrderNumber',
           'order.OrderName AS OrderName',
+          'order.OrderType AS OrderType',
           'order.ExternalOrderId AS ExternalOrderId',
         ])
         .where('order.Id = :id', { id });
@@ -997,6 +1008,7 @@ export class OrdersService {
         Description: orderData.Description,
         OrderNumber: orderData.OrderNumber,
         OrderName: orderData.OrderName,
+        OrderType: orderData.OrderType,
         ExternalOrderId: orderData.ExternalOrderId,
         OrderStatusId: orderData.OrderStatusId,
         StatusName: orderData.StatusName || 'Unknown Status',
