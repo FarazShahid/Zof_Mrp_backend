@@ -246,14 +246,52 @@ export class OrdersService {
                     `Size option is required for order item ${product.Name}`,
                   );
                 }
-                // Lookup associated SizeMeasurement
-                sizeMeasurement = await queryRunner.manager.findOne(SizeMeasurement, {
-                  where: { SizeOptionId: option.SizeOption },
-                });
-                if (!sizeMeasurement) {
-                  throw new BadRequestException(
-                    `SizeOption with id ${option.SizeOption} has no associated measurement`,
-                  );
+                
+                // If MeasurementId is provided, use that specific version
+                if (option.MeasurementId) {
+                  sizeMeasurement = await queryRunner.manager.findOne(SizeMeasurement, {
+                    where: { 
+                      Id: option.MeasurementId,
+                      IsActive: true 
+                    },
+                  });
+                  if (!sizeMeasurement) {
+                    throw new BadRequestException(
+                      `Size measurement with id ${option.MeasurementId} not found or is inactive`,
+                    );
+                  }
+                  // Verify it matches the SizeOption
+                  if (sizeMeasurement.SizeOptionId !== option.SizeOption) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match size option ${option.SizeOption}`,
+                    );
+                  }
+                } else {
+                  // If MeasurementId is not provided, get the latest version for this SizeOption
+                  sizeMeasurement = await queryRunner.manager
+                    .createQueryBuilder(SizeMeasurement, 'sm')
+                    .where('sm.SizeOptionId = :sizeOptionId', { sizeOptionId: option.SizeOption })
+                    .andWhere('sm.IsLatest = :isLatest', { isLatest: true })
+                    .andWhere('sm.IsActive = :isActive', { isActive: true })
+                    .orderBy('sm.Version', 'DESC')
+                    .getOne();
+                  
+                  if (!sizeMeasurement) {
+                    // Fallback: try to find any active measurement for this SizeOption
+                    sizeMeasurement = await queryRunner.manager.findOne(SizeMeasurement, {
+                      where: { 
+                        SizeOptionId: option.SizeOption,
+                        IsActive: true 
+                      },
+                      order: { Version: 'DESC' }
+                    });
+                  }
+                  
+                  if (!sizeMeasurement) {
+                    throw new BadRequestException(
+                      `SizeOption with id ${option.SizeOption} has no associated measurement`,
+                    );
+                  }
                 }
               }
               orderItemDetailsToSave.push({
@@ -666,16 +704,52 @@ export class OrdersService {
                     `Size option is required for order item "${product.Name}"`,
                   );
                 }
-                sizeMeasurement = await queryRunner.manager.findOne(
-                  SizeMeasurement,
-                  {
-                    where: { SizeOptionId: option.SizeOption },
-                  },
-                );
-                if (!sizeMeasurement) {
-                  throw new BadRequestException(
-                    `SizeOption with id ${option.SizeOption} has no associated measurement`,
-                  );
+                
+                // If MeasurementId is provided, use that specific version
+                if (option.MeasurementId) {
+                  sizeMeasurement = await queryRunner.manager.findOne(SizeMeasurement, {
+                    where: { 
+                      Id: option.MeasurementId,
+                      IsActive: true 
+                    },
+                  });
+                  if (!sizeMeasurement) {
+                    throw new BadRequestException(
+                      `Size measurement with id ${option.MeasurementId} not found or is inactive`,
+                    );
+                  }
+                  // Verify it matches the SizeOption
+                  if (sizeMeasurement.SizeOptionId !== option.SizeOption) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match size option ${option.SizeOption}`,
+                    );
+                  }
+                } else {
+                  // If MeasurementId is not provided, get the latest version for this SizeOption
+                  sizeMeasurement = await queryRunner.manager
+                    .createQueryBuilder(SizeMeasurement, 'sm')
+                    .where('sm.SizeOptionId = :sizeOptionId', { sizeOptionId: option.SizeOption })
+                    .andWhere('sm.IsLatest = :isLatest', { isLatest: true })
+                    .andWhere('sm.IsActive = :isActive', { isActive: true })
+                    .orderBy('sm.Version', 'DESC')
+                    .getOne();
+                  
+                  if (!sizeMeasurement) {
+                    // Fallback: try to find any active measurement for this SizeOption
+                    sizeMeasurement = await queryRunner.manager.findOne(SizeMeasurement, {
+                      where: { 
+                        SizeOptionId: option.SizeOption,
+                        IsActive: true 
+                      },
+                      order: { Version: 'DESC' }
+                    });
+                  }
+                  
+                  if (!sizeMeasurement) {
+                    throw new BadRequestException(
+                      `SizeOption with id ${option.SizeOption} has no associated measurement`,
+                    );
+                  }
                 }
               }
 
