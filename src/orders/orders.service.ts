@@ -35,6 +35,7 @@ import { User } from 'src/users/entities/user.entity';
 import { OrderComment } from './entities/order-comment.entity';
 import { CreateOrderCommentDto } from './dto/create-order-comment.dto';
 import { UpdateOrderCommentDto } from './dto/update-order-comment.dto';
+import { OrderType } from './order-type.enum';
 
 @Injectable()
 export class OrdersService {
@@ -123,6 +124,7 @@ export class OrdersService {
         ExternalOrderId,
         OrderName,
         OrderNumber,
+        OrderType,
         items,
       } = createOrderDto;
 
@@ -182,6 +184,7 @@ export class OrdersService {
         ExternalOrderId,
         OrderNumber,
         OrderName,
+        OrderType,
         CreatedBy: createdBy,
         UpdatedBy: createdBy,
       });
@@ -243,14 +246,52 @@ export class OrdersService {
                     `Size option is required for order item ${product.Name}`,
                   );
                 }
-                // Lookup associated SizeMeasurement
-                sizeMeasurement = await queryRunner.manager.findOne(SizeMeasurement, {
-                  where: { SizeOptionId: option.SizeOption },
-                });
-                if (!sizeMeasurement) {
-                  throw new BadRequestException(
-                    `SizeOption with id ${option.SizeOption} has no associated measurement`,
-                  );
+                
+                // If MeasurementId is provided, use that specific version
+                if (option.MeasurementId) {
+                  sizeMeasurement = await queryRunner.manager.findOne(SizeMeasurement, {
+                    where: { 
+                      Id: option.MeasurementId,
+                      IsActive: true 
+                    },
+                  });
+                  if (!sizeMeasurement) {
+                    throw new BadRequestException(
+                      `Size measurement with id ${option.MeasurementId} not found or is inactive`,
+                    );
+                  }
+                  // Verify it matches the SizeOption
+                  if (sizeMeasurement.SizeOptionId !== option.SizeOption) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match size option ${option.SizeOption}`,
+                    );
+                  }
+                } else {
+                  // If MeasurementId is not provided, get the latest version for this SizeOption
+                  sizeMeasurement = await queryRunner.manager
+                    .createQueryBuilder(SizeMeasurement, 'sm')
+                    .where('sm.SizeOptionId = :sizeOptionId', { sizeOptionId: option.SizeOption })
+                    .andWhere('sm.IsLatest = :isLatest', { isLatest: true })
+                    .andWhere('sm.IsActive = :isActive', { isActive: true })
+                    .orderBy('sm.Version', 'DESC')
+                    .getOne();
+                  
+                  if (!sizeMeasurement) {
+                    // Fallback: try to find any active measurement for this SizeOption
+                    sizeMeasurement = await queryRunner.manager.findOne(SizeMeasurement, {
+                      where: { 
+                        SizeOptionId: option.SizeOption,
+                        IsActive: true 
+                      },
+                      order: { Version: 'DESC' }
+                    });
+                  }
+                  
+                  if (!sizeMeasurement) {
+                    throw new BadRequestException(
+                      `SizeOption with id ${option.SizeOption} has no associated measurement`,
+                    );
+                  }
                 }
               }
               orderItemDetailsToSave.push({
@@ -304,6 +345,7 @@ export class OrdersService {
       ExternalOrderId: existingOrder.ExternalOrderId,
       OrderNumber: existingOrder.OrderNumber,
       OrderName: existingOrder.OrderName,
+      OrderType: OrderType.RE_ORDER, // Automatically set to Re-order
       items: [],
     };
 
@@ -332,7 +374,11 @@ export class OrdersService {
     }
 
     // Create new order using the existing createOrder() logic
-    return this.createOrder(reorderDto, createdBy, userId);
+    const newOrder = await this.createOrder(reorderDto, createdBy, userId);
+    
+    // Update the new order to set ParentOrderId
+    newOrder.ParentOrderId = orderId;
+    return await this.orderRepository.save(newOrder);
   }
 
   async getAllOrders(userId: number): Promise<any> {
@@ -358,6 +404,8 @@ export class OrdersService {
           'order.OrderPriority AS OrderPriority',
           'order.OrderNumber AS OrderNumber',
           'order.OrderName AS OrderName',
+          'order.OrderType AS OrderType',
+          'order.ParentOrderId AS ParentOrderId',
           'order.ExternalOrderId AS ExternalOrderId',
           'order.CreatedOn AS CreatedOn',
           'order.CreatedBy AS CreatedBy',
@@ -392,6 +440,8 @@ export class OrdersService {
         OrderPriority: order.OrderPriority,
         OrderNumber: order.OrderNumber,
         OrderName: order.OrderName,
+        OrderType: order.OrderType,
+        ParentOrderId: order?.ParentOrderId ?? null,
         ExternalOrderId: order.ExternalOrderId,
         CreatedOn: order.CreatedOn,
         CreatedBy: order.CreatedBy,
@@ -443,6 +493,8 @@ export class OrdersService {
         'order.Deadline',
         'order.OrderNumber  AS OrderNumber ',
         'order.OrderName AS OrderName',
+        'order.OrderType AS OrderType',
+        'order.ParentOrderId AS ParentOrderId',
         'order.ExternalOrderId AS ExternalOrderId',
         'order.CreatedOn AS CreatedOn',
         'order.CreatedBy AS CreatedBy',
@@ -464,6 +516,8 @@ export class OrdersService {
       Id: order.OrderId,
       OrderName: order.OrderName,
       OrderNumber: order.OrderNumber,
+      OrderType: order.OrderType,
+      ParentOrderId: order?.ParentOrderId ?? null,
       ExternalOrderId: order.ExternalOrderId,
       Description: order.order_Description,
       OrderEventId: order?.order_OrderEventId ?? null,
@@ -650,16 +704,52 @@ export class OrdersService {
                     `Size option is required for order item "${product.Name}"`,
                   );
                 }
-                sizeMeasurement = await queryRunner.manager.findOne(
-                  SizeMeasurement,
-                  {
-                    where: { SizeOptionId: option.SizeOption },
-                  },
-                );
-                if (!sizeMeasurement) {
-                  throw new BadRequestException(
-                    `SizeOption with id ${option.SizeOption} has no associated measurement`,
-                  );
+                
+                // If MeasurementId is provided, use that specific version
+                if (option.MeasurementId) {
+                  sizeMeasurement = await queryRunner.manager.findOne(SizeMeasurement, {
+                    where: { 
+                      Id: option.MeasurementId,
+                      IsActive: true 
+                    },
+                  });
+                  if (!sizeMeasurement) {
+                    throw new BadRequestException(
+                      `Size measurement with id ${option.MeasurementId} not found or is inactive`,
+                    );
+                  }
+                  // Verify it matches the SizeOption
+                  if (sizeMeasurement.SizeOptionId !== option.SizeOption) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match size option ${option.SizeOption}`,
+                    );
+                  }
+                } else {
+                  // If MeasurementId is not provided, get the latest version for this SizeOption
+                  sizeMeasurement = await queryRunner.manager
+                    .createQueryBuilder(SizeMeasurement, 'sm')
+                    .where('sm.SizeOptionId = :sizeOptionId', { sizeOptionId: option.SizeOption })
+                    .andWhere('sm.IsLatest = :isLatest', { isLatest: true })
+                    .andWhere('sm.IsActive = :isActive', { isActive: true })
+                    .orderBy('sm.Version', 'DESC')
+                    .getOne();
+                  
+                  if (!sizeMeasurement) {
+                    // Fallback: try to find any active measurement for this SizeOption
+                    sizeMeasurement = await queryRunner.manager.findOne(SizeMeasurement, {
+                      where: { 
+                        SizeOptionId: option.SizeOption,
+                        IsActive: true 
+                      },
+                      order: { Version: 'DESC' }
+                    });
+                  }
+                  
+                  if (!sizeMeasurement) {
+                    throw new BadRequestException(
+                      `SizeOption with id ${option.SizeOption} has no associated measurement`,
+                    );
+                  }
                 }
               }
 
@@ -715,6 +805,9 @@ export class OrdersService {
       if (updateData.OrderName !== undefined) {
         orderPayload.OrderName = updateData.OrderName;
       }
+      if (updateData.OrderType !== undefined) {
+        orderPayload.OrderType = updateData.OrderType;
+      }
 
       const updatedOrder = await queryRunner.manager.save(Order, orderPayload);
 
@@ -741,6 +834,17 @@ export class OrdersService {
     if (assignedClientIds.length > 0 && !assignedClientIds.includes(order.ClientId)) {
       throw new BadRequestException(
         `You are not assigned to the client with ID ${order.ClientId}`,
+      );
+    }
+
+    // Check if this order has any re-orders (child orders)
+    const reOrders = await this.orderRepository.find({
+      where: { ParentOrderId: id },
+    });
+
+    if (reOrders && reOrders.length > 0) {
+      throw new BadRequestException(
+        `Cannot delete order with ID ${id} because it has ${reOrders.length} re-order(s) associated with it. Please delete the re-orders first.`,
       );
     }
 
@@ -804,6 +908,8 @@ export class OrdersService {
           'order.OrderPriority AS OrderPriority',
           'order.OrderNumber AS OrderNumber',
           'order.OrderName AS OrderName',
+          'order.OrderType AS OrderType',
+          'order.ParentOrderId AS ParentOrderId',
           'order.ExternalOrderId AS ExternalOrderId',
         ])
         .where('order.Id = :id', { id });
@@ -997,6 +1103,8 @@ export class OrdersService {
         Description: orderData.Description,
         OrderNumber: orderData.OrderNumber,
         OrderName: orderData.OrderName,
+        OrderType: orderData.OrderType,
+        ParentOrderId: orderData?.ParentOrderId ?? null,
         ExternalOrderId: orderData.ExternalOrderId,
         OrderStatusId: orderData.OrderStatusId,
         StatusName: orderData.StatusName || 'Unknown Status',

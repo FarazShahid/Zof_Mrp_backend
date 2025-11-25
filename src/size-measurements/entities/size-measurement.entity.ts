@@ -1,9 +1,25 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 
 @Entity('sizemeasurements')
 export class SizeMeasurement {
   @PrimaryGeneratedColumn()
   Id: number;
+
+  @Column({ type: 'int', nullable: true, default: null })
+  OriginalSizeMeasurementId: number;
+
+  @Column({ type: 'int', nullable: false, default: 1 })
+  Version: number;
+
+  @Column({ type: 'boolean', nullable: false, default: true })
+  IsLatest: boolean;
+
+  @Column({ type: 'boolean', nullable: false, default: true })
+  IsActive: boolean;
+
+  @ManyToOne(() => SizeMeasurement, { nullable: true, onDelete: 'RESTRICT', onUpdate: 'CASCADE' })
+  @JoinColumn({ name: 'OriginalSizeMeasurementId', referencedColumnName: 'Id' })
+  OriginalSizeMeasurement?: SizeMeasurement | null;
 
   @Column({ type: 'int', nullable: false, default: 1 })
   SizeOptionId: number;

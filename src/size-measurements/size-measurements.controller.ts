@@ -52,6 +52,33 @@ export class SizeMeasurementsController {
   }
 
   @HasRight(AppRightsEnum.ViewProductDefinition)
+  @Get(':id/versions')
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get all versions for a size measurement')
+  findVersions(@Param('id') id: string, @CurrentUser() user: any) {
+    try {
+      return this.sizeMeasurementsService.findVersionsByMeasurementId(+id, user.userId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @HasRight(AppRightsEnum.ViewProductDefinition)
+  @Get('size-option/:sizeOptionId')
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Get all size measurements (originals and versions) for a size option')
+  findAllBySizeOption(
+    @Param('sizeOptionId') sizeOptionId: string,
+    @CurrentUser() user: any,
+  ) {
+    try {
+      return this.sizeMeasurementsService.findAllBySizeOption(+sizeOptionId, user.userId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @HasRight(AppRightsEnum.ViewProductDefinition)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a size measurement by id')
