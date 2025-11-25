@@ -35,6 +35,7 @@ import { User } from 'src/users/entities/user.entity';
 import { OrderComment } from './entities/order-comment.entity';
 import { CreateOrderCommentDto } from './dto/create-order-comment.dto';
 import { UpdateOrderCommentDto } from './dto/update-order-comment.dto';
+import { OrderType } from './order-type.enum';
 
 @Injectable()
 export class OrdersService {
@@ -306,7 +307,7 @@ export class OrdersService {
       ExternalOrderId: existingOrder.ExternalOrderId,
       OrderNumber: existingOrder.OrderNumber,
       OrderName: existingOrder.OrderName,
-      OrderType: existingOrder.OrderType,
+      OrderType: OrderType.RE_ORDER, // Automatically set to Re-order
       items: [],
     };
 
@@ -335,7 +336,11 @@ export class OrdersService {
     }
 
     // Create new order using the existing createOrder() logic
-    return this.createOrder(reorderDto, createdBy, userId);
+    const newOrder = await this.createOrder(reorderDto, createdBy, userId);
+    
+    // Update the new order to set ParentOrderId
+    newOrder.ParentOrderId = orderId;
+    return await this.orderRepository.save(newOrder);
   }
 
   async getAllOrders(userId: number): Promise<any> {
@@ -362,6 +367,7 @@ export class OrdersService {
           'order.OrderNumber AS OrderNumber',
           'order.OrderName AS OrderName',
           'order.OrderType AS OrderType',
+          'order.ParentOrderId AS ParentOrderId',
           'order.ExternalOrderId AS ExternalOrderId',
           'order.CreatedOn AS CreatedOn',
           'order.CreatedBy AS CreatedBy',
@@ -397,6 +403,7 @@ export class OrdersService {
         OrderNumber: order.OrderNumber,
         OrderName: order.OrderName,
         OrderType: order.OrderType,
+        ParentOrderId: order?.ParentOrderId ?? null,
         ExternalOrderId: order.ExternalOrderId,
         CreatedOn: order.CreatedOn,
         CreatedBy: order.CreatedBy,
@@ -449,6 +456,7 @@ export class OrdersService {
         'order.OrderNumber  AS OrderNumber ',
         'order.OrderName AS OrderName',
         'order.OrderType AS OrderType',
+        'order.ParentOrderId AS ParentOrderId',
         'order.ExternalOrderId AS ExternalOrderId',
         'order.CreatedOn AS CreatedOn',
         'order.CreatedBy AS CreatedBy',
@@ -471,6 +479,7 @@ export class OrdersService {
       OrderName: order.OrderName,
       OrderNumber: order.OrderNumber,
       OrderType: order.OrderType,
+      ParentOrderId: order?.ParentOrderId ?? null,
       ExternalOrderId: order.ExternalOrderId,
       Description: order.order_Description,
       OrderEventId: order?.order_OrderEventId ?? null,
@@ -815,6 +824,7 @@ export class OrdersService {
           'order.OrderNumber AS OrderNumber',
           'order.OrderName AS OrderName',
           'order.OrderType AS OrderType',
+          'order.ParentOrderId AS ParentOrderId',
           'order.ExternalOrderId AS ExternalOrderId',
         ])
         .where('order.Id = :id', { id });
@@ -1009,6 +1019,7 @@ export class OrdersService {
         OrderNumber: orderData.OrderNumber,
         OrderName: orderData.OrderName,
         OrderType: orderData.OrderType,
+        ParentOrderId: orderData?.ParentOrderId ?? null,
         ExternalOrderId: orderData.ExternalOrderId,
         OrderStatusId: orderData.OrderStatusId,
         StatusName: orderData.StatusName || 'Unknown Status',

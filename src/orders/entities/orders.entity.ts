@@ -55,6 +55,16 @@ export class Order extends BaseEntity {
   @Column({ type: 'varchar', length: 100, nullable: true })
   OrderType: string;
 
+  @Column({ type: 'int', nullable: true })
+  ParentOrderId: number;
+
+  @ManyToOne(() => Order, { nullable: true })
+  @JoinColumn({ name: 'ParentOrderId' })
+  parentOrder: Order;
+
+  @OneToMany(() => Order, order => order.parentOrder)
+  childOrders: Order[];
+
   @Column({ type: 'varchar', length: 255, nullable: true })
   ExternalOrderId: string;
 
