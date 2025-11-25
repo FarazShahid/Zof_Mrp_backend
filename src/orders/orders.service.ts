@@ -763,6 +763,17 @@ export class OrdersService {
       );
     }
 
+    // Check if this order has any re-orders (child orders)
+    const reOrders = await this.orderRepository.find({
+      where: { ParentOrderId: id },
+    });
+
+    if (reOrders && reOrders.length > 0) {
+      throw new BadRequestException(
+        `Cannot delete order with ID ${id} because it has ${reOrders.length} re-order(s) associated with it. Please delete the re-orders first.`,
+      );
+    }
+
     const orderItems = await this.orderItemRepository.find({
       where: { OrderId: id },
     });
