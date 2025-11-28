@@ -1,4 +1,4 @@
-import { Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, Query, UseInterceptors } from '@nestjs/common';
+import { Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, Query, UseInterceptors, Patch } from '@nestjs/common';
 import { SizeMeasurementsService } from './size-measurements.service';
 import { CreateSizeMeasurementDto } from './dto/create-size-measurement.dto';
 import { UpdateSizeMeasurementDto } from './dto/update-size-measurement.dto';
@@ -101,6 +101,18 @@ export class SizeMeasurementsController {
   ) {
     try {
       return this.sizeMeasurementsService.update(+id, updateSizeMeasurementDto, user.email, user.userId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @HasRight(AppRightsEnum.UpdateProductDefinition)
+  @Patch(':id/set-as-default')
+  @HttpCode(HttpStatus.OK)
+  @CommonApiResponses('Set a size measurement as default (creates new version and marks as latest)')
+  setAsDefault(@Param('id') id: string, @CurrentUser() user: any) {
+    try {
+      return this.sizeMeasurementsService.setAsDefault(+id, user.email, user.userId);
     } catch (error) {
       throw error;
     }

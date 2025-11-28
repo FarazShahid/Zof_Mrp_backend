@@ -150,6 +150,29 @@ export class SizeMeasurementsService {
 
       const items = await queryBuilder.getRawMany();
 
+      const originalIds = items
+        .filter(item => !item.OriginalSizeMeasurementId)
+        .map(item => item.Id);
+
+      let originalVersionLookup = new Map<number, boolean>();
+      if (originalIds.length > 0) {
+        const originalsWithVersions = await this.sizeMeasurementRepository
+          .createQueryBuilder('sm')
+          .select('sm.OriginalSizeMeasurementId', 'originalId')
+          .addSelect('COUNT(*)', 'versionCount')
+          .where('sm.OriginalSizeMeasurementId IN (:...originalIds)', { originalIds })
+          .andWhere('sm.IsActive = :isActive', { isActive: true })
+          .groupBy('sm.OriginalSizeMeasurementId')
+          .getRawMany();
+
+        originalVersionLookup = new Map(
+          originalsWithVersions.map(record => [
+            Number(record.originalId),
+            Number(record.versionCount) > 0,
+          ]),
+        );
+      }
+
       const cutOptionIds = items
         .filter(e => e.CutOptionId != null)
         .map(e => e.CutOptionId);
@@ -170,7 +193,14 @@ export class SizeMeasurementsService {
       return filteredItems.map(e => ({
         ...e,
         H_FusionInside: e?.H_FusionInside ? HatFusion.YES : HatFusion.NO ?? HatFusion.NO,
-        cutOptionName: cutOptionsMap.get(e.CutOptionId)?.OptionProductCutOptions || null
+        cutOptionName: cutOptionsMap.get(e.CutOptionId)?.OptionProductCutOptions || null,
+        hasVersions: !e.OriginalSizeMeasurementId
+          ? Boolean(originalVersionLookup.get(e.Id))
+          : false,
+        CreatedOn: e.CreatedOn,
+        CreatedBy: e.CreatedBy,
+        UpdatedOn: e.UpdatedOn,
+        UpdatedBy: e.UpdatedBy,
       }));
 
     } catch (error) {
@@ -222,7 +252,11 @@ export class SizeMeasurementsService {
       return {
         ...sizeMeasurement,
         H_FusionInside: sizeMeasurement?.H_FusionInside ? HatFusion.YES : HatFusion.NO ?? HatFusion.NO,
-        cutOptionName
+        cutOptionName,
+        CreatedOn: sizeMeasurement.CreatedOn,
+        CreatedBy: sizeMeasurement.CreatedBy,
+        UpdatedOn: sizeMeasurement.UpdatedOn,
+        UpdatedBy: sizeMeasurement.UpdatedBy,
       };
 
     } catch (error) {
@@ -458,7 +492,11 @@ export class SizeMeasurementsService {
       return {
         ...savedResponse,
         cutOptionName: cutOptionName,
-        SizeOptionName: sizeOptionName
+        SizeOptionName: sizeOptionName,
+        CreatedOn: savedResponse.CreatedOn,
+        CreatedBy: savedResponse.CreatedBy,
+        UpdatedOn: savedResponse.UpdatedOn,
+        UpdatedBy: savedResponse.UpdatedBy,
       };
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -469,6 +507,121 @@ export class SizeMeasurementsService {
     }
   }
 
+
+  async setAsDefault(id: number, updatedBy: string, userId: number): Promise<any> {
+    try {
+      // Get the existing record
+      const existingMeasurement = await this.sizeMeasurementRepository.findOne({
+        where: { Id: id, IsActive: true }
+      });
+
+      if (!existingMeasurement) {
+        throw new NotFoundException(`Size measurement with ID ${id} not found`);
+      }
+
+      // Verify user access
+      const userAssignedClientIds = await this.getClientsForUser(userId);
+      if (userAssignedClientIds.length > 0 && existingMeasurement.ClientId && !userAssignedClientIds.includes(existingMeasurement.ClientId)) {
+        throw new NotFoundException(`Size measurement with ID ${id} not found`);
+      }
+
+      // Determine the original ID
+      const originalId = existingMeasurement.OriginalSizeMeasurementId || existingMeasurement.Id;
+
+      // Get the maximum version number for this original
+      const maxVersion = await this.sizeMeasurementRepository
+        .createQueryBuilder('sm')
+        .where('sm.Id = :originalId', { originalId })
+        .orWhere('sm.OriginalSizeMeasurementId = :originalId', { originalId })
+        .select('MAX(sm.Version)', 'maxVersion')
+        .getRawOne();
+
+      const nextVersion = (maxVersion?.maxVersion || existingMeasurement.Version || 0) + 1;
+
+      // Mark all existing versions of this original as not latest
+      await this.sizeMeasurementRepository
+        .createQueryBuilder()
+        .update(SizeMeasurement)
+        .set({ IsLatest: false })
+        .where('Id = :originalId', { originalId })
+        .orWhere('OriginalSizeMeasurementId = :originalId', { originalId })
+        .execute();
+      
+      // Also mark other measurements with the same SizeOptionId as not latest
+      await this.sizeMeasurementRepository
+        .createQueryBuilder()
+        .update(SizeMeasurement)
+        .set({ IsLatest: false })
+        .where('SizeOptionId = :sizeOptionId', { sizeOptionId: existingMeasurement.SizeOptionId })
+        .andWhere('Id != :originalId', { originalId })
+        .andWhere('(OriginalSizeMeasurementId != :originalId OR OriginalSizeMeasurementId IS NULL)', { originalId })
+        .andWhere('IsActive = :isActive', { isActive: true })
+        .execute();
+
+      // Create new version - copy existing measurement without changes
+      const { Id, OriginalSizeMeasurementId, Version, IsLatest, IsActive, CreatedOn, UpdatedOn, ...existingData } = existingMeasurement;
+
+      const baseMeasurementName = this.getBaseMeasurementName(existingMeasurement.Measurement1);
+      const versionSuffixNumber = Math.max(nextVersion - 1, 1);
+
+      // Create new version with same data
+      const newVersionData = {
+        ...existingData,
+        // Override versioning fields
+        OriginalSizeMeasurementId: originalId,
+        Version: nextVersion,
+        IsLatest: true,
+        IsActive: true,
+        CreatedBy: updatedBy,
+        UpdatedBy: updatedBy,
+      };
+
+      if (baseMeasurementName) {
+        newVersionData.Measurement1 = this.buildVersionedMeasurementName(baseMeasurementName, versionSuffixNumber);
+      }
+
+      const newVersion = this.sizeMeasurementRepository.create(newVersionData);
+      const savedResponse = await this.sizeMeasurementRepository.save(newVersion);
+
+      // Get size option name and cut option name for response
+      let sizeOptionName = null;
+      let cutOptionName = null;
+
+      if (savedResponse.SizeOptionId) {
+        const sizeOption = await this.sizeMeasurementRepository
+          .createQueryBuilder('sm')
+          .select('so.OptionSizeOptions as SizeOptionName')
+          .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
+          .where('so.Id = :sizeOptionId', { sizeOptionId: savedResponse.SizeOptionId })
+          .getRawOne();
+        sizeOptionName = sizeOption?.SizeOptionName || null;
+      }
+
+      if (savedResponse.CutOptionId) {
+        const cutOption = await this.productCutOptionRepository.findOne({
+          where: { Id: savedResponse.CutOptionId },
+          withDeleted: true
+        });
+        cutOptionName = cutOption?.OptionProductCutOptions || null;
+      }
+
+      return {
+        ...savedResponse,
+        cutOptionName: cutOptionName,
+        SizeOptionName: sizeOptionName,
+        CreatedOn: savedResponse.CreatedOn,
+        CreatedBy: savedResponse.CreatedBy,
+        UpdatedOn: savedResponse.UpdatedOn,
+        UpdatedBy: savedResponse.UpdatedBy,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error setting size measurement as default:', error);
+      throw new BadRequestException('Error setting size measurement as default');
+    }
+  }
 
   async remove(id: number, userId: number): Promise<void> {
     try {
@@ -545,7 +698,11 @@ export class SizeMeasurementsService {
       return items.map(e => ({
         ...e,
         H_FusionInside: e?.H_FusionInside ? HatFusion.YES : HatFusion.NO ?? HatFusion.NO,
-        cutOptionName: cutOptionsMap.get(e.CutOptionId)?.OptionProductCutOptions || null
+        cutOptionName: cutOptionsMap.get(e.CutOptionId)?.OptionProductCutOptions || null,
+        CreatedOn: e.CreatedOn,
+        CreatedBy: e.CreatedBy,
+        UpdatedOn: e.UpdatedOn,
+        UpdatedBy: e.UpdatedBy,
       }));
 
     } catch (error) {
