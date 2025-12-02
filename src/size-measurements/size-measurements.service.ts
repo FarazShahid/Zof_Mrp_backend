@@ -451,12 +451,12 @@ export class SizeMeasurementsService {
       // Exclude versioning fields, Id, and timestamps from the copy
       const { Id, OriginalSizeMeasurementId, Version, IsLatest, IsActive, CreatedOn, UpdatedOn, ...existingData } = existingMeasurement;
 
+      // Get the base name (remove any existing version suffix if present)
       const desiredBaseNameSource = updateSizeMeasurementDto.Measurement1 !== undefined
         ? updateSizeMeasurementDto.Measurement1
         : existingMeasurement.Measurement1;
 
       const baseMeasurementName = this.getBaseMeasurementName(desiredBaseNameSource);
-      const versionSuffixNumber = Math.max(nextVersion - 1, 1);
 
       // Merge updates with existing data (updates take precedence)
       const newVersionData = {
@@ -469,11 +469,9 @@ export class SizeMeasurementsService {
         IsActive: true,
         CreatedBy: updatedBy,
         UpdatedBy: updatedBy,
+        // Keep the original name without version suffix
+        Measurement1: baseMeasurementName || existingData.Measurement1,
       };
-
-      if (baseMeasurementName) {
-        newVersionData.Measurement1 = this.buildVersionedMeasurementName(baseMeasurementName, versionSuffixNumber);
-      }
 
       const newVersion = this.sizeMeasurementRepository.create(newVersionData);
       const savedResponse = await this.sizeMeasurementRepository.save(newVersion);
@@ -561,8 +559,8 @@ export class SizeMeasurementsService {
       // Create new version - copy existing measurement without changes
       const { Id, OriginalSizeMeasurementId, Version, IsLatest, IsActive, CreatedOn, UpdatedOn, ...existingData } = existingMeasurement;
 
+      // Get the base name (remove any existing version suffix if present)
       const baseMeasurementName = this.getBaseMeasurementName(existingMeasurement.Measurement1);
-      const versionSuffixNumber = Math.max(nextVersion - 1, 1);
 
       // Create new version with same data
       const newVersionData = {
@@ -574,11 +572,9 @@ export class SizeMeasurementsService {
         IsActive: true,
         CreatedBy: updatedBy,
         UpdatedBy: updatedBy,
+        // Keep the original name without version suffix
+        Measurement1: baseMeasurementName || existingData.Measurement1,
       };
-
-      if (baseMeasurementName) {
-        newVersionData.Measurement1 = this.buildVersionedMeasurementName(baseMeasurementName, versionSuffixNumber);
-      }
 
       const newVersion = this.sizeMeasurementRepository.create(newVersionData);
       const savedResponse = await this.sizeMeasurementRepository.save(newVersion);
