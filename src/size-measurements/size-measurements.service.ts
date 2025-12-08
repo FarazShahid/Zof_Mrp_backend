@@ -75,6 +75,22 @@ export class SizeMeasurementsService {
         }
       }
 
+      // Check for duplicate: ClientId, ProductCategoryId, and SizeOptionId combination
+      const existingMeasurement = await this.sizeMeasurementRepository.findOne({
+        where: {
+          ClientId: createSizeMeasurementDto.ClientId,
+          ProductCategoryId: createSizeMeasurementDto.ProductCategoryId,
+          SizeOptionId: createSizeMeasurementDto.SizeOptionId,
+          IsActive: true,
+        },
+      });
+
+      if (existingMeasurement) {
+        throw new BadRequestException(
+          'A size measurement with this Client, Product Category, and Size Option combination already exists. Please use a different combination or update the existing measurement.'
+        );
+      }
+
       const sanitizedMeasurementName = this.getBaseMeasurementName(createSizeMeasurementDto.Measurement1);
 
       const newSizeMeasurement = this.sizeMeasurementRepository.create({
@@ -106,6 +122,10 @@ export class SizeMeasurementsService {
       
       return saved;
     } catch (error) {
+      // Re-throw BadRequestException and NotFoundException as-is to preserve the original error message
+      if (error instanceof BadRequestException || error instanceof NotFoundException) {
+        throw error;
+      }
       console.error('Error creating size measurement:', error);
       throw new BadRequestException('Error creating size measurement');
     }
@@ -645,6 +665,82 @@ export class SizeMeasurementsService {
         }
       }
 
+      // If deleting a record that is latest, set another record as latest
+      if (measurementEntity.IsLatest) {
+        // Determine the original ID
+        const originalId = measurementEntity.OriginalSizeMeasurementId || measurementEntity.Id;
+
+        // Try to find and set the original as latest
+        if (measurementEntity.OriginalSizeMeasurementId) {
+          const original = await this.sizeMeasurementRepository.findOne({
+            where: { Id: originalId, IsActive: true },
+          });
+
+          if (original) {
+            // Mark all other measurements with the same SizeOptionId as not latest
+            await this.sizeMeasurementRepository
+              .createQueryBuilder()
+              .update(SizeMeasurement)
+              .set({ IsLatest: false })
+              .where('SizeOptionId = :sizeOptionId', { sizeOptionId: measurementEntity.SizeOptionId })
+              .andWhere('Id != :originalId', { originalId })
+              .andWhere('IsActive = :isActive', { isActive: true })
+              .execute();
+
+            // Set original as latest
+            await this.sizeMeasurementRepository.update(originalId, { IsLatest: true });
+          } else {
+            // Original not found or inactive, find the most recent active version
+            const mostRecentVersion = await this.sizeMeasurementRepository
+              .createQueryBuilder('sm')
+              .where('sm.OriginalSizeMeasurementId = :originalId', { originalId })
+              .andWhere('sm.IsActive = :isActive', { isActive: true })
+              .andWhere('sm.Id != :deletingId', { deletingId: id })
+              .orderBy('sm.Version', 'DESC')
+              .getOne();
+
+            if (mostRecentVersion) {
+              // Mark all other measurements with the same SizeOptionId as not latest
+              await this.sizeMeasurementRepository
+                .createQueryBuilder()
+                .update(SizeMeasurement)
+                .set({ IsLatest: false })
+                .where('SizeOptionId = :sizeOptionId', { sizeOptionId: measurementEntity.SizeOptionId })
+                .andWhere('Id != :versionId', { versionId: mostRecentVersion.Id })
+                .andWhere('IsActive = :isActive', { isActive: true })
+                .execute();
+
+              // Set most recent version as latest
+              await this.sizeMeasurementRepository.update(mostRecentVersion.Id, { IsLatest: true });
+            }
+          }
+        } else {
+          // This is the original being deleted, find the most recent active version
+          const mostRecentVersion = await this.sizeMeasurementRepository
+            .createQueryBuilder('sm')
+            .where('sm.OriginalSizeMeasurementId = :originalId', { originalId })
+            .andWhere('sm.IsActive = :isActive', { isActive: true })
+            .andWhere('sm.Id != :deletingId', { deletingId: id })
+            .orderBy('sm.Version', 'DESC')
+            .getOne();
+
+          if (mostRecentVersion) {
+            // Mark all other measurements with the same SizeOptionId as not latest
+            await this.sizeMeasurementRepository
+              .createQueryBuilder()
+              .update(SizeMeasurement)
+              .set({ IsLatest: false })
+              .where('SizeOptionId = :sizeOptionId', { sizeOptionId: measurementEntity.SizeOptionId })
+              .andWhere('Id != :versionId', { versionId: mostRecentVersion.Id })
+              .andWhere('IsActive = :isActive', { isActive: true })
+              .execute();
+
+            // Set most recent version as latest
+            await this.sizeMeasurementRepository.update(mostRecentVersion.Id, { IsLatest: true });
+          }
+        }
+      }
+
       const result = await this.sizeMeasurementRepository.delete(id);
       if (result.affected === 0) {
         throw new NotFoundException(`Size measurement with ID ${id} not found`);
@@ -717,13 +813,5 @@ export class SizeMeasurementsService {
     return name.replace(/\s*-\s*v\d+$/i, '').trim();
   }
 
-  /**
-   * Helper: build measurement name with version suffix (e.g., "Jersey XXL - v1")
-   */
-  private buildVersionedMeasurementName(baseName: string, versionNumber: number): string {
-    const safeBase = baseName?.trim() || 'Size Measurement';
-    const safeVersion = Math.max(versionNumber, 1);
-    return `${safeBase} - v${safeVersion}`;
-  }
 
 } 
