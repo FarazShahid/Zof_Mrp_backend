@@ -11,6 +11,7 @@ import { ApiQuery } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 import { HasRight } from 'src/auth/has-right-guard';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @ControllerAuthProtector('Products', 'products')
 @UseInterceptors(AuditInterceptor)
@@ -175,10 +176,21 @@ export class ProductsController {
   @HasRight(AppRightsEnum.ViewProduct)
   @Get('with-attachments/all')
   @HttpCode(HttpStatus.OK)
-  @CommonApiResponses('Get all products with their attachments and client information')
-  async getProductsWithAttachments(@CurrentUser() user: any) {
+  @CommonApiResponses('Get paginated products with their attachments and client information')
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starts from 1)', example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of items per page', example: 10 })
+  async getProductsWithAttachments(
+    @CurrentUser() user: any,
+    @Query() paginationDto: PaginationDto,
+  ) {
     try {
-      return await this.productsService.getProductsWithAttachments(user.userId);
+      const page = paginationDto.page || 1;
+      const limit = paginationDto.limit || 10;
+      return await this.productsService.getProductsWithAttachments(
+        user.userId,
+        page,
+        limit,
+      );
     } catch (error) {
       throw error;
     }

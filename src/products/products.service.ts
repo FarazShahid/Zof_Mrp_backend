@@ -49,7 +49,7 @@ export class ProductsService {
     if (!assignedClientIds.length) {
       return [];
     }
-    
+
     // Filter out any invalid values (NaN, null, undefined) and ensure all are valid numbers
     const validClientIds = assignedClientIds.filter(id => {
       return id !== null && id !== undefined && !isNaN(Number(id)) && Number.isFinite(Number(id));
@@ -73,7 +73,7 @@ export class ProductsService {
           `Client with ID ${createProductDto.ClientId} not found`,
         );
 
-     const assignedClientIds = await this.getClientsForUser(userId);
+      const assignedClientIds = await this.getClientsForUser(userId);
 
       if (assignedClientIds.length > 0 && !assignedClientIds.includes(createProductDto.ClientId)) {
         throw new BadRequestException(
@@ -205,7 +205,7 @@ export class ProductsService {
   async getAllProducts(userId: number, filter?: string | undefined | null): Promise<any[]> {
 
     const assignedClientIds = await this.getClientsForUser(userId);
-    
+
     try {
       let query = this.productRepository
         .createQueryBuilder('product')
@@ -353,7 +353,7 @@ export class ProductsService {
   }
 
   async findOne(id: number, userId: number): Promise<any> {
-    const product = await this.productRepository.findOne({ 
+    const product = await this.productRepository.findOne({
       where: { Id: id },
       relations: ['client', 'fabricType']
     });
@@ -924,10 +924,60 @@ export class ProductsService {
     }
   }
 
-  async getProductsWithAttachments(userId: number): Promise<any[]> {
+  async getProductsWithAttachments(
+    userId: number,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{
+    data: any[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasMore: boolean;
+    };
+  }> {
     try {
       const assignedClientIds = await this.getClientsForUser(userId);
 
+      // Step 1: Get all product IDs that have any attachments (we'll filter for images later)
+      let allProductsQuery = this.productRepository
+        .createQueryBuilder('product')
+        .innerJoin(
+          'media_links',
+          'mediaLink',
+          'mediaLink.reference_id = product.Id AND mediaLink.reference_type = :refType',
+          { refType: 'product' },
+        )
+        .innerJoin('media', 'media', 'media.id = mediaLink.media_id')
+        .select('product.Id', 'productId')
+        .distinct(true)
+        .orderBy('product.Id', 'ASC');
+
+      if (assignedClientIds.length > 0) {
+        allProductsQuery.andWhere('product.ClientId IN (:...ids)', {
+          ids: assignedClientIds,
+        });
+      }
+
+      const allProductIdsResult = await allProductsQuery.getRawMany();
+      const allProductIds = allProductIdsResult.map((row) => row.productId);
+
+      if (allProductIds.length === 0) {
+        return {
+          data: [],
+          pagination: {
+            page,
+            limit,
+            total: 0,
+            totalPages: 0,
+            hasMore: false,
+          },
+        };
+      }
+
+      // Step 2: Fetch all products with their attachments to filter for images
       let query = this.productRepository
         .createQueryBuilder('product')
         .leftJoin('Client', 'client', 'client.Id = product.ClientId')
@@ -950,15 +1000,50 @@ export class ProductsService {
           'media.file_url AS fileUrl',
           'mediaLink.tag AS mediaTag',
         ])
+        .where('product.Id IN (:...allProductIds)', { allProductIds })
         .orderBy('product.Id', 'ASC');
-
-      if (assignedClientIds.length > 0) {
-        query.andWhere('product.ClientId IN (:...ids)', { ids: assignedClientIds });
-      }
 
       const results = await query.getRawMany();
 
-      // Group attachments by product
+      // Image types filter
+      const imageTypes = new Set([
+        'png',
+        'jpg',
+        'jpeg',
+        'gif',
+        'webp',
+        'svg',
+        'bmp',
+        'tiff',
+        'avif',
+      ]);
+
+      // Helper function to check if file is an image
+      const isImageType = (fileType: string | null, fileName: string | null): boolean => {
+        if (!fileType && !fileName) return false;
+        
+        // Check fileType (could be extension or MIME type)
+        if (fileType) {
+          const typeLower = fileType.toLowerCase();
+          // Check if it's a MIME type (e.g., "image/png")
+          if (typeLower.startsWith('image/')) {
+            const ext = typeLower.split('/')[1]?.split(';')[0]?.trim();
+            if (ext && imageTypes.has(ext)) return true;
+          }
+          // Check if it's just an extension
+          if (imageTypes.has(typeLower)) return true;
+        }
+        
+        // Check fileName extension as fallback
+        if (fileName) {
+          const ext = fileName.split('.').pop()?.toLowerCase();
+          if (ext && imageTypes.has(ext)) return true;
+        }
+        
+        return false;
+      };
+
+      // Step 4: Group attachments by product
       const productsMap = new Map<number, any>();
 
       for (const row of results) {
@@ -975,8 +1060,8 @@ export class ProductsService {
           });
         }
 
-        // Add attachment if exists
-        if (row.mediaId) {
+        // Add attachment if exists and is an image type
+        if (row.mediaId && isImageType(row.fileType, row.fileName)) {
           productsMap.get(productId).attachments.push({
             mediaId: row.mediaId,
             fileName: row.fileName,
@@ -987,7 +1072,28 @@ export class ProductsService {
         }
       }
 
-      return Array.from(productsMap.values());
+      // Filter products to only include those with image attachments
+      const productsWithImageAttachments = Array.from(productsMap.values()).filter(
+        (product) => product.attachments.length > 0,
+      );
+
+      // Step 5: Paginate the filtered products
+      const skip = (page - 1) * limit;
+      const paginatedProducts = productsWithImageAttachments.slice(skip, skip + limit);
+      const total = productsWithImageAttachments.length;
+      const totalPages = Math.ceil(total / limit);
+      const hasMore = skip + paginatedProducts.length < total;
+
+      return {
+        data: paginatedProducts,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasMore,
+        },
+      };
     } catch (error) {
       console.error('Error fetching products with attachments:', error);
       throw new BadRequestException('Error fetching products with attachments');
