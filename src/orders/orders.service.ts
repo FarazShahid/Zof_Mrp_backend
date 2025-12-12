@@ -1121,6 +1121,7 @@ export class OrdersService {
     const orderItems = await this.orderItemRepository
       .createQueryBuilder('orderItem')
       .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
+      .leftJoin('project', 'project', 'product.ProjectId = project.Id')
       .leftJoin('document', 'imageDoc', 'orderItem.ImageId = imageDoc.Id')
       .leftJoin('document', 'fileDoc', 'orderItem.FileId = fileDoc.Id')
       .leftJoin('document', 'videoDoc', 'orderItem.VideoId = videoDoc.Id')
@@ -1147,6 +1148,8 @@ export class OrdersService {
         'orderItem.OrderItemPriority AS OrderItemPriority',
         'orderItem.ItemShipmentStatus AS ItemShipmentStatus',
         'product.Name AS ProductName',
+        'product.ProjectId AS ProjectId',
+        'project.Name AS ProjectName',
         'printingOption.Id AS PrintingOptionId',
         'printingOption.PrintingOptionId AS PrintingOptionId',
         'printingOption.Description AS PrintingOptionDescription',
@@ -1210,6 +1213,8 @@ export class OrdersService {
           OrderId: item.OrderId,
           ProductId: item.ProductId,
           ProductName: item.ProductName || '',
+          ProjectId: item?.ProjectId ?? null,
+          ProjectName: item?.ProjectName ?? null,
           Description: item?.Description ?? null,
           OrderItemPriority: item.OrderItemPriority || 0,
           ItemShipmentStatus: item?.ItemShipmentStatus ?? null,

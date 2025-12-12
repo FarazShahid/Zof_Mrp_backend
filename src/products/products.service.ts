@@ -14,6 +14,7 @@ import { UpdateProductStatusDto } from './dto/update-status-dto';
 import { Client } from 'src/clients/entities/client.entity';
 import { ProductPrintingOptions } from './entities/product-printing-options.entity';
 import { User } from 'src/users/entities/user.entity';
+import { Project } from 'src/projects/entities/project.entity';
 
 @Injectable()
 export class ProductsService {
@@ -29,6 +30,9 @@ export class ProductsService {
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    @InjectRepository(Project)
+    private readonly projectRepository: Repository<Project>,
 
     private dataSource: DataSource,
   ) { }
@@ -79,6 +83,33 @@ export class ProductsService {
         throw new BadRequestException(
           `You are not assigned to the client with ID ${createProductDto.ClientId}`,
         );
+      }
+
+      // Validate ProjectId if provided
+      if (createProductDto.ProjectId) {
+        const project = await this.projectRepository.findOne({
+          where: { Id: createProductDto.ProjectId },
+        });
+
+        if (!project) {
+          throw new BadRequestException(
+            `Project with ID ${createProductDto.ProjectId} not found`,
+          );
+        }
+
+        // Ensure project belongs to the same client as the product
+        if (project.ClientId !== createProductDto.ClientId) {
+          throw new BadRequestException(
+            `Project with ID ${createProductDto.ProjectId} does not belong to client with ID ${createProductDto.ClientId}`,
+          );
+        }
+
+        // Authorization: User must have access to the project's client
+        if (assignedClientIds.length > 0 && !assignedClientIds.includes(project.ClientId)) {
+          throw new BadRequestException(
+            `You are not assigned to the client of project with ID ${createProductDto.ProjectId}`,
+          );
+        }
       }
 
       const newProduct = this.productRepository.create({
@@ -216,6 +247,7 @@ export class ProductsService {
           'category.Id = product.ProductCategoryId',
         )
         .leftJoin('Client', 'client', 'client.Id = product.ClientId')
+        .leftJoin('project', 'project', 'project.Id = product.ProjectId')
         .select([
           'product.Id AS Id',
           'product.Name AS Name',
@@ -230,6 +262,8 @@ export class ProductsService {
           'product.isArchived AS isArchived',
           'client.Id AS ClientId',
           'client.Name AS ClientName',
+          'product.ProjectId AS ProjectId',
+          'project.Name AS ProjectName',
           'product.CreatedOn AS CreatedOn',
           'product.UpdatedOn AS UpdatedOn',
           'product.CreatedBy AS CreatedBy',
@@ -303,6 +337,7 @@ export class ProductsService {
           'category.Id = product.ProductCategoryId',
         )
         .leftJoin('Client', 'client', 'client.Id = product.ClientId')
+        .leftJoin('project', 'project', 'project.Id = product.ProjectId')
         .select([
           'product.Id AS Id',
           'product.Name AS Name',
@@ -317,6 +352,8 @@ export class ProductsService {
           'product.isArchived AS isArchived',
           'client.Id AS ClientId',
           'client.Name AS ClientName',
+          'product.ProjectId AS ProjectId',
+          'project.Name AS ProjectName',
           'product.CreatedOn AS CreatedOn',
           'product.UpdatedOn AS UpdatedOn',
           'product.CreatedBy AS CreatedBy',
@@ -341,6 +378,8 @@ export class ProductsService {
         isArchived: Boolean(product?.isArchived) || false,
         ClientId: product?.ClientId || null,
         ClientName: product?.ClientName || null,
+        ProjectId: product?.ProjectId || null,
+        ProjectName: product?.ProjectName || null,
         CreatedBy: product?.CreatedBy || '',
         UpdatedBy: product?.UpdatedBy || '',
         CreatedOn: product?.CreatedOn || '',
@@ -355,7 +394,7 @@ export class ProductsService {
   async findOne(id: number, userId: number): Promise<any> {
     const product = await this.productRepository.findOne({
       where: { Id: id },
-      relations: ['client', 'fabricType']
+      relations: ['client', 'fabricType', 'project']
     });
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
@@ -415,6 +454,8 @@ export class ProductsService {
       ClientName: product.client?.Name || null,
       FabricName: product.fabricType?.Name || null,
       FabricType: product.fabricType?.Type || null,
+      ProjectId: product.project?.Id || null,
+      ProjectName: product.project?.Name || null,
       printingOptions,
       productColors,
       productDetails,
@@ -448,6 +489,39 @@ export class ProductsService {
         throw new BadRequestException(
           `Client with ID ${updateProductDto.ClientId} not found`,
         );
+    }
+
+    // Validate ProjectId if provided
+    const finalClientId = updateProductDto.ClientId ?? product.ClientId;
+    if (updateProductDto.ProjectId !== undefined) {
+      if (updateProductDto.ProjectId === null) {
+        // Allowing ProjectId to be set to null (removing project assignment)
+        // No validation needed
+      } else {
+        const project = await this.projectRepository.findOne({
+          where: { Id: updateProductDto.ProjectId },
+        });
+
+        if (!project) {
+          throw new BadRequestException(
+            `Project with ID ${updateProductDto.ProjectId} not found`,
+          );
+        }
+
+        // Ensure project belongs to the same client as the product
+        if (project.ClientId !== finalClientId) {
+          throw new BadRequestException(
+            `Project with ID ${updateProductDto.ProjectId} does not belong to client with ID ${finalClientId}`,
+          );
+        }
+
+        // Authorization: User must have access to the project's client
+        if (assignedClientIds.length > 0 && !assignedClientIds.includes(project.ClientId)) {
+          throw new BadRequestException(
+            `You are not assigned to the client of project with ID ${updateProductDto.ProjectId}`,
+          );
+        }
+      }
     }
 
     const {

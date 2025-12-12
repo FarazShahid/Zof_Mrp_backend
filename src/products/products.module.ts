@@ -8,9 +8,10 @@ import { ProductPrintingOptions } from './entities/product-printing-options.enti
 import { PrintingOptions } from 'src/printingoptions/entities/printingoptions.entity';
 import { AuditModule } from 'src/audit-logs/audit.module';
 import { User } from 'src/users/entities/user.entity';
+import { Project } from 'src/projects/entities/project.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product, ProductPrintingOptions, Client, User]),
+  imports: [TypeOrmModule.forFeature([Product, ProductPrintingOptions, Client, User, Project]),
 AuditModule
 ],
   controllers: [ProductsController],
