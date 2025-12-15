@@ -1002,6 +1002,9 @@ export class ProductsService {
     userId: number,
     page: number = 1,
     limit: number = 10,
+    clientId?: number,
+    productId?: number,
+    searchQuery?: string,
   ): Promise<{
     data: any[];
     pagination: {
@@ -1014,6 +1017,12 @@ export class ProductsService {
   }> {
     try {
       const assignedClientIds = await this.getClientsForUser(userId);
+
+      if(clientId !== undefined && clientId !== null) {
+        if (assignedClientIds.length > 0 && !assignedClientIds.includes(clientId)) {
+          throw new ForbiddenException("You do not have access to this client");
+        }
+      }
 
       // Step 1: Get all product IDs that have any attachments (we'll filter for images later)
       let allProductsQuery = this.productRepository
@@ -1033,6 +1042,21 @@ export class ProductsService {
         allProductsQuery.andWhere('product.ClientId IN (:...ids)', {
           ids: assignedClientIds,
         });
+      }
+
+      if (clientId !== undefined && clientId !== null) {
+        allProductsQuery.andWhere('product.ClientId = :clientId', { clientId });
+      }
+
+      if (productId !== undefined && productId !== null) {
+        allProductsQuery.andWhere('product.Id = :productId', { productId });
+      }
+
+      if (searchQuery) {
+        allProductsQuery.andWhere(
+          '(product.Name LIKE :search OR product.Description LIKE :search)',
+          { search: `%${searchQuery}%` },
+        );
       }
 
       const allProductIdsResult = await allProductsQuery.getRawMany();
@@ -1076,6 +1100,21 @@ export class ProductsService {
         ])
         .where('product.Id IN (:...allProductIds)', { allProductIds })
         .orderBy('product.Id', 'ASC');
+
+      if (clientId !== undefined && clientId !== null) {
+        query.andWhere('product.ClientId = :clientId', { clientId });
+      }
+
+      if (productId !== undefined && productId !== null) {
+        query.andWhere('product.Id = :productId', { productId });
+      }
+
+      if (searchQuery) {
+        query.andWhere(
+          '(product.Name LIKE :search OR product.Description LIKE :search)',
+          { search: `%${searchQuery}%` },
+        );
+      }
 
       const results = await query.getRawMany();
 

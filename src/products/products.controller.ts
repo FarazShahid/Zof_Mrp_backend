@@ -179,6 +179,9 @@ export class ProductsController {
   @CommonApiResponses('Get paginated products with their attachments and client information')
   @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starts from 1)', example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of items per page', example: 10 })
+  @ApiQuery({ name: 'searchQuery', required: false, type: String, description: 'Search query for product name or description', example: 'shirt' })
+  @ApiQuery({ name: 'clientId', required: false, type: Number, description: 'Client ID to filter products', example: 1 })
+  @ApiQuery({ name: 'productId', required: false, type: Number, description: 'Product ID to filter products', example: 1 })
   async getProductsWithAttachments(
     @CurrentUser() user: any,
     @Query() paginationDto: PaginationDto,
@@ -186,10 +189,16 @@ export class ProductsController {
     try {
       const page = paginationDto.page || 1;
       const limit = paginationDto.limit || 10;
+      const searchQuery = paginationDto.searchQuery || undefined;
+      const clientId = paginationDto.clientId || undefined;
+      const productId = paginationDto.productId || undefined;
       return await this.productsService.getProductsWithAttachments(
         user.userId,
         page,
         limit,
+        clientId,
+        productId,
+        searchQuery
       );
     } catch (error) {
       throw error;
