@@ -6,10 +6,12 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { User } from '../users/entities/user.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
+import axios from 'axios';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private readonly secretKey = process.env.RECAPTCHA_SECRET_KEY;
 
   constructor(
     @InjectRepository(User)
@@ -18,6 +20,35 @@ export class AuthService {
     private readonly refreshTokenRepository: Repository<RefreshToken>,
     private readonly jwtService: JwtService,
   ) {}
+
+  async verify(token: string): Promise<boolean> {
+    if (this.secretKey) {
+      if (!token) throw new BadRequestException('No reCAPTCHA token provided');
+
+      const url = `https://www.google.com/recaptcha/api/siteverify`;
+      try {
+        const response = await axios.post(
+          url,
+          null,
+          {
+            params: {
+              secret: this.secretKey,
+              response: token,
+            },
+          },
+        );
+
+        const data = response.data;
+
+        if (!data.success) {
+          throw new BadRequestException('reCAPTCHA verification failed');
+        }
+        return data.success;
+      } catch (error) {
+        throw new BadRequestException('Failed to verify reCAPTCHA');
+      }
+    }
+  }
 
   async validateUser(email: string, password: string): Promise<any> {
     try {
