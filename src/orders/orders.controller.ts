@@ -65,9 +65,10 @@ export class OrdersController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all orders')
-  async findAll(@CurrentUser() currentUser: any): Promise<any> {
+  @ApiQuery({ name: 'projectId', required: false, type: Number, description: 'Project ID to filter products', example: 1 })
+  async findAll(@CurrentUser() currentUser: any, @Query('projectId') projectId?: number): Promise<any> {
     try {
-      return this.ordersService.getAllOrders(currentUser.userId);
+      return this.ordersService.getAllOrders(currentUser.userId, projectId);
     } catch (error) {
       console.error('Error fetching orders:', error);
       throw error;

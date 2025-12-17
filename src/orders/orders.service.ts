@@ -381,7 +381,7 @@ export class OrdersService {
     return await this.orderRepository.save(newOrder);
   }
 
-  async getAllOrders(userId: number): Promise<any> {
+  async getAllOrders(userId: number, projectId?: number | null | undefined): Promise<any> {
     try {
       const assignedClientIds = await this.getClientsForUser(userId);
 
@@ -418,6 +418,19 @@ export class OrdersService {
         query = query.where('order.ClientId IN (:...assignedClientIds)', {
           assignedClientIds,
         });
+      }
+
+      if (projectId) {
+        const products = await this.productRepository.find({
+          where: { ProjectId: projectId },
+          select: ['Id'],
+        });
+        const productIds = [...new Set(products.map(p => p.Id))];
+
+        if (productIds.length === 0) return [];
+
+        query.leftJoin('orderitems', 'orderItem', 'orderItem.OrderId = order.Id')
+          .andWhere('orderItem.ProductId IN (:...productIds)', { productIds });
       }
 
       const result = await query.getRawMany();

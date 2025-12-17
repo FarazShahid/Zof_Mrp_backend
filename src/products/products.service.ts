@@ -233,7 +233,7 @@ export class ProductsService {
     }
   }
 
-  async getAllProducts(userId: number, filter?: string | undefined | null): Promise<any[]> {
+  async getAllProducts(userId: number, filter?: string | undefined | null, projectId?: number | null | undefined): Promise<any[]> {
 
     const assignedClientIds = await this.getClientsForUser(userId);
 
@@ -281,6 +281,10 @@ export class ProductsService {
         query.andWhere('product.ClientId IN (:...ids)', { ids: assignedClientIds });
       }
 
+      if (projectId) {
+        query.andWhere('product.ProjectId = :projectId', { projectId });
+      }
+
       const products = await query.getRawMany();
 
       return products.map((product) => ({
@@ -297,6 +301,8 @@ export class ProductsService {
         isArchived: Boolean(product?.isArchived) || false,
         ClientId: product?.ClientId || null,
         ClientName: product?.ClientName || null,
+        ProjectId: product?.ProjectId || null,
+        ProjectName: product?.ProjectName || null,
         CreatedBy: product?.CreatedBy || '',
         UpdatedBy: product?.UpdatedBy || '',
         CreatedOn: product?.CreatedOn || '',

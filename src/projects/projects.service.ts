@@ -81,22 +81,30 @@ export class ProjectsService {
     });
 
     const savedProject = await this.projectRepository.save(project);
-    this.logger.log(`Project created successfully with ID: ${savedProject.Id}`);
     
     return savedProject;
   }
 
-  async findAll(userId: number): Promise<Project[]> {
-    this.logger.log('Finding all projects');
-    
-    const assignedClientIds = await this.getClientsForUser(userId);
+  async findAll(userId: number, clientId?: number | null | undefined): Promise<any[]> {
+
+    let assignedClientIds = await this.getClientsForUser(userId);
+
+    if (clientId) {
+      if (assignedClientIds !== null && assignedClientIds.length > 0 && !assignedClientIds.includes(clientId)) {
+        throw new BadRequestException(
+          `You are not assigned to the client with ID ${clientId}`,
+        );
+      } else {
+        assignedClientIds = [clientId];
+      }
+    }
 
     const whereCondition =
       assignedClientIds === null
         ? {}
         : assignedClientIds.length > 0
           ? { ClientId: In(assignedClientIds) }
-          : { ClientId: -1 }; // No assigned clients, return empty
+          : {};
 
     const projects = await this.projectRepository.find({
       where: whereCondition,
@@ -104,7 +112,18 @@ export class ProjectsService {
       order: { Name: 'ASC' },
     });
 
-    return projects;
+    return projects.map(e => ({
+      Id: e.Id,
+      Name: e.Name,
+      Description: e.Description,
+      ClientId: e.ClientId,
+      ClientName: e.client?.Name ?? null,
+      isArchived: e.isArchived,
+      CreatedOn: e.CreatedOn,
+      UpdatedOn: e.UpdatedOn,
+      CreatedBy: e.CreatedBy,
+      UpdatedBy: e.UpdatedBy,
+    }));
   }
 
   async findOne(id: number, userId: number): Promise<Project> {

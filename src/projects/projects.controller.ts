@@ -10,6 +10,7 @@ import {
   BadRequestException,
   Put,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -21,6 +22,7 @@ import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-p
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 import { HasRight } from 'src/auth/has-right-guard';
 import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { ApiQuery } from '@nestjs/swagger';
 
 @ControllerAuthProtector('Projects', 'projects')
 @UseInterceptors(AuditInterceptor)
@@ -50,10 +52,11 @@ export class ProjectsController {
   @HttpCode(HttpStatus.OK)
   @CommonApiResponseModal([CreateProjectDto])
   @CommonApiResponses('Get all projects')
-  findAll(@CurrentUser() user: any) {
+  @ApiQuery({ name: 'clientId', required: false, type: Number, description: 'Client ID to filter projects', example: 1 })
+  findAll(@CurrentUser() user: any, @Query('clientId') clientId?: number) {
     this.logger.log('Getting all projects');
     try {
-      return this.projectsService.findAll(user.userId);
+      return this.projectsService.findAll(user.userId, clientId);
     } catch (error) {
       this.logger.error(`Error getting projects: ${error.message}`, error.stack);
       throw new BadRequestException(`Failed to get projects: ${error.message}`);

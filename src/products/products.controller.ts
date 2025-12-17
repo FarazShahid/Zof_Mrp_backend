@@ -36,12 +36,14 @@ export class ProductsController {
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all products')
   @ApiQuery({ name: 'filter', required: false, description: 'Filter by unarchive products' })
+  @ApiQuery({ name: 'projectId', required: false, type: Number, description: 'Project ID to filter products', example: 1 })
   findAll(
     @CurrentUser() user: any,
     @Query('filter') filter?: string,
+    @Query('projectId') projectId?: number,
   ) {
     try {
-      return this.productsService.getAllProducts(user.userId, filter);
+      return this.productsService.getAllProducts(user.userId, filter, projectId);
     } catch (error) {
       throw error;
     }
