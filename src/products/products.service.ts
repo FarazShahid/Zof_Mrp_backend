@@ -14,6 +14,7 @@ import { UpdateProductStatusDto } from './dto/update-status-dto';
 import { Client } from 'src/clients/entities/client.entity';
 import { ProductPrintingOptions } from './entities/product-printing-options.entity';
 import { User } from 'src/users/entities/user.entity';
+import { Project } from 'src/projects/entities/project.entity';
 
 @Injectable()
 export class ProductsService {
@@ -29,6 +30,9 @@ export class ProductsService {
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    @InjectRepository(Project)
+    private readonly projectRepository: Repository<Project>,
 
     private dataSource: DataSource,
   ) { }
@@ -49,7 +53,7 @@ export class ProductsService {
     if (!assignedClientIds.length) {
       return [];
     }
-    
+
     // Filter out any invalid values (NaN, null, undefined) and ensure all are valid numbers
     const validClientIds = assignedClientIds.filter(id => {
       return id !== null && id !== undefined && !isNaN(Number(id)) && Number.isFinite(Number(id));
@@ -73,12 +77,39 @@ export class ProductsService {
           `Client with ID ${createProductDto.ClientId} not found`,
         );
 
-     const assignedClientIds = await this.getClientsForUser(userId);
+      const assignedClientIds = await this.getClientsForUser(userId);
 
       if (assignedClientIds.length > 0 && !assignedClientIds.includes(createProductDto.ClientId)) {
         throw new BadRequestException(
           `You are not assigned to the client with ID ${createProductDto.ClientId}`,
         );
+      }
+
+      // Validate ProjectId if provided
+      if (createProductDto.ProjectId) {
+        const project = await this.projectRepository.findOne({
+          where: { Id: createProductDto.ProjectId },
+        });
+
+        if (!project) {
+          throw new BadRequestException(
+            `Project with ID ${createProductDto.ProjectId} not found`,
+          );
+        }
+
+        // Ensure project belongs to the same client as the product
+        if (project.ClientId !== createProductDto.ClientId) {
+          throw new BadRequestException(
+            `Project with ID ${createProductDto.ProjectId} does not belong to client with ID ${createProductDto.ClientId}`,
+          );
+        }
+
+        // Authorization: User must have access to the project's client
+        if (assignedClientIds.length > 0 && !assignedClientIds.includes(project.ClientId)) {
+          throw new BadRequestException(
+            `You are not assigned to the client of project with ID ${createProductDto.ProjectId}`,
+          );
+        }
       }
 
       const newProduct = this.productRepository.create({
@@ -202,10 +233,10 @@ export class ProductsService {
     }
   }
 
-  async getAllProducts(userId: number, filter?: string | undefined | null): Promise<any[]> {
+  async getAllProducts(userId: number, filter?: string | undefined | null, projectId?: number | null | undefined): Promise<any[]> {
 
     const assignedClientIds = await this.getClientsForUser(userId);
-    
+
     try {
       let query = this.productRepository
         .createQueryBuilder('product')
@@ -216,6 +247,7 @@ export class ProductsService {
           'category.Id = product.ProductCategoryId',
         )
         .leftJoin('Client', 'client', 'client.Id = product.ClientId')
+        .leftJoin('project', 'project', 'project.Id = product.ProjectId')
         .select([
           'product.Id AS Id',
           'product.Name AS Name',
@@ -230,6 +262,8 @@ export class ProductsService {
           'product.isArchived AS isArchived',
           'client.Id AS ClientId',
           'client.Name AS ClientName',
+          'product.ProjectId AS ProjectId',
+          'project.Name AS ProjectName',
           'product.CreatedOn AS CreatedOn',
           'product.UpdatedOn AS UpdatedOn',
           'product.CreatedBy AS CreatedBy',
@@ -245,6 +279,10 @@ export class ProductsService {
 
       if (assignedClientIds.length > 0) {
         query.andWhere('product.ClientId IN (:...ids)', { ids: assignedClientIds });
+      }
+
+      if (projectId) {
+        query.andWhere('product.ProjectId = :projectId', { projectId });
       }
 
       const products = await query.getRawMany();
@@ -263,6 +301,8 @@ export class ProductsService {
         isArchived: Boolean(product?.isArchived) || false,
         ClientId: product?.ClientId || null,
         ClientName: product?.ClientName || null,
+        ProjectId: product?.ProjectId || null,
+        ProjectName: product?.ProjectName || null,
         CreatedBy: product?.CreatedBy || '',
         UpdatedBy: product?.UpdatedBy || '',
         CreatedOn: product?.CreatedOn || '',
@@ -303,6 +343,7 @@ export class ProductsService {
           'category.Id = product.ProductCategoryId',
         )
         .leftJoin('Client', 'client', 'client.Id = product.ClientId')
+        .leftJoin('project', 'project', 'project.Id = product.ProjectId')
         .select([
           'product.Id AS Id',
           'product.Name AS Name',
@@ -317,6 +358,8 @@ export class ProductsService {
           'product.isArchived AS isArchived',
           'client.Id AS ClientId',
           'client.Name AS ClientName',
+          'product.ProjectId AS ProjectId',
+          'project.Name AS ProjectName',
           'product.CreatedOn AS CreatedOn',
           'product.UpdatedOn AS UpdatedOn',
           'product.CreatedBy AS CreatedBy',
@@ -341,6 +384,8 @@ export class ProductsService {
         isArchived: Boolean(product?.isArchived) || false,
         ClientId: product?.ClientId || null,
         ClientName: product?.ClientName || null,
+        ProjectId: product?.ProjectId || null,
+        ProjectName: product?.ProjectName || null,
         CreatedBy: product?.CreatedBy || '',
         UpdatedBy: product?.UpdatedBy || '',
         CreatedOn: product?.CreatedOn || '',
@@ -353,9 +398,9 @@ export class ProductsService {
   }
 
   async findOne(id: number, userId: number): Promise<any> {
-    const product = await this.productRepository.findOne({ 
+    const product = await this.productRepository.findOne({
       where: { Id: id },
-      relations: ['client', 'fabricType']
+      relations: ['client', 'fabricType', 'project']
     });
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
@@ -415,6 +460,8 @@ export class ProductsService {
       ClientName: product.client?.Name || null,
       FabricName: product.fabricType?.Name || null,
       FabricType: product.fabricType?.Type || null,
+      ProjectId: product.project?.Id || null,
+      ProjectName: product.project?.Name || null,
       printingOptions,
       productColors,
       productDetails,
@@ -448,6 +495,39 @@ export class ProductsService {
         throw new BadRequestException(
           `Client with ID ${updateProductDto.ClientId} not found`,
         );
+    }
+
+    // Validate ProjectId if provided
+    const finalClientId = updateProductDto.ClientId ?? product.ClientId;
+    if (updateProductDto.ProjectId !== undefined) {
+      if (updateProductDto.ProjectId === null) {
+        // Allowing ProjectId to be set to null (removing project assignment)
+        // No validation needed
+      } else {
+        const project = await this.projectRepository.findOne({
+          where: { Id: updateProductDto.ProjectId },
+        });
+
+        if (!project) {
+          throw new BadRequestException(
+            `Project with ID ${updateProductDto.ProjectId} not found`,
+          );
+        }
+
+        // Ensure project belongs to the same client as the product
+        if (project.ClientId !== finalClientId) {
+          throw new BadRequestException(
+            `Project with ID ${updateProductDto.ProjectId} does not belong to client with ID ${finalClientId}`,
+          );
+        }
+
+        // Authorization: User must have access to the project's client
+        if (assignedClientIds.length > 0 && !assignedClientIds.includes(project.ClientId)) {
+          throw new BadRequestException(
+            `You are not assigned to the client of project with ID ${updateProductDto.ProjectId}`,
+          );
+        }
+      }
     }
 
     const {
@@ -924,10 +1004,84 @@ export class ProductsService {
     }
   }
 
-  async getProductsWithAttachments(userId: number): Promise<any[]> {
+  async getProductsWithAttachments(
+    userId: number,
+    page: number = 1,
+    limit: number = 10,
+    clientId?: number,
+    productId?: number,
+    searchQuery?: string,
+  ): Promise<{
+    data: any[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasMore: boolean;
+    };
+  }> {
     try {
       const assignedClientIds = await this.getClientsForUser(userId);
 
+      if(clientId !== undefined && clientId !== null) {
+        if (assignedClientIds.length > 0 && !assignedClientIds.includes(clientId)) {
+          throw new ForbiddenException("You do not have access to this client");
+        }
+      }
+
+      // Step 1: Get all product IDs that have any attachments (we'll filter for images later)
+      let allProductsQuery = this.productRepository
+        .createQueryBuilder('product')
+        .innerJoin(
+          'media_links',
+          'mediaLink',
+          'mediaLink.reference_id = product.Id AND mediaLink.reference_type = :refType',
+          { refType: 'product' },
+        )
+        .innerJoin('media', 'media', 'media.id = mediaLink.media_id')
+        .select('product.Id', 'productId')
+        .distinct(true)
+        .orderBy('product.Id', 'ASC');
+
+      if (assignedClientIds.length > 0) {
+        allProductsQuery.andWhere('product.ClientId IN (:...ids)', {
+          ids: assignedClientIds,
+        });
+      }
+
+      if (clientId !== undefined && clientId !== null) {
+        allProductsQuery.andWhere('product.ClientId = :clientId', { clientId });
+      }
+
+      if (productId !== undefined && productId !== null) {
+        allProductsQuery.andWhere('product.Id = :productId', { productId });
+      }
+
+      if (searchQuery) {
+        allProductsQuery.andWhere(
+          '(product.Name LIKE :search OR product.Description LIKE :search)',
+          { search: `%${searchQuery}%` },
+        );
+      }
+
+      const allProductIdsResult = await allProductsQuery.getRawMany();
+      const allProductIds = allProductIdsResult.map((row) => row.productId);
+
+      if (allProductIds.length === 0) {
+        return {
+          data: [],
+          pagination: {
+            page,
+            limit,
+            total: 0,
+            totalPages: 0,
+            hasMore: false,
+          },
+        };
+      }
+
+      // Step 2: Fetch all products with their attachments to filter for images
       let query = this.productRepository
         .createQueryBuilder('product')
         .leftJoin('Client', 'client', 'client.Id = product.ClientId')
@@ -950,15 +1104,65 @@ export class ProductsService {
           'media.file_url AS fileUrl',
           'mediaLink.tag AS mediaTag',
         ])
+        .where('product.Id IN (:...allProductIds)', { allProductIds })
         .orderBy('product.Id', 'ASC');
 
-      if (assignedClientIds.length > 0) {
-        query.andWhere('product.ClientId IN (:...ids)', { ids: assignedClientIds });
+      if (clientId !== undefined && clientId !== null) {
+        query.andWhere('product.ClientId = :clientId', { clientId });
+      }
+
+      if (productId !== undefined && productId !== null) {
+        query.andWhere('product.Id = :productId', { productId });
+      }
+
+      if (searchQuery) {
+        query.andWhere(
+          '(product.Name LIKE :search OR product.Description LIKE :search)',
+          { search: `%${searchQuery}%` },
+        );
       }
 
       const results = await query.getRawMany();
 
-      // Group attachments by product
+      // Image types filter
+      const imageTypes = new Set([
+        'png',
+        'jpg',
+        'jpeg',
+        'gif',
+        'webp',
+        'svg',
+        'bmp',
+        'tiff',
+        'avif',
+      ]);
+
+      // Helper function to check if file is an image
+      const isImageType = (fileType: string | null, fileName: string | null): boolean => {
+        if (!fileType && !fileName) return false;
+        
+        // Check fileType (could be extension or MIME type)
+        if (fileType) {
+          const typeLower = fileType.toLowerCase();
+          // Check if it's a MIME type (e.g., "image/png")
+          if (typeLower.startsWith('image/')) {
+            const ext = typeLower.split('/')[1]?.split(';')[0]?.trim();
+            if (ext && imageTypes.has(ext)) return true;
+          }
+          // Check if it's just an extension
+          if (imageTypes.has(typeLower)) return true;
+        }
+        
+        // Check fileName extension as fallback
+        if (fileName) {
+          const ext = fileName.split('.').pop()?.toLowerCase();
+          if (ext && imageTypes.has(ext)) return true;
+        }
+        
+        return false;
+      };
+
+      // Step 4: Group attachments by product
       const productsMap = new Map<number, any>();
 
       for (const row of results) {
@@ -975,8 +1179,8 @@ export class ProductsService {
           });
         }
 
-        // Add attachment if exists
-        if (row.mediaId) {
+        // Add attachment if exists and is an image type
+        if (row.mediaId && isImageType(row.fileType, row.fileName)) {
           productsMap.get(productId).attachments.push({
             mediaId: row.mediaId,
             fileName: row.fileName,
@@ -987,7 +1191,28 @@ export class ProductsService {
         }
       }
 
-      return Array.from(productsMap.values());
+      // Filter products to only include those with image attachments
+      const productsWithImageAttachments = Array.from(productsMap.values()).filter(
+        (product) => product.attachments.length > 0,
+      );
+
+      // Step 5: Paginate the filtered products
+      const skip = (page - 1) * limit;
+      const paginatedProducts = productsWithImageAttachments.slice(skip, skip + limit);
+      const total = productsWithImageAttachments.length;
+      const totalPages = Math.ceil(total / limit);
+      const hasMore = skip + paginatedProducts.length < total;
+
+      return {
+        data: paginatedProducts,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasMore,
+        },
+      };
     } catch (error) {
       console.error('Error fetching products with attachments:', error);
       throw new BadRequestException('Error fetching products with attachments');

@@ -86,6 +86,13 @@ export class CreateProductDto {
   @Min(1)
   ClientId: number;
 
+  @CommonApiProperty('Project Id', 1)
+  @IsNumber()
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  ProjectId?: number;
+
   @CommonApiProperty('Product name', 'T-Shirt', true)
   @IsString()
   @IsNotEmpty()

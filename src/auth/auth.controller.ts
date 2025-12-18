@@ -22,8 +22,9 @@ export class AuthController {
   @ApiResponse({ type: LoginResponseDto }) 
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Login a user')
-  async login(@Body() body: { email: string; password: string }, @Req() req: any) {
+  async login(@Body() body: { email: string; password: string; token: string }, @Req() req: any) {
     try {
+      await this.authService.verify(body.token);
       const user = await this.authService.validateUser(body.email, body.password);
       const deviceInfo = req.headers['user-agent'] || 'Unknown Device';
       const ipAddress = req.ip || req.connection.remoteAddress || 'Unknown IP';

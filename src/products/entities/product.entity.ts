@@ -3,6 +3,7 @@ import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMan
 import { ProductPrintingOptions } from "./product-printing-options.entity";
 import { ProductCategory } from "src/product-category/entities/product-category.entity";
 import { FabricType } from "src/fabrictype/_/fabrictype.entity";
+import { Project } from "src/projects/entities/project.entity";
 
 
 @Entity('product')
@@ -29,6 +30,13 @@ export class Product {
     @ManyToOne(() => Client, { onDelete: 'SET NULL', onUpdate: 'CASCADE' })
     @JoinColumn([{ name: 'ClientId', referencedColumnName: 'Id' }])
     client: Client | null;
+
+    @Column({ type: 'int', nullable: true })
+    ProjectId: number | null;
+
+    @ManyToOne(() => Project, { onDelete: 'SET NULL', onUpdate: 'CASCADE' })
+    @JoinColumn([{ name: 'ProjectId', referencedColumnName: 'Id' }])
+    project: Project | null;
 
     @Column({ type: 'int' })
     ProductCategoryId: number;

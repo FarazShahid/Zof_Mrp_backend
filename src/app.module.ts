@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule } from './clients/clients.module';
 import { ProductsModule } from './products/products.module';
+import { ProjectsModule } from './projects/projects.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './users/user.module';
 import { EventsModule } from './events/events.module';
@@ -57,6 +58,7 @@ import { DashboardReportModule } from './dashboard-reports/dashboard-report.modu
     }),
     AuthModule,
     ClientsModule,
+    ProjectsModule,
     ColorOptionModule,
     EventsModule,
     FabricTypeModule,

@@ -381,7 +381,7 @@ export class OrdersService {
     return await this.orderRepository.save(newOrder);
   }
 
-  async getAllOrders(userId: number): Promise<any> {
+  async getAllOrders(userId: number, projectId?: number | null | undefined): Promise<any> {
     try {
       const assignedClientIds = await this.getClientsForUser(userId);
 
@@ -418,6 +418,19 @@ export class OrdersService {
         query = query.where('order.ClientId IN (:...assignedClientIds)', {
           assignedClientIds,
         });
+      }
+
+      if (projectId) {
+        const products = await this.productRepository.find({
+          where: { ProjectId: projectId },
+          select: ['Id'],
+        });
+        const productIds = [...new Set(products.map(p => p.Id))];
+
+        if (productIds.length === 0) return [];
+
+        query.leftJoin('orderitems', 'orderItem', 'orderItem.OrderId = order.Id')
+          .andWhere('orderItem.ProductId IN (:...productIds)', { productIds });
       }
 
       const result = await query.getRawMany();
@@ -1121,6 +1134,7 @@ export class OrdersService {
     const orderItems = await this.orderItemRepository
       .createQueryBuilder('orderItem')
       .leftJoin('product', 'product', 'orderItem.ProductId = product.Id')
+      .leftJoin('project', 'project', 'product.ProjectId = project.Id')
       .leftJoin('document', 'imageDoc', 'orderItem.ImageId = imageDoc.Id')
       .leftJoin('document', 'fileDoc', 'orderItem.FileId = fileDoc.Id')
       .leftJoin('document', 'videoDoc', 'orderItem.VideoId = videoDoc.Id')
@@ -1147,6 +1161,8 @@ export class OrdersService {
         'orderItem.OrderItemPriority AS OrderItemPriority',
         'orderItem.ItemShipmentStatus AS ItemShipmentStatus',
         'product.Name AS ProductName',
+        'product.ProjectId AS ProjectId',
+        'project.Name AS ProjectName',
         'printingOption.Id AS PrintingOptionId',
         'printingOption.PrintingOptionId AS PrintingOptionId',
         'printingOption.Description AS PrintingOptionDescription',
@@ -1210,6 +1226,8 @@ export class OrdersService {
           OrderId: item.OrderId,
           ProductId: item.ProductId,
           ProductName: item.ProductName || '',
+          ProjectId: item?.ProjectId ?? null,
+          ProjectName: item?.ProjectName ?? null,
           Description: item?.Description ?? null,
           OrderItemPriority: item.OrderItemPriority || 0,
           ItemShipmentStatus: item?.ItemShipmentStatus ?? null,

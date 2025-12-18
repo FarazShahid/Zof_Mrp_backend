@@ -29,6 +29,7 @@ import { AvailbleSizeOptions } from "src/products/entities/available-size-option
 import { ProductPrintingOptions } from "src/products/entities/product-printing-options.entity";
 import { Product, Productdetails } from "src/products/entities/product.entity";
 import { QAChecklist } from "src/products/entities/qa-checklist.entity";
+import { Project } from "src/projects/entities/project.entity";
 import { ShipmentCarrier } from "src/shipment-carrier/entities/shipment-carrier.entity";
 import { ShipmentBox, ShipmentBoxItem } from "src/shipment/entities/shipment-box.entity";
 import { ShipmentOrder } from "src/shipment/entities/shipment-order.entity";
@@ -74,6 +75,7 @@ export const ENTITIES = [
     Productdetails,
     ProductPrintingOptions,
     ProductRegionStandard,
+    Project,
     QAChecklist,
     Shipment,
     ShipmentBox,

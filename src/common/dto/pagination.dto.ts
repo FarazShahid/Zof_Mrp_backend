@@ -29,4 +29,30 @@ export class PaginationDto {
   get skip(): number {
     return (this.page - 1) * this.limit;
   }
+
+  @ApiProperty({
+    description: 'Search query for product name or description',
+    required: false,
+  })
+  @IsOptional()
+  searchQuery?: string;
+
+
+  @ApiProperty({
+    description: 'Client ID to filter products',
+    required: false,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  clientId?: number;
+
+  @ApiProperty({
+    description: 'Product ID to filter products',
+    required: false,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  productId?: number;
 } 

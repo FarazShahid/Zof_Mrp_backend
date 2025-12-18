@@ -19,10 +19,45 @@ export class UserService {
     private clientRepo: Repository<Client>,
   ) {}
 
+  private validateStrongPassword(password: string): void {
+    if (!password) {
+      throw new BadRequestException('Password cannot be empty');
+    }
+
+    const errors: string[] = [];
+
+    if (password.length < 8) {
+      errors.push('at least 8 characters');
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      errors.push('an uppercase letter');
+    }
+
+    if (!/[a-z]/.test(password)) {
+      errors.push('a lowercase letter');
+    }
+
+    if (!/[0-9]/.test(password)) {
+      errors.push('a number');
+    }
+
+    if (!/[\W_]/.test(password)) {
+      errors.push('a special character (e.g., !@#$%^&*)');
+    }
+
+    if (errors.length > 0) {
+      const message = `Password must include ${errors.join(', ')}`;
+      throw new BadRequestException(message);
+    }
+  }
+
   async createUser(data: any): Promise<any> {
     const { Email, firstName, lastName, Password, createdBy, roleId, assignedClients } = data;
 
     this.logger.log(`Creating user with email: ${Email}`);
+
+    this.validateStrongPassword(Password);
 
     const existingUser = await this.userRepository.findOne({ where: { Email } });
     if (existingUser) {
@@ -151,6 +186,9 @@ export class UserService {
       }
 
       if (Password && Password.trim() !== '****') {
+
+        this.validateStrongPassword(Password);
+
         this.logger.log(`Updating password for user with id: ${id}`);
         const saltRounds = 10;
         user.Password = await bcrypt.hash(Password, saltRounds);

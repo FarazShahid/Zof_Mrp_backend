@@ -11,6 +11,7 @@ import { ApiQuery } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 import { HasRight } from 'src/auth/has-right-guard';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @ControllerAuthProtector('Products', 'products')
 @UseInterceptors(AuditInterceptor)
@@ -35,12 +36,14 @@ export class ProductsController {
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all products')
   @ApiQuery({ name: 'filter', required: false, description: 'Filter by unarchive products' })
+  @ApiQuery({ name: 'projectId', required: false, type: Number, description: 'Project ID to filter products', example: 1 })
   findAll(
     @CurrentUser() user: any,
     @Query('filter') filter?: string,
+    @Query('projectId') projectId?: number,
   ) {
     try {
-      return this.productsService.getAllProducts(user.userId, filter);
+      return this.productsService.getAllProducts(user.userId, filter, projectId);
     } catch (error) {
       throw error;
     }
@@ -175,10 +178,30 @@ export class ProductsController {
   @HasRight(AppRightsEnum.ViewProduct)
   @Get('with-attachments/all')
   @HttpCode(HttpStatus.OK)
-  @CommonApiResponses('Get all products with their attachments and client information')
-  async getProductsWithAttachments(@CurrentUser() user: any) {
+  @CommonApiResponses('Get paginated products with their attachments and client information')
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starts from 1)', example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of items per page', example: 10 })
+  @ApiQuery({ name: 'searchQuery', required: false, type: String, description: 'Search query for product name or description', example: 'shirt' })
+  @ApiQuery({ name: 'clientId', required: false, type: Number, description: 'Client ID to filter products', example: 1 })
+  @ApiQuery({ name: 'productId', required: false, type: Number, description: 'Product ID to filter products', example: 1 })
+  async getProductsWithAttachments(
+    @CurrentUser() user: any,
+    @Query() paginationDto: PaginationDto,
+  ) {
     try {
-      return await this.productsService.getProductsWithAttachments(user.userId);
+      const page = paginationDto.page || 1;
+      const limit = paginationDto.limit || 10;
+      const searchQuery = paginationDto.searchQuery || undefined;
+      const clientId = paginationDto.clientId || undefined;
+      const productId = paginationDto.productId || undefined;
+      return await this.productsService.getProductsWithAttachments(
+        user.userId,
+        page,
+        limit,
+        clientId,
+        productId,
+        searchQuery
+      );
     } catch (error) {
       throw error;
     }
