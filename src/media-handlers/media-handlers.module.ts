@@ -2,6 +2,7 @@
 import { Module } from '@nestjs/common';
 import { MediaHandlersService } from './media-handlers.service';
 import { MediaHandlersController } from './media-handler.controller';
+import { PublicMediaController } from './public-media.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Media } from 'src/media/_/media.entity';
 import { MediaLink } from 'src/media-link/_/media-link.entity';
@@ -13,7 +14,7 @@ import { AuditModule } from 'src/audit-logs/audit.module';
       AuditModule
     ],
   providers: [MediaHandlersService],
-  controllers: [MediaHandlersController],
+  controllers: [MediaHandlersController, PublicMediaController],
   exports: [MediaHandlersService],
 })
 export class MediaHandlersModule {}
