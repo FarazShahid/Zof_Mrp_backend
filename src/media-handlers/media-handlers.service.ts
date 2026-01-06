@@ -35,11 +35,22 @@ export class MediaHandlersService {
         throw new Error('Invalid Azure Storage SAS URL format');
       }
 
+      const sasParams = new URL(sasUrl).searchParams;
+      const permissions = sasParams.get('sp') || sasParams.get('permissions') || '';
+
+      if (permissions && !permissions.includes('w') && !permissions.includes('c')) {
+        this.logger.warn(
+          'Warning: SAS URL may not have write/create permissions. ' +
+          'Required permissions: w (write) and c (create) for uploads.'
+        );
+      }
+
       const blobServiceClient = new BlobServiceClient(sasUrl);
       this.containerClient =
         blobServiceClient.getContainerClient(containerName);
 
       this.logger.log('Azure Storage connection initialized successfully');
+      this.logger.log(`Container: ${containerName}`);
     } catch (error) {
       this.logger.error(
         'Failed to initialize Azure Storage connection:',
@@ -67,9 +78,25 @@ export class MediaHandlersService {
       const bufferStream = new stream.PassThrough();
       bufferStream.end(file.buffer);
 
-      await blockBlobClient.uploadStream(bufferStream, file.size, undefined, {
-        blobHTTPHeaders: { blobContentType: file.mimetype },
-      });
+      try {
+        await blockBlobClient.uploadStream(bufferStream, file.size, undefined, {
+          blobHTTPHeaders: { blobContentType: file.mimetype },
+        });
+      } catch (uploadError: any) {
+        // Provide more helpful error messages for common Azure Storage errors
+        if (uploadError.statusCode === 403) {
+          this.logger.error('Azure Storage authentication failed. Possible causes:');
+          this.logger.error('1. SAS URL may be expired');
+          this.logger.error('2. SAS URL may not have write (w) or create (c) permissions');
+          this.logger.error('3. SAS URL format may be incorrect');
+          this.logger.error(`Error details: ${uploadError.message}`);
+          throw new Error(
+            'Azure Storage authentication failed. Please check your SAS URL has write permissions and is not expired. ' +
+            `Details: ${uploadError.message}`
+          );
+        }
+        throw uploadError;
+      }
 
       const FileTypesEnum = {
         DESIGN: { id: 1, name: "Design File" },
@@ -87,7 +114,7 @@ export class MediaHandlersService {
       const document = this.mediaRepository.create({
         file_name: nameWithoutExtension,
         file_type: extension,
-        file_url: blockBlobClient.url,
+        file_url: blobName, // Store only blob name instead of complete URL
         typeId: typeId || null,
         uploaded_by: createdBy,
       });
@@ -109,9 +136,12 @@ export class MediaHandlersService {
         media: savedMedia,
         link: savedLink,
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to upload and save document:', error.message);
-      throw error;
+      if (error.message && error.message.includes('Azure Storage authentication failed')) {
+        throw error;
+      }
+      throw new Error(`Failed to upload file: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -132,19 +162,79 @@ export class MediaHandlersService {
         QASHEET: { id: 4, name: "QA Sheet" },
       };
 
-    return links.map((link) => ({
-      id: link.id,
-      mediaId: link.media?.id,
-      fileName: link.media?.file_name,
-      fileType: link.media?.file_type,
-      fileUrl: link.media?.file_url,
-      tag: link.tag || null,
-      typeId: link.media?.typeId || null,
-      typeName: link.media?.typeId ? Object.values(FileTypesEnum).find(type => type.id === link.media.typeId)?.name : null,
-      uploadedBy: link.media?.uploaded_by,
-      uploadedOn: link.media?.uploaded_on,
-      referenceType: link.reference_type,
-      referenceId: link.reference_id,
-    }));
+    return links.map((link) => {
+      // Construct URL dynamically using blob name
+      const blobName = link.media?.file_url; // file_url now contains blob name
+      const fileUrl = blobName ? this.constructMediaUrl(blobName) : null;
+
+      return {
+        id: link.id,
+        mediaId: link.media?.id,
+        fileName: link.media?.file_name,
+        fileType: link.media?.file_type,
+        blobName: blobName, // Return blob name separately
+        fileUrl: fileUrl, // Constructed URL for viewing
+        tag: link.tag || null,
+        typeId: link.media?.typeId || null,
+        typeName: link.media?.typeId ? Object.values(FileTypesEnum).find(type => type.id === link.media.typeId)?.name : null,
+        uploadedBy: link.media?.uploaded_by,
+        uploadedOn: link.media?.uploaded_on,
+        referenceType: link.reference_type,
+        referenceId: link.reference_id,
+      };
+    });
+  }
+
+  /**
+   * Construct media URL using blob name
+   * Uses environment variables for base URL and token
+   */
+  private constructMediaUrl(blobName: string): string {
+    const mediaViewUrl = this.configService.get<string>('MEDIA_VIEW_URL') || '';
+    if (!mediaViewUrl || !blobName) {
+      return '';
+    }
+
+    // Ensure no trailing slash, then append path segment
+    const base = mediaViewUrl.endsWith('/')
+      ? mediaViewUrl.slice(0, -1)
+      : mediaViewUrl;
+
+    return `${base}/${encodeURIComponent(blobName)}`;
+  }
+
+  /**
+   * Get media file by blob name from Azure Storage
+   */
+  async getMediaByBlobName(blobName: string): Promise<{ stream: NodeJS.ReadableStream; contentType: string; contentLength: number } | null> {
+    try {
+      console.log('blobName', blobName);
+      const blockBlobClient = this.containerClient.getBlockBlobClient(blobName);
+      console.log('blockBlobClient', blockBlobClient);
+      // Check if blob exists
+      const exists = await blockBlobClient.exists();
+      if (!exists) {
+        return null;
+      }
+
+      // Get blob properties
+      const properties = await blockBlobClient.getProperties();
+      
+      // Download blob as stream
+      const downloadResponse = await blockBlobClient.download(0);
+      
+      if (!downloadResponse.readableStreamBody) {
+        throw new Error('Failed to get readable stream from blob');
+      }
+      
+      return {
+        stream: downloadResponse.readableStreamBody,
+        contentType: properties.contentType || 'application/octet-stream',
+        contentLength: properties.contentLength,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get media by blob name ${blobName}:`, error.message);
+      throw error;
+    }
   }
 }
