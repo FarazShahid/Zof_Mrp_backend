@@ -172,8 +172,7 @@ export class MediaHandlersService {
         mediaId: link.media?.id,
         fileName: link.media?.file_name,
         fileType: link.media?.file_type,
-        blobName: blobName, // Return blob name separately
-        fileUrl: fileUrl, // Constructed URL for viewing
+        fileUrl: blobName,
         tag: link.tag || null,
         typeId: link.media?.typeId || null,
         typeName: link.media?.typeId ? Object.values(FileTypesEnum).find(type => type.id === link.media.typeId)?.name : null,
