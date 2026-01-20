@@ -1,7 +1,7 @@
 import { SizeMeasurement } from "src/size-measurements/entities/size-measurement.entity";
 
 
-type Section = 'top' | 'bottom' | 'logoTop' | 'logoBottom' | 'hat';
+type Section = 'top' | 'bottom' | 'logoTop' | 'logoBottom' | 'hat' | 'bag' | 'cap';
 
 const FIELD_MAP: { key: keyof SizeMeasurement; label: string; section: Section }[] = [
   // Top unit
@@ -90,6 +90,28 @@ const FIELD_MAP: { key: keyof SizeMeasurement; label: string; section: Section }
   { key: 'H_FusionInside', label: 'Fusion Inside', section: 'hat' },
   { key: 'H_PatchSize', label: 'Patch Size', section: 'hat' },
   { key: 'H_PatchPlacement', label: 'Patch Placement', section: 'hat' },
+
+  // Bag
+
+  { key: 'Bag_Height', label: 'Bag Height', section: 'bag' },
+  { key: 'Bag_Length', label: 'Bag Length', section: 'bag' },
+  { key: 'Bag_Depth', label: 'Bag Depth', section: 'bag' },
+  { key: 'Bag_HandleGrip', label: 'Bag Handle Grip', section: 'bag' },
+  { key: 'Bag_ShoulderStrap_Full_Length', label: 'Bag Shoulder Strap Full Length', section: 'bag' },
+  { key: 'Bag_FrontPocketLength', label: 'Bag Front Pocket Length', section: 'bag' },
+  { key: 'Bag_FrontPocketHeight', label: 'Bag Front Pocket Height', section: 'bag' },
+  { key: 'Bag_SidePocketLength', label: 'Bag Side Pocket Length', section: 'bag' },
+  { key: 'Bag_SidePocketHeight', label: 'Bag Side Pocket Height', section: 'bag' },
+
+
+  // Cap
+
+  { key: 'Cap_CrownCircumference', label: 'Cap Crown Circumference', section: 'cap' },
+  { key: 'Cap_BrimLength', label: 'Cap Brim Length', section: 'cap' },
+  { key: 'Cap_BrimWidth', label: 'Cap Brim Width', section: 'cap' },
+  { key: 'Cap_Height', label: 'Cap Height', section: 'cap' },
+  { key: 'Cap_Crown_Width', label: 'Cap Crown Width', section: 'cap' },
+  { key: 'cap_cuff_height', label: 'Cap Cuff Height', section: 'cap' },
 ];
 
 export function buildMeasurements(sm: SizeMeasurement) {
@@ -99,6 +121,8 @@ export function buildMeasurements(sm: SizeMeasurement) {
     logoTop: [],
     logoBottom: [],
     hat: [],
+    bag: [],
+    cap: []
   };
 
   for (const field of FIELD_MAP) {

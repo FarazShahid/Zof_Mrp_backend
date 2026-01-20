@@ -274,6 +274,55 @@ export class SizeMeasurement {
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   H_PatchPlacement: number;
 
+  // Bag Measurements
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Bag_Height: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Bag_Length: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Bag_Depth: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Bag_HandleGrip: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Bag_ShoulderStrap_Full_Length: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Bag_FrontPocketLength: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Bag_FrontPocketHeight: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Bag_SidePocketLength: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Bag_SidePocketHeight: number;
+
+  // Basball Cap Measurements
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Cap_CrownCircumference: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Cap_BrimLength: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Cap_BrimWidth: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  Cap_Height: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })  
+  Cap_Crown_Width: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  cap_cuff_height: number;
+
   @Column({ type: 'datetime', nullable: true })
   CreatedOn: Date;
 

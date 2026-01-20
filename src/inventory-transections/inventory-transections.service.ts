@@ -115,6 +115,7 @@ export class inventoryTransectionService {
 
     const transection = this.inventoryTransactionsRepository.create({
       ...data,
+      TransactionDate: data.TransactionDate ? new Date(data.TransactionDate) : new Date(),
       Quantity: qty,
       CurrentStock: newStock,
       CreatedBy: createdBy,
@@ -367,6 +368,7 @@ export class inventoryTransectionService {
       await this.inventoryTransactionsRepository.update(Id, {
         CurrentStock: stock,
         Quantity: data.Quantity,
+        TransactionDate: data.TransactionDate ? new Date(data.TransactionDate) : existingTransaction.TransactionDate,
         TransactionType: data.TransactionType,
         ClientId: data?.ClientId ?? existingTransaction?.ClientId,
         OrderId: data?.OrderId ?? existingTransaction?.OrderId,

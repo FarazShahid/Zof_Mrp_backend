@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsOptional,
   IsEnum,
+  IsDateString,
 } from 'class-validator';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 import { TransactionType } from './inventory-transections.entity';
@@ -39,4 +40,9 @@ export class CreateInventoryTransectionsDto {
   @IsNumber()
   @IsOptional()
   OrderId?: number;
+
+  @CommonApiProperty('Transaction Date', '2025-07-04T10:00:00Z')
+  @IsDateString()
+  @IsOptional()
+  TransactionDate?: string;
 }
