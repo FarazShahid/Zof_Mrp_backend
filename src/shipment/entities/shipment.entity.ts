@@ -8,6 +8,7 @@ export enum ShipmentStatus {
     DAMAGED = "Damaged",
     DELIVERED = "Delivered",
     CANCELLED = "Cancelled",
+    DISPATCHED = "Dispatched"
 }
 
 @Entity('shipment')

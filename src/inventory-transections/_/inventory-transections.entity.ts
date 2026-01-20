@@ -11,6 +11,7 @@ import {
 export enum TransactionType {
   IN = 'IN',
   OUT = 'OUT',
+  PRODUCTION = 'PRODUCTION',
   OPENING_BALANCE = 'Opening Balance',
   RETURN_TO_STOCK = 'Return to Stock',
   RETURN_TO_SUPPLIER = 'Return to Supplier',

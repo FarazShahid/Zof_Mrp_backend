@@ -589,4 +589,112 @@ export class CreateSizeMeasurementDto {
   @Max(999.99)
   H_PatchPlacement: number;
 
+ // Bag Measurements
+
+  @CommonApiProperty('Bag Height', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Bag_Height: number;
+
+  @CommonApiProperty('Bag Length', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Bag_Length: number;
+
+  @CommonApiProperty('Bag Depth', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Bag_Depth: number;
+
+  @CommonApiProperty('Bag Handle Grip', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Bag_HandleGrip: number;
+
+  @CommonApiProperty('Bag Shoulder strap full lenght ', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Bag_ShoulderStrap_Full_Length: number;
+
+  @CommonApiProperty('Bag Front pocket length', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Bag_FrontPocketLength: number;
+
+  @CommonApiProperty('Bag front pocket height', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Bag_FrontPocketHeight: number;
+
+  @CommonApiProperty('Bag Sidepocket Length', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Bag_SidePocketLength: number;
+
+  @CommonApiProperty('Bag Side Pocket height', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Bag_SidePocketHeight: number;
+
+  // Basball Cap Measurements
+
+  @CommonApiProperty('Cap Crown Circumference', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Cap_CrownCircumference: number;
+
+  @CommonApiProperty('Cap Brim Length', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Cap_BrimLength: number;
+
+  @CommonApiProperty('Cap Brim Width', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Cap_BrimWidth: number;
+
+  @CommonApiProperty('Cap Height', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  Cap_Height: number;
+
+  @CommonApiProperty('Cap Crown Width', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)  
+  Cap_Crown_Width: number;
+
+  @CommonApiProperty('cap cuff height', '1')
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(999.99)
+  cap_cuff_height: number;
 }
