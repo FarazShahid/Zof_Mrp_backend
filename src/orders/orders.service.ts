@@ -246,8 +246,8 @@ export class OrdersService {
           if (Array.isArray(item.orderItemDetails) && item.ProductId) {
             const orderItemDetailsToSave = [];
             const product = products.find(p => p.Id === item.ProductId);
-            const { IsTopUnit, IsBottomUnit, SupportsLogo } = product.ProductCategory;
-            const isSizeOptionRequired = IsTopUnit || IsBottomUnit || SupportsLogo;
+            const { IsTopUnit, IsBottomUnit, SupportsLogo, IsBag, IsHat } = product.ProductCategory;
+            const isSizeOptionRequired = IsTopUnit || IsBottomUnit || SupportsLogo || IsBag || IsHat;
             for (const option of item.orderItemDetails) {
               let sizeMeasurement;
               if (isSizeOptionRequired) {
@@ -283,6 +283,8 @@ export class OrdersService {
                     .where('sm.SizeOptionId = :sizeOptionId', { sizeOptionId: option.SizeOption })
                     .andWhere('sm.IsLatest = :isLatest', { isLatest: true })
                     .andWhere('sm.IsActive = :isActive', { isActive: true })
+                    .andWhere('sm.ProductCategoryId = :productCategoryId', {productCategoryId: product.ProductCategoryId})
+                    .andWhere('sm.ClientId = :clientId', {clientId: product.ClientId})
                     .orderBy('sm.Version', 'DESC')
                     .getOne();
                   
