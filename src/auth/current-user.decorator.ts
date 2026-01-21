@@ -17,7 +17,7 @@ export const CurrentUserName = createParamDecorator(
 export const CurrentUserRoleId = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
-    console.log('Request User:', request.user);
+    // Security: Removed console.log that was leaking user data
     return request?.user?.roleId ?? 0;
   },
 ); 

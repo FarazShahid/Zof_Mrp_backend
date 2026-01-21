@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { ClientsModule } from './clients/clients.module';
 import { ProductsModule } from './products/products.module';
 import { ProjectsModule } from './projects/projects.module';
@@ -35,6 +37,11 @@ import { DashboardReportModule } from './dashboard-reports/dashboard-report.modu
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    // Security: Add rate limiting to prevent brute force attacks
+    ThrottlerModule.forRoot([{
+      ttl: 60000, // Time window in milliseconds (60 seconds)
+      limit: 100,  // Max requests per ttl window (100 requests per minute globally)
+    }]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -85,6 +92,13 @@ import { DashboardReportModule } from './dashboard-reports/dashboard-report.modu
     RolesRightsModule,
     DashboardReportModule
   ],
-  controllers: []
+  controllers: [],
+  providers: [
+    // Security: Apply rate limiting globally
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard
+    }
+  ]
 })
 export class AppModule { }

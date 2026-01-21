@@ -75,17 +75,19 @@ export class AuthService {
       const user = await this.userRepository.findOne({ where: { Email: email } });
 
       if (!user) {
-        throw new UnauthorizedException('User not found');
+        // Security: Use generic error message to prevent user enumeration
+        throw new UnauthorizedException('Invalid credentials');
       }
 
       if(!user.isActive){
-        throw new UnauthorizedException('User is Inactive. Please contact admin for activation.');
+        throw new UnauthorizedException('Account is inactive. Please contact administrator.');
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.Password);
       if (!isPasswordValid) {
-        this.logger.warn(`Invalid password for user with email: ${email}`);
-        throw new UnauthorizedException('Invalid password');
+        // Security: Log user ID instead of email, use generic error message
+        this.logger.warn(`Failed login attempt for user ID: ${user.Id}`);
+        throw new UnauthorizedException('Invalid credentials');
       }
 
       const { Password: _, ...result } = user;

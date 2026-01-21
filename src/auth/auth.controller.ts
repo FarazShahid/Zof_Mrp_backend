@@ -11,6 +11,8 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser } from './current-user.decorator';
 import { Request } from 'express';
 import { ValidatedUser } from './jwt.strategy';
+import { Throttle } from '@nestjs/throttler';
+
 @ApiTags('Authentication')
 @Controller('auth')
 @UseInterceptors(AuditInterceptor)
@@ -19,6 +21,8 @@ export class AuthController {
 
   constructor(private readonly authService: AuthService) {}
 
+  // Security: Strict rate limiting on login endpoint (5 attempts per minute)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('login')
   @ApiBody({ type: LoginUserDto })
   @ApiResponse({ type: LoginResponseDto })
@@ -38,6 +42,8 @@ export class AuthController {
     }
   }
 
+  // Security: Rate limiting on refresh endpoint (10 attempts per minute)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('refresh')
   @ApiBody({ type: RefreshTokenDto })
   @ApiResponse({ type: RefreshTokenResponseDto })

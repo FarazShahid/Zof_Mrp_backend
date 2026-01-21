@@ -15,10 +15,21 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     TypeOrmModule.forFeature([User, RefreshToken]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_ACCESS_SECRET') || 'yourAccessSecretKey',
-        signOptions: { expiresIn: '15m' },
-      }),
+      useFactory: async (configService: ConfigService) => {
+        const secret = configService.get<string>('JWT_ACCESS_SECRET');
+
+        if (!secret) {
+          throw new Error(
+            'CRITICAL SECURITY ERROR: JWT_ACCESS_SECRET environment variable is not configured. ' +
+            'Application cannot start without a valid JWT secret.'
+          );
+        }
+
+        return {
+          secret,
+          signOptions: { expiresIn: '15m' },
+        };
+      },
       inject: [ConfigService],
     }),
     AuditModule

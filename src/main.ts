@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { ValidationPipe, Logger, BadRequestException, ValidationError } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import * as helmet from 'helmet';
+import * as express from 'express';
 
 function extractErrors(errors: ValidationError[], parentPath = ''): string[] {
   const result: string[] = [];
@@ -31,14 +33,60 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   logger.log('Application created');
 
-  // Enable CORS
+  // Security: Add security headers using Helmet
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+      },
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  }));
+  logger.log('Security headers configured');
+
+  // Security: Set request body size limits to prevent DoS attacks
+  app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ limit: '1mb', extended: true }));
+  logger.log('Request body size limits configured');
+
+  // Security: Enable CORS with proper validation
+  const frontendUrl = process.env.FRONTEND_URL;
+
+  if (!frontendUrl) {
+    logger.warn('WARNING: FRONTEND_URL environment variable is not set. Using default localhost.');
+  }
+
+  const allowedOrigins = frontendUrl
+    ? frontendUrl.split(',').map(url => url.trim())
+    : ['http://localhost:3001'];
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        logger.warn(`CORS blocked request from origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type, Authorization, Accept',
     credentials: true,
   });
-  logger.log('CORS enabled');
+  logger.log(`CORS enabled for origins: ${allowedOrigins.join(', ')}`);
 
   // Global validation pipe
   app.useGlobalPipes(
