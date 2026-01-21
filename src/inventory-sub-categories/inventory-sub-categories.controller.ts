@@ -20,6 +20,7 @@ import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 import { HasRight } from 'src/auth/has-right-guard';
+import { CurrentUserData } from 'src/auth/auth.types';
 
 @ControllerAuthProtector('Inventory Sub Categories', 'inventory-sub-categories')
 @UseInterceptors(AuditInterceptor)
@@ -34,7 +35,7 @@ export class InventorySubCategoryController {
   @CommonApiResponses('Create a new Inventory Sub Category')
   async create(
     @Body() CreateInventorySubCategoryDto: CreateInventorySubCategoryDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: CurrentUserData
   ) {
     try {
       const data = {
@@ -77,8 +78,8 @@ export class InventorySubCategoryController {
   @CommonApiResponses('Update a Inventory Sub Category by id')
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateData: any,
-    @CurrentUser() user: any
+    @Body() updateData: CreateInventorySubCategoryDto,
+    @CurrentUser() user: CurrentUserData
   ) {
     try {
       const data = {

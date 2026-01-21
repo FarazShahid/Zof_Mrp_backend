@@ -82,17 +82,18 @@ export class MediaHandlersService {
         await blockBlobClient.uploadStream(bufferStream, file.size, undefined, {
           blobHTTPHeaders: { blobContentType: file.mimetype },
         });
-      } catch (uploadError: any) {
+      } catch (uploadError: unknown) {
         // Provide more helpful error messages for common Azure Storage errors
-        if (uploadError.statusCode === 403) {
+        const error = uploadError as { statusCode?: number; message?: string };
+        if (error.statusCode === 403) {
           this.logger.error('Azure Storage authentication failed. Possible causes:');
           this.logger.error('1. SAS URL may be expired');
           this.logger.error('2. SAS URL may not have write (w) or create (c) permissions');
           this.logger.error('3. SAS URL format may be incorrect');
-          this.logger.error(`Error details: ${uploadError.message}`);
+          this.logger.error(`Error details: ${error.message}`);
           throw new Error(
             'Azure Storage authentication failed. Please check your SAS URL has write permissions and is not expired. ' +
-            `Details: ${uploadError.message}`
+            `Details: ${error.message}`
           );
         }
         throw uploadError;
@@ -136,12 +137,13 @@ export class MediaHandlersService {
         media: savedMedia,
         link: savedLink,
       };
-    } catch (error: any) {
-      this.logger.error('Failed to upload and save document:', error.message);
-      if (error.message && error.message.includes('Azure Storage authentication failed')) {
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error('Failed to upload and save document:', err.message);
+      if (err.message && err.message.includes('Azure Storage authentication failed')) {
         throw error;
       }
-      throw new Error(`Failed to upload file: ${error.message || 'Unknown error'}`);
+      throw new Error(`Failed to upload file: ${err.message || 'Unknown error'}`);
     }
   }
 

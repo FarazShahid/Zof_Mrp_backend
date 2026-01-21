@@ -80,7 +80,7 @@ export class InventorySubCategoryService {
     };
   }
 
-  async update(Id: number, data: any) {
+  async update(Id: number, data: { Name?: string; CategoryId?: number; updatedBy: string }) {
     try {
       const inventoryCategory = await this.inventorySubCategoryRepository.findOne({ where: { Id } });
       if (!inventoryCategory) {
@@ -89,13 +89,13 @@ export class InventorySubCategoryService {
 
       const { Name, CategoryId, updatedBy } = data;
 
-      const updateData: any = {};
+      const updateData: Partial<InventorySubCategories> = {
+        UpdatedBy: updatedBy,
+        UpdatedOn: new Date(),
+      };
 
       if (Name !== undefined) updateData.Name = Name;
       if (CategoryId !== undefined) updateData.CategoryId = CategoryId;
-
-      updateData.UpdatedBy = updatedBy;
-      updateData.UpdatedOn = new Date();
 
       await this.inventorySubCategoryRepository.update(Id, updateData);
 

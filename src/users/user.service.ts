@@ -6,6 +6,28 @@ import * as bcrypt from 'bcrypt';
 import { AppRole } from 'src/roles-rights/roles.rights.entity';
 import { Client } from 'src/clients/entities/client.entity';
 
+interface AssignedClient {
+  clientId: number;
+  name: string;
+}
+
+interface CreateUserData {
+  Email: string;
+  firstName: string;
+  lastName: string;
+  Password: string;
+  createdBy: string;
+  roleId?: number;
+  assignedClients?: Array<{ clientId: number }>;
+  isActive?: boolean;
+}
+
+interface UserResponse extends Omit<User, 'Password'> {
+  Password: string;
+  roleName: string | null;
+  assignedClients: AssignedClient[];
+}
+
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
@@ -52,7 +74,7 @@ export class UserService {
     }
   }
 
-  async createUser(data: any): Promise<any> {
+  async createUser(data: CreateUserData): Promise<UserResponse> {
     const { Email, firstName, lastName, Password, createdBy, roleId, assignedClients } = data;
 
     this.logger.log(`Creating user with email: ${Email}`);
@@ -99,7 +121,7 @@ export class UserService {
     return { ...savedUser, roleId: roleId, roleName: roleName, Password: '****' };
   }
 
-  async getAllUsers(): Promise<any[]> {
+  async getAllUsers(): Promise<UserResponse[]> {
     this.logger.log('Finding all users');
     const users = await this.userRepository.find();
     const roles = await this.roleRepository.find();
@@ -124,7 +146,7 @@ export class UserService {
     });
   }
 
-  async getUserById(id: number): Promise<any> {
+  async getUserById(id: number): Promise<UserResponse> {
     this.logger.log(`Finding user with id: ${id}`);
     const user = await this.userRepository.findOne({ where: { Id: id } });
 

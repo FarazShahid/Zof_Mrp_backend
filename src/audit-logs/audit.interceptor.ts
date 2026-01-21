@@ -13,13 +13,13 @@ export class AuditInterceptor implements NestInterceptor {
     private readonly auditLogService: AuditLogService,
   ) { }
 
-  private sanitizePayload(payload: any): any {
+  private sanitizePayload(payload: unknown): unknown {
     if (!payload || typeof payload !== 'object') {
       return payload;
     }
 
     const sensitiveFields = ['password', 'Password', 'PASSWORD', 'token', 'Token', 'TOKEN', 'secret', 'Secret', 'SECRET'];
-    const sanitized = { ...payload };
+    const sanitized = { ...(payload as Record<string, unknown>) };
 
     for (const field of sensitiveFields) {
       if (field in sanitized) {

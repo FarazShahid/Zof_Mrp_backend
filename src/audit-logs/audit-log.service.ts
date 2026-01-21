@@ -4,6 +4,19 @@ import { Repository } from 'typeorm';
 import { AuditLog } from './audit-log.entity';
 import { User } from 'src/users/entities/user.entity';
 
+interface AuditLogResponse {
+  id: number;
+  module: string;
+  action: string;
+  details: string;
+  entityId: number;
+  ip: string;
+  device: string;
+  createdAt: Date;
+  userId: number;
+  Email: string;
+}
+
 @Injectable()
 export class AuditLogService {
   constructor(
@@ -16,7 +29,7 @@ export class AuditLogService {
     return this.auditLogRepo.save(log);
   }
 
-  async getLogs(): Promise<any[]> {
+  async getLogs(): Promise<AuditLogResponse[]> {
     return this.auditLogRepo
       .createQueryBuilder('log')
       .leftJoinAndSelect(User, 'user', 'user.Id = log.UserId')

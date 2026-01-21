@@ -1,12 +1,12 @@
-import { 
-  Get, 
-  Post, 
-  Put, 
-  Delete, 
-  Body, 
-  Param, 
-  ParseIntPipe, 
-  HttpCode, 
+import {
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  ParseIntPipe,
+  HttpCode,
   HttpStatus,
   Logger,
   BadRequestException,
@@ -21,6 +21,7 @@ import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 import { HasRight } from 'src/auth/has-right-guard';
+import { CurrentUserData } from 'src/auth/auth.types';
 
 @ControllerAuthProtector('Fabric Types', 'fabrictype')
 @UseInterceptors(AuditInterceptor)
@@ -36,7 +37,7 @@ export class FabricTypeController {
   @CommonApiResponses('Create a new fabric type')
   async create(
     @Body() createFabricTypeDto: CreateFabricTypeDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: CurrentUserData
   ) {
     this.logger.log(`Creating fabric type: ${JSON.stringify(createFabricTypeDto)}, User: ${JSON.stringify(user)}`);
     try {
@@ -86,9 +87,9 @@ export class FabricTypeController {
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a fabric type by id')
   async update(
-    @Param('id', ParseIntPipe) id: number, 
-    @Body() updateData: any,
-    @CurrentUser() user: any
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateData: CreateFabricTypeDto,
+    @CurrentUser() user: CurrentUserData
   ) {
     this.logger.log(`Updating fabric type with id: ${id}, data: ${JSON.stringify(updateData)}, User: ${JSON.stringify(user)}`);
     try {

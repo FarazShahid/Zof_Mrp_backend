@@ -18,7 +18,7 @@ export function CommonApiResponses(summary: string) {
 
 export const CommonApiProperty = (
   description: string = '',
-  example?: string | number | boolean | any[],
+  example?: string | number | boolean | unknown[],
   isRequired: boolean = true
 ) => {
   return ApiProperty({
@@ -28,4 +28,4 @@ export const CommonApiProperty = (
   });
 };
 
-export const CommonApiResponseModal = (typeData: any) => (ApiResponse({type: typeData}))
+export const CommonApiResponseModal = (typeData: Function | [Function]) => (ApiResponse({type: typeData}))

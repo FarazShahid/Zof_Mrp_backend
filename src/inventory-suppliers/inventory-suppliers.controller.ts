@@ -20,6 +20,7 @@ import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 import { HasRight } from 'src/auth/has-right-guard';
+import { CurrentUserData } from 'src/auth/auth.types';
 
 @ControllerAuthProtector('Inventory Supplier', 'inventory-suppliers')
 @UseInterceptors(AuditInterceptor)
@@ -34,7 +35,7 @@ export class InventorySupplierController {
   @CommonApiResponses('Create a new Inventory Supplier')
   async create(
     @Body() CreateInventorySuppliersDto: CreateInventorySuppliersDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: CurrentUserData
   ) {
     try {
       const data = {
@@ -77,8 +78,8 @@ export class InventorySupplierController {
   @CommonApiResponses('Update a Inventory Supplier by id')
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateData: any,
-    @CurrentUser() user: any
+    @Body() updateData: CreateInventorySuppliersDto,
+    @CurrentUser() user: CurrentUserData
   ) {
     try {
       const data = {

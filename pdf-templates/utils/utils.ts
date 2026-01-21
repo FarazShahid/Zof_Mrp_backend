@@ -115,7 +115,7 @@ const FIELD_MAP: { key: keyof SizeMeasurement; label: string; section: Section }
 ];
 
 export function buildMeasurements(sm: SizeMeasurement) {
-  const result: Record<Section, { label: string; value: any; unit: string }[]> = {
+  const result: Record<Section, { label: string; value: string | number; unit: string }[]> = {
     top: [],
     bottom: [],
     logoTop: [],
@@ -153,7 +153,7 @@ export function resolveSizeName(sizeOptionId?: number) {
   return sizeOptionId ?? '';
 }
 
-export function buildChartSrc(item: any) {
+export function buildChartSrc(item: unknown): string | undefined {
   // Optional: return a data URL or hosted image URL to replace the placeholder.
   return undefined;
 }

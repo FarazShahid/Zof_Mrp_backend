@@ -10,6 +10,7 @@ import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 import { HasRight } from 'src/auth/has-right-guard';
 import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { CurrentUserData } from 'src/auth/auth.types';
 
 @ControllerAuthProtector('Users', 'users')
 @UseInterceptors(AuditInterceptor)
@@ -23,7 +24,7 @@ export class UserController {
   @ApiBody({ type: CreateUserDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new user')
-  async create(@Body() createUserDto: CreateUserDto, @CurrentUser() currentUser: any): Promise<User> {
+  async create(@Body() createUserDto: CreateUserDto, @CurrentUser() currentUser: CurrentUserData): Promise<User> {
     try {
       this.logger.log(`Creating user: ${JSON.stringify({
         ...createUserDto,
@@ -78,7 +79,7 @@ export class UserController {
   async update(
     @Param('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
-    @CurrentUser() currentUser: any
+    @CurrentUser() currentUser: CurrentUserData
   ): Promise<User> {
     try {
       this.logger.log(`Updating user with id: ${id}, data: ${JSON.stringify({

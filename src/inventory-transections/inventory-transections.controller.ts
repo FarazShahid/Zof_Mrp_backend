@@ -21,6 +21,7 @@ import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
 import { HasRight } from 'src/auth/has-right-guard';
+import { CurrentUserData } from 'src/auth/auth.types';
 
 @ControllerAuthProtector('Inventory Transections', 'inventory-transections')
 @UseInterceptors(AuditInterceptor)
@@ -35,7 +36,7 @@ export class InventoryTransectionController {
     @CommonApiResponses('Create a new Inventory Transection')
     async create(
         @Body() CreateInventoryTransectionsDto: CreateInventoryTransectionsDto,
-        @CurrentUser() user: any
+        @CurrentUser() user: CurrentUserData
     ) {
         try {
             const data = {
@@ -51,7 +52,7 @@ export class InventoryTransectionController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @CommonApiResponses('Get all Inventory Transections')
-    async findAll(@CurrentUser() user: any) {
+    async findAll(@CurrentUser() user: CurrentUserData) {
         try {
             return await this.inventoryTransectionService.findAll(user.userId);
         } catch (error) {
@@ -63,7 +64,7 @@ export class InventoryTransectionController {
     @Get(':id')
     @HttpCode(HttpStatus.OK)
     @CommonApiResponses('Get a Inventory Transection by id')
-    async findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: any) {
+    async findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: CurrentUserData) {
         try {
             return await this.inventoryTransectionService.findOne(id, user.userId);
         } catch (error) {
@@ -78,8 +79,8 @@ export class InventoryTransectionController {
     @CommonApiResponses('Update an Inventory Transection by id')
     async update(
         @Param('id', ParseIntPipe) id: number,
-        @Body() updateData: any,
-        @CurrentUser() user: any
+        @Body() updateData: CreateInventoryTransectionsDto,
+        @CurrentUser() user: CurrentUserData
     ) {
         try {
             return await this.inventoryTransectionService.update(id, updateData, user.email, user.userId);
@@ -92,7 +93,7 @@ export class InventoryTransectionController {
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     @CommonApiResponses('Delete a Inventory Transection by id')
-    async delete(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: any) {
+    async delete(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: CurrentUserData) {
         try {
             return await this.inventoryTransectionService.delete(id, user.userId);
         } catch (error) {

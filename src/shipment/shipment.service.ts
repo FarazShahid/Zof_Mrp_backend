@@ -68,7 +68,7 @@ export class ShipmentService {
     return validClientIds;
   }
 
-  async create(createShipmentDto: CreateShipmentDto, createdBy: any, userId: number) {
+  async create(createShipmentDto: CreateShipmentDto, createdBy: string, userId: number) {
     const {
       ShipmentCode,
       TrackingId,

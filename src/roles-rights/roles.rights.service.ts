@@ -179,7 +179,7 @@ export class RolesRightsService {
     };
   }
 
-  async getAssignedRights(roleId: number): Promise<any[]> {
+  async getAssignedRights(roleId: number): Promise<Array<{ group: string; permissions: Array<{ id: number; name: string }> }>> {
 
     const roleWithRights = await this.getRoleWithRightsById(roleId);
     const rightIds = roleWithRights?.rightIds ?? [];
@@ -198,7 +198,7 @@ export class RolesRightsService {
       .getMany();
     const rightsMap = new Map(rights.map((right) => [right.id, right]));
 
-    const permissions: any[] = uniqueRightIds.map((id) => {
+    const permissions: Array<{ id: number; name: string; group_by: string }> = uniqueRightIds.map((id) => {
       const right = rightsMap.get(id);
       if (!right) {
         throw new Error(`Right with ID ${id} not found.`);
@@ -211,7 +211,7 @@ export class RolesRightsService {
       };
     });
 
-    const grouped = permissions.reduce<Record<string, any>>((acc, { id, name, group_by }) => {
+    const grouped = permissions.reduce<Record<string, { group: string; permissions: Array<{ id: number; name: string }> }>>((acc, { id, name, group_by }) => {
       if (!acc[group_by]) {
         acc[group_by] = {
           group: group_by,
