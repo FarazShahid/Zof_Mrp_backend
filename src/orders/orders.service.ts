@@ -756,6 +756,8 @@ export class OrdersService {
                     .where('sm.SizeOptionId = :sizeOptionId', { sizeOptionId: option.SizeOption })
                     .andWhere('sm.IsLatest = :isLatest', { isLatest: true })
                     .andWhere('sm.IsActive = :isActive', { isActive: true })
+                    .andWhere('sm.ProductCategoryId = :productCategoryId', {productCategoryId: product.ProductCategoryId})
+                    .andWhere('sm.ClientId = :clientId', {clientId: product.ClientId})
                     .orderBy('sm.Version', 'DESC')
                     .getOne();
                   
