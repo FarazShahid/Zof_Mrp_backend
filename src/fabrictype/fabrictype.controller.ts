@@ -15,6 +15,7 @@ import {
 import { FabricTypeService } from './fabrictype.service';
 import { CreateFabricTypeDto } from './_/create-fabrictype.dto';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
@@ -36,7 +37,7 @@ export class FabricTypeController {
   @CommonApiResponses('Create a new fabric type')
   async create(
     @Body() createFabricTypeDto: CreateFabricTypeDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: ValidatedUser
   ) {
     this.logger.log(`Creating fabric type: ${JSON.stringify(createFabricTypeDto)}, User: ${JSON.stringify(user)}`);
     try {
@@ -88,7 +89,7 @@ export class FabricTypeController {
   async update(
     @Param('id', ParseIntPipe) id: number, 
     @Body() updateData: any,
-    @CurrentUser() user: any
+    @CurrentUser() user: ValidatedUser
   ) {
     this.logger.log(`Updating fabric type with id: ${id}, data: ${JSON.stringify(updateData)}, User: ${JSON.stringify(user)}`);
     try {

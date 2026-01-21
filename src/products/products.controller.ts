@@ -3,6 +3,7 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
@@ -23,7 +24,7 @@ export class ProductsController {
   @ApiBody({ type: CreateProductDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new product')
-  create(@Body() createProductDto: CreateProductDto, @CurrentUser() user: any) {
+  create(@Body() createProductDto: CreateProductDto, @CurrentUser() user: ValidatedUser) {
     try {
       return this.productsService.create(createProductDto, user.email, user.userId);
     } catch (error) {
@@ -38,7 +39,7 @@ export class ProductsController {
   @ApiQuery({ name: 'filter', required: false, description: 'Filter by unarchive products' })
   @ApiQuery({ name: 'projectId', required: false, type: Number, description: 'Project ID to filter products', example: 1 })
   findAll(
-    @CurrentUser() user: any,
+    @CurrentUser() user: ValidatedUser,
     @Query('filter') filter?: string,
     @Query('projectId') projectId?: number,
   ) {
@@ -55,7 +56,7 @@ export class ProductsController {
   @CommonApiResponses('Get all products by client ID')
   async getProductsByClientId(
     @Param('clientId') clientId: string,
-    @CurrentUser() user: any,
+    @CurrentUser() user: ValidatedUser,
   ) {
     try {
       return await this.productsService.getProductsByClientId(+clientId, user.userId);
@@ -68,7 +69,7 @@ export class ProductsController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a product by id')
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+  findOne(@Param('id') id: string, @CurrentUser() user: ValidatedUser) {
     try {
       return this.productsService.findOne(+id, user.userId);
     } catch (error) {
@@ -81,7 +82,7 @@ export class ProductsController {
   @ApiBody({ type: CreateProductDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a product by id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto, @CurrentUser() user: any) {
+  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto, @CurrentUser() user: ValidatedUser) {
     try {
       return this.productsService.update(+id, updateProductDto, user.email, user.userId);
     } catch (error) {
@@ -94,7 +95,7 @@ export class ProductsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a product by id')
-  remove(@Param('id') id: string, @CurrentUser() user: any) {
+  remove(@Param('id') id: string, @CurrentUser() user: ValidatedUser) {
     try {
       return this.productsService.remove(+id, user.userId);
     } catch (error) {
@@ -107,7 +108,7 @@ export class ProductsController {
   @ApiBody({ type: UpdateProductStatusDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update archived status of a product by its id')
-  updateProductStatus(@Param('id') id: string, @Body() updateProductStatus: UpdateProductStatusDto, @CurrentUser() user: any) {
+  updateProductStatus(@Param('id') id: string, @Body() updateProductStatus: UpdateProductStatusDto, @CurrentUser() user: ValidatedUser) {
     try {
       return this.productsService.updateProductStatus(+id, updateProductStatus, user.email, user.userId);
     } catch (error) {
@@ -185,7 +186,7 @@ export class ProductsController {
   @ApiQuery({ name: 'clientId', required: false, type: Number, description: 'Client ID to filter products', example: 1 })
   @ApiQuery({ name: 'productId', required: false, type: Number, description: 'Product ID to filter products', example: 1 })
   async getProductsWithAttachments(
-    @CurrentUser() user: any,
+    @CurrentUser() user: ValidatedUser,
     @Query() paginationDto: PaginationDto,
   ) {
     try {

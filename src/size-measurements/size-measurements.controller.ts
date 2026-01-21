@@ -3,6 +3,7 @@ import { SizeMeasurementsService } from './size-measurements.service';
 import { CreateSizeMeasurementDto } from './dto/create-size-measurement.dto';
 import { UpdateSizeMeasurementDto } from './dto/update-size-measurement.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
@@ -21,7 +22,7 @@ export class SizeMeasurementsController {
   @HttpCode(HttpStatus.CREATED)
   @ApiBody({ type: CreateSizeMeasurementDto })
   @CommonApiResponses('Create a new size measurement')
-  create(@Body() createSizeMeasurementDto: CreateSizeMeasurementDto, @CurrentUser() user: any) {
+  create(@Body() createSizeMeasurementDto: CreateSizeMeasurementDto, @CurrentUser() user: ValidatedUser) {
     try {
       return this.sizeMeasurementsService.create(createSizeMeasurementDto, user.email, user.userId);
     } catch (error) {
@@ -38,7 +39,7 @@ export class SizeMeasurementsController {
   @ApiQuery({ name: 'SizeOptionId', required: false, description: 'Filter by Size Option Id' })
   @ApiQuery({ name: 'ProductCategoryId', required: false, description: 'Filter by Product Category Id' })
   findAll(
-    @CurrentUser() user: any,
+    @CurrentUser() user: ValidatedUser,
     @Query('CutOptionId') CutOptionId?: number,
     @Query('ClientId') ClientId?: number,
     @Query('SizeOptionId') SizeOptionId?: number,
@@ -55,7 +56,7 @@ export class SizeMeasurementsController {
   @Get(':id/versions')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all versions for a size measurement')
-  findVersions(@Param('id') id: string, @CurrentUser() user: any) {
+  findVersions(@Param('id') id: string, @CurrentUser() user: ValidatedUser) {
     try {
       return this.sizeMeasurementsService.findVersionsByMeasurementId(+id, user.userId);
     } catch (error) {
@@ -69,7 +70,7 @@ export class SizeMeasurementsController {
   @CommonApiResponses('Get all size measurements (originals and versions) for a size option')
   findAllBySizeOption(
     @Param('sizeOptionId') sizeOptionId: string,
-    @CurrentUser() user: any,
+    @CurrentUser() user: ValidatedUser,
   ) {
     try {
       return this.sizeMeasurementsService.findAllBySizeOption(+sizeOptionId, user.userId);
@@ -82,7 +83,7 @@ export class SizeMeasurementsController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a size measurement by id')
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+  findOne(@Param('id') id: string, @CurrentUser() user: ValidatedUser) {
     try {
       return this.sizeMeasurementsService.findOne(+id, user.userId);
     } catch (error) {
@@ -97,7 +98,7 @@ export class SizeMeasurementsController {
   update(
     @Param('id') id: string,
     @Body() updateSizeMeasurementDto: UpdateSizeMeasurementDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: ValidatedUser,
   ) {
     try {
       return this.sizeMeasurementsService.update(+id, updateSizeMeasurementDto, user.email, user.userId);
@@ -110,7 +111,7 @@ export class SizeMeasurementsController {
   @Patch(':id/set-as-default')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Set a size measurement as default (creates new version and marks as latest)')
-  setAsDefault(@Param('id') id: string, @CurrentUser() user: any) {
+  setAsDefault(@Param('id') id: string, @CurrentUser() user: ValidatedUser) {
     try {
       return this.sizeMeasurementsService.setAsDefault(+id, user.email, user.userId);
     } catch (error) {
@@ -122,7 +123,7 @@ export class SizeMeasurementsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a size measurement by id')
-  remove(@Param('id') id: string, @CurrentUser() user: any) {
+  remove(@Param('id') id: string, @CurrentUser() user: ValidatedUser) {
     try {
       return this.sizeMeasurementsService.remove(+id, user.userId);
     } catch (error) {

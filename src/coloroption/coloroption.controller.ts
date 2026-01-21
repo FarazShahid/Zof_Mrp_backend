@@ -3,6 +3,7 @@ import { ColorOptionService } from './coloroption.service';
 import { CreateColorOptionDto } from './_/create-color-option.dto';
 import { UpdateColorOptionDto } from './_/update-color-option.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
@@ -19,7 +20,7 @@ export class ColorOptionController {
   @ApiBody({ type: CreateColorOptionDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new color option')
-  create(@Body() createColorOptionDto: CreateColorOptionDto, @CurrentUser() currentUser: any) {
+  create(@Body() createColorOptionDto: CreateColorOptionDto, @CurrentUser() currentUser: ValidatedUser) {
     try {
       return this.colorOptionService.create(createColorOptionDto, currentUser.email);
     } catch (error) {
@@ -56,7 +57,7 @@ export class ColorOptionController {
   @ApiBody({ type: CreateColorOptionDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a color option by id')
-  update(@Param('id') id: number, @Body() updateColorOptionDto: UpdateColorOptionDto, @CurrentUser() currentUser: any) {
+  update(@Param('id') id: number, @Body() updateColorOptionDto: UpdateColorOptionDto, @CurrentUser() currentUser: ValidatedUser) {
     try {
       return this.colorOptionService.update(id, updateColorOptionDto, currentUser.email);
     } catch (error) {

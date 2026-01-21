@@ -2,6 +2,7 @@ import { Body, Delete, Get, Param, Post, Put, HttpCode, HttpStatus, UseIntercept
 import { OrderstatusService } from './orderstatus.service';
 import { CreateOrderStatusDto, UpdateOrderStatusDto } from './dto/order-status.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
@@ -37,7 +38,7 @@ export class OrderStatusController {
   @ApiBody({ type: CreateOrderStatusDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new order status')
-  create(@Body() createOrderStatusDto: CreateOrderStatusDto, @CurrentUser() currentUser: any) {
+  create(@Body() createOrderStatusDto: CreateOrderStatusDto, @CurrentUser() currentUser: ValidatedUser) {
     try {
       return this.orderStatusService.create(createOrderStatusDto, currentUser.email);
     } catch (error) {
@@ -49,7 +50,7 @@ export class OrderStatusController {
   @ApiBody({ type: CreateOrderStatusDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update an order status by id')
-  update(@Param('id') id: string, @Body() updateOrderStatusDto: UpdateOrderStatusDto, @CurrentUser() currentUser: any) {
+  update(@Param('id') id: string, @Body() updateOrderStatusDto: UpdateOrderStatusDto, @CurrentUser() currentUser: ValidatedUser) {
     try {
       return this.orderStatusService.update(+id, updateOrderStatusDto, currentUser.email);
     } catch (error) {

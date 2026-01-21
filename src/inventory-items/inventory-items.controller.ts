@@ -14,6 +14,7 @@ import {
 import { inventoryItemService } from './inventory-items.service';
 import { CreateInventoryItemDto } from './_/create-items-categories.dto';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
@@ -35,7 +36,7 @@ export class InventoryItemController {
   @CommonApiResponses('Create a new Inventory Item')
   async create(
     @Body() CreateInventoryItemDto: CreateInventoryItemDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: ValidatedUser
   ) {
     try {
       const data = {
@@ -79,7 +80,7 @@ export class InventoryItemController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateData: any,
-    @CurrentUser() user: any
+    @CurrentUser() user: ValidatedUser
   ) {
     try {
       const data: UpdateInventoryItemDto = {

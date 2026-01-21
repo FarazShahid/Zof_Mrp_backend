@@ -2,6 +2,7 @@ import { Body, Delete, Get, Param, Post, Put, HttpCode, HttpStatus, UseIntercept
 import { PrintingoptionsService } from './printingoptions.service';
 import { CreatePrintingOptionDto, UpdatePrintingOptionDto } from './dto/printing-option.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
@@ -30,7 +31,7 @@ export class PrintingoptionsController {
   @ApiBody({ type: CreatePrintingOptionDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new printing option')
-  create(@Body() createPrintingOptionDto: CreatePrintingOptionDto, @CurrentUser() currentUser: any) {
+  create(@Body() createPrintingOptionDto: CreatePrintingOptionDto, @CurrentUser() currentUser: ValidatedUser) {
     try {
       return this.printingOptionsService.create(createPrintingOptionDto, currentUser.email);
     } catch (error) {
@@ -55,7 +56,7 @@ export class PrintingoptionsController {
   @ApiBody({ type: CreatePrintingOptionDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a printing option by id')
-  update(@Param('id') id: string, @Body() updatePrintingOption: UpdatePrintingOptionDto, @CurrentUser() currentUser: any) {
+  update(@Param('id') id: string, @Body() updatePrintingOption: UpdatePrintingOptionDto, @CurrentUser() currentUser: ValidatedUser) {
     try {
       return this.printingOptionsService.update(+id, updatePrintingOption, currentUser.email);
     } catch (error) {

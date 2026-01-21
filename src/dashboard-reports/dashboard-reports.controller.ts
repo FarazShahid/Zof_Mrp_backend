@@ -2,6 +2,7 @@ import { Get, Query, UseInterceptors } from '@nestjs/common';
 import { DashboardReportService } from './dashboard-report.service';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 
@@ -14,7 +15,7 @@ export class DashboardReportController {
   @Get('widgets')
   @ApiOperation({ summary: 'Get dashboard widgets data' })
   @ApiResponse({ status: 200, description: 'Dashboard widgets data retrieved successfully' })
-  async getDashboardWidgets(@CurrentUser() currentUser: any) {
+  async getDashboardWidgets(@CurrentUser() currentUser: ValidatedUser) {
     const userId = currentUser.userId;
     return await this.dashboardReportService.getDashboardWidgets(userId);
   }
@@ -23,7 +24,7 @@ export class DashboardReportController {
   @Get('order-status-summary')
   @ApiOperation({ summary: 'Get order status summary' })
   @ApiResponse({ status: 200, description: 'Order status summary retrieved successfully' })
-  async getOrderStatusSummary(@CurrentUser() currentUser: any) {
+  async getOrderStatusSummary(@CurrentUser() currentUser: ValidatedUser) {
     const userId = currentUser.userId;
     return await this.dashboardReportService.getOrderStatusSummary(userId);
   }
@@ -33,7 +34,7 @@ export class DashboardReportController {
   @ApiQuery({ name: 'year', required: false, type: Number, description: 'Year for the summary (default: current year)' })
   @ApiResponse({ status: 200, description: 'Order summary by month retrieved successfully' })
   async getOrderSummaryByMonth(
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: ValidatedUser,
     @Query('year') year?: string | number,
   ) {
     const userId = currentUser.userId;
@@ -44,7 +45,7 @@ export class DashboardReportController {
   @Get('late-orders')
   @ApiOperation({ summary: 'Get late orders' })
   @ApiResponse({ status: 200, description: 'Late orders retrieved successfully' })
-  async getLateOrders(@CurrentUser() currentUser: any) {
+  async getLateOrders(@CurrentUser() currentUser: ValidatedUser) {
     const userId = currentUser.userId;
     return await this.dashboardReportService.getLateOrders(userId);
   }
@@ -55,7 +56,7 @@ export class DashboardReportController {
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of top clients to return (default: 10)' })
   @ApiResponse({ status: 200, description: 'Top clients retrieved successfully' })
   async getTopClients(
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: ValidatedUser,
     @Query('limit') limit?: string | number,
   ) {
     const userId = currentUser.userId;
@@ -67,7 +68,7 @@ export class DashboardReportController {
   @Get('shipments-summary')
   @ApiOperation({ summary: 'Get shipments summary' })
   @ApiResponse({ status: 200, description: 'Shipments summary retrieved successfully' })
-  async getShipmentsSummary(@CurrentUser() currentUser: any) {
+  async getShipmentsSummary(@CurrentUser() currentUser: ValidatedUser) {
     const userId = currentUser.userId;
     return await this.dashboardReportService.getShipmentsSummary(userId);
   }
@@ -76,7 +77,7 @@ export class DashboardReportController {
   @Get('stock-levels')
   @ApiOperation({ summary: 'Get stock levels summary' })
   @ApiResponse({ status: 200, description: 'Stock levels retrieved successfully' })
-  async getStockLevels(@CurrentUser() currentUser: any) {
+  async getStockLevels(@CurrentUser() currentUser: ValidatedUser) {
     const userId = currentUser.userId;
     return await this.dashboardReportService.getStockLevels(userId);
   }
@@ -87,7 +88,7 @@ export class DashboardReportController {
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of top products to return (default: 10)' })
   @ApiResponse({ status: 200, description: 'Top products retrieved successfully' })
   async getTopProducts(
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: ValidatedUser,
     @Query('limit') limit?: string | number,
   ) {
     const userId = currentUser.userId;

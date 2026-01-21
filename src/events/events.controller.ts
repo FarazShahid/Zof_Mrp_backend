@@ -3,6 +3,7 @@ import { EventService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
@@ -21,7 +22,7 @@ export class EventController {
   @ApiBody({ type: CreateEventDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new event')
-  async create(@Body() createEventDto: CreateEventDto, @CurrentUser() user: any): Promise<any> {
+  async create(@Body() createEventDto: CreateEventDto, @CurrentUser() user: ValidatedUser): Promise<any> {
     try {
       const event = await this.eventService.create(createEventDto, user.email, user.userId);
       return event;
@@ -34,7 +35,7 @@ export class EventController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all events')
-  async findAll(@CurrentUser() user: any): Promise<any> {
+  async findAll(@CurrentUser() user: ValidatedUser): Promise<any> {
     try {
       const events = await this.eventService.getAllEvents(user.userId);
       return events;
@@ -47,7 +48,7 @@ export class EventController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get an event by id')
-  async findOne(@Param('id') id: string, @CurrentUser() user: any): Promise<any> {
+  async findOne(@Param('id') id: string, @CurrentUser() user: ValidatedUser): Promise<any> {
     try {
       const event = await this.eventService.findOne(+id, user.userId);
       return event;
@@ -61,7 +62,7 @@ export class EventController {
   @ApiBody({ type: CreateEventDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update an event by id')
-  async update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto, @CurrentUser() user: any): Promise<any> {
+  async update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto, @CurrentUser() user: ValidatedUser): Promise<any> {
     try {
       const event = await this.eventService.update(+id, updateEventDto, user.email, user.userId);
       return event;
@@ -74,7 +75,7 @@ export class EventController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete an event by id')
-  async remove(@Param('id') id: string, @CurrentUser() user: any): Promise<void> {
+  async remove(@Param('id') id: string, @CurrentUser() user: ValidatedUser): Promise<void> {
     try {
       await this.eventService.remove(+id, user.userId);
     } catch (error) {

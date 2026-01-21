@@ -8,6 +8,26 @@ import { User } from '../users/entities/user.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
 import axios from 'axios';
 
+export interface UserWithoutPassword extends Omit<User, 'Password'> {}
+
+export interface LoginResponse {
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+  user: {
+    id: number;
+    email: string;
+    roleId: number | null;
+    isActive: boolean;
+  };
+}
+
+export interface RefreshTokenResponse {
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+}
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -50,7 +70,7 @@ export class AuthService {
     }
   }
 
-  async validateUser(email: string, password: string): Promise<any> {
+  async validateUser(email: string, password: string): Promise<UserWithoutPassword> {
     try {
       const user = await this.userRepository.findOne({ where: { Email: email } });
 
@@ -75,7 +95,7 @@ export class AuthService {
     }
   }
 
-  async login(user: any, deviceInfo?: string, ipAddress?: string, userAgent?: string) {
+  async login(user: UserWithoutPassword, deviceInfo?: string, ipAddress?: string, userAgent?: string): Promise<LoginResponse> {
     try {
       const payload = {
         email: user.Email,
@@ -83,15 +103,15 @@ export class AuthService {
         roleId: user.roleId,
         isActive: user.isActive,
         userId: user.Id
-      }; 
-      
+      };
+
       // Generate access token (15 minutes)
       const accessToken = this.jwtService.sign(payload);
-      
+
       // Generate refresh token (7 days)
       const refreshToken = this.generateRefreshToken();
       const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
-      
+
       // Store refresh token in database
       const refreshTokenEntity = this.refreshTokenRepository.create({
         tokenHash: refreshTokenHash,
@@ -102,9 +122,9 @@ export class AuthService {
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
         lastUsedAt: new Date(),
       });
-      
+
       await this.refreshTokenRepository.save(refreshTokenEntity);
-      
+
       return {
         access_token: accessToken,
         refresh_token: refreshToken,
@@ -122,7 +142,7 @@ export class AuthService {
     }
   }
 
-  async refreshTokens(refreshToken: string, deviceInfo?: string, ipAddress?: string, userAgent?: string) {
+  async refreshTokens(refreshToken: string, deviceInfo?: string, ipAddress?: string, userAgent?: string): Promise<RefreshTokenResponse> {
     try {
       // Find refresh token in database
       const refreshTokens = await this.refreshTokenRepository.find({
@@ -130,7 +150,7 @@ export class AuthService {
         relations: ['user']
       });
 
-      let validRefreshToken = null;
+      let validRefreshToken: RefreshToken | null = null;
       for (const token of refreshTokens) {
         const isMatch = await bcrypt.compare(refreshToken, token.tokenHash);
         if (isMatch) {

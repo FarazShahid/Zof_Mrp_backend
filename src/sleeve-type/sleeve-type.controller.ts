@@ -3,6 +3,7 @@ import { SleeveTypeService } from './sleeve-type.service';
 import { CreateSleeveTypeDto } from "./dto/create-sleeve-type.dto/create-sleeve-type.dto";
 import { UpdateSleeveTypeDto } from './dto/update-sleeve-type.dto/update-sleeve-type.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
@@ -18,7 +19,7 @@ export class SleeveTypeController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new sleeve type')
-  create(@Body() createDto: CreateSleeveTypeDto, @CurrentUser() currentUser: any) {
+  create(@Body() createDto: CreateSleeveTypeDto, @CurrentUser() currentUser: ValidatedUser) {
     try {
       return this.sleeveService.create(createDto, currentUser.email);
     } catch (error) {
@@ -57,7 +58,7 @@ export class SleeveTypeController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDto: UpdateSleeveTypeDto,
-    @CurrentUser() currentUser: any
+    @CurrentUser() currentUser: ValidatedUser
   ) {
     try {
       return this.sleeveService.update(id, updateDto, currentUser.email);

@@ -4,6 +4,7 @@ import { CreateSizeOptionDto } from './dto/create-sizeoptions.dto';
 import { SizeOption } from './entities/sizeoptions.entity';
 import { UpdateSizeOptionDto } from './dto/update-sizeoptions.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
@@ -19,7 +20,7 @@ export class SizeoptionsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new size option')
-  async create(@Body() CreateSizeOptionDto: CreateSizeOptionDto, @CurrentUser() currentUser: any): Promise<SizeOption> {
+  async create(@Body() CreateSizeOptionDto: CreateSizeOptionDto, @CurrentUser() currentUser: ValidatedUser): Promise<SizeOption> {
     try {
       return this.sizeoptionsService.create(CreateSizeOptionDto, currentUser.email);
     } catch (error) {
@@ -67,7 +68,7 @@ export class SizeoptionsController {
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a size option by id')
-  async update(@Param('id') id: number, @Body() updateSizeOptionDto: UpdateSizeOptionDto, @CurrentUser() currentUser: any) {
+  async update(@Param('id') id: number, @Body() updateSizeOptionDto: UpdateSizeOptionDto, @CurrentUser() currentUser: ValidatedUser) {
     try {
       return this.sizeoptionsService.update(id, updateSizeOptionDto, currentUser.email);
     } catch (error) {

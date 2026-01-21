@@ -4,6 +4,7 @@ import { CreateProductRegionStandardDto } from './_/create-product-region-standa
 import { UpdateProductRegionStandardDto } from './_/update-product-region-standard.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { ApiTags } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
@@ -20,7 +21,7 @@ export class ProductRegionStandardController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new product region standard')
-  create(@Body() dto: CreateProductRegionStandardDto, @CurrentUser() currentUser: any) {
+  create(@Body() dto: CreateProductRegionStandardDto, @CurrentUser() currentUser: ValidatedUser) {
     try {
       return this.service.create(dto, currentUser.email);
     } catch (error) {
@@ -56,7 +57,7 @@ export class ProductRegionStandardController {
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a product region standard by id')
-  update(@Param('id') id: number, @Body() dto: UpdateProductRegionStandardDto, @CurrentUser() currentUser: any) {
+  update(@Param('id') id: number, @Body() dto: UpdateProductRegionStandardDto, @CurrentUser() currentUser: ValidatedUser) {
     try {
       return this.service.update(id, dto, currentUser.email);
     } catch (error) {

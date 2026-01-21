@@ -1,10 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe, Logger, BadRequestException } from '@nestjs/common';
+import { ValidationPipe, Logger, BadRequestException, ValidationError } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
-function extractErrors(errors: any[], parentPath = ''): string[] {
+function extractErrors(errors: ValidationError[], parentPath = ''): string[] {
   const result: string[] = [];
 
   for (const error of errors) {

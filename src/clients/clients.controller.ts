@@ -6,6 +6,7 @@ import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { ApiBody } from '@nestjs/swagger';
 import { CommonApiResponses, CommonApiResponseModal } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
@@ -26,7 +27,7 @@ export class ClientsController {
   @ApiBody({ type: CreateClientDto })
   @CommonApiResponseModal(CreateClientDto)
   @CommonApiResponses('Create a new client')
-  create(@Body() createClientDto: CreateClientDto, @CurrentUser() user: any) {
+  create(@Body() createClientDto: CreateClientDto, @CurrentUser() user: ValidatedUser) {
     this.logger.log(`Creating client: ${JSON.stringify(createClientDto)}, User: ${JSON.stringify(user)}`);
     try {
       return this.clientsService.create(createClientDto, user.email, user.userId, user.roleId);
@@ -41,7 +42,7 @@ export class ClientsController {
   @HttpCode(HttpStatus.OK)
   @CommonApiResponseModal([CreateClientDto])
   @CommonApiResponses('Get all clients')
-  findAll( @CurrentUser() user: any) {
+  findAll( @CurrentUser() user: ValidatedUser) {
     this.logger.log('Getting all clients');
     try {
       return this.clientsService.findAll(user.userId);
@@ -55,7 +56,7 @@ export class ClientsController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a client by id')
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+  findOne(@Param('id') id: string, @CurrentUser() user: ValidatedUser) {
     this.logger.log(`Getting client with id: ${id}`);
     try {
       return this.clientsService.findOne(+id, user.userId);
@@ -73,7 +74,7 @@ export class ClientsController {
   update(
     @Param('id') id: string, 
     @Body() updateClientDto: UpdateClientDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: ValidatedUser
   ) {
     this.logger.log(`Updating client with id: ${id}, data: ${JSON.stringify(updateClientDto)}, User: ${JSON.stringify(user)}`);
     try {
@@ -88,7 +89,7 @@ export class ClientsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a client by id')
-  remove(@Param('id') id: string, @CurrentUser() user: any) {
+  remove(@Param('id') id: string, @CurrentUser() user: ValidatedUser) {
     this.logger.log(`Deleting client with id: ${id}`);
     try {
       return this.clientsService.remove(+id, user.userId);

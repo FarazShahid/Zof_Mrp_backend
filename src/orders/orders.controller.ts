@@ -18,6 +18,7 @@ import { OrdersService } from './orders.service';
 import { CreateOrderDto, GetOrdersItemsDto } from './dto/create-orders.dto';
 import { UpdateOrderDto } from './dto/update-orders.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
@@ -52,7 +53,7 @@ export class OrdersController {
   @ApiBody({ type: CreateOrderDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new order')
-  async create(@Body() createOrderDto: CreateOrderDto, @CurrentUser() currentUser: any): Promise<any> {
+  async create(@Body() createOrderDto: CreateOrderDto, @CurrentUser() currentUser: ValidatedUser): Promise<any> {
     try {
       return this.ordersService.createOrder(createOrderDto, currentUser.email, currentUser.userId);
     } catch (error) {
@@ -66,7 +67,7 @@ export class OrdersController {
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all orders')
   @ApiQuery({ name: 'projectId', required: false, type: Number, description: 'Project ID to filter products', example: 1 })
-  async findAll(@CurrentUser() currentUser: any, @Query('projectId') projectId?: number): Promise<any> {
+  async findAll(@CurrentUser() currentUser: ValidatedUser, @Query('projectId') projectId?: number): Promise<any> {
     try {
       return this.ordersService.getAllOrders(currentUser.userId, projectId);
     } catch (error) {
@@ -95,7 +96,7 @@ export class OrdersController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get an order by client id')
-  async findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: any): Promise<any> {
+  async findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: ValidatedUser): Promise<any> {
     try {
       return this.ordersService.getOrdersByClientId(id, currentUser.userId);
     } catch (error) {
@@ -111,7 +112,7 @@ export class OrdersController {
   @CommonApiResponses('Update an order by id')
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateOrderDto: UpdateOrderDto, @CurrentUser() currentUser: any,
+    @Body() updateOrderDto: UpdateOrderDto, @CurrentUser() currentUser: ValidatedUser,
     @Req() req,
   ): Promise<any> {
     try {
@@ -128,7 +129,7 @@ export class OrdersController {
   @CommonApiResponses('Reorders an existing order by ID')
   async reorderOrder(
     @Param('id', ParseIntPipe) id: number,
-    @CurrentUser() currentUser: any
+    @CurrentUser() currentUser: ValidatedUser
   ): Promise<any> {
     return this.ordersService.reorder(id, currentUser.email, currentUser.userId);
   }
@@ -138,7 +139,7 @@ export class OrdersController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete an order by id')
-  async remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: any): Promise<void> {
+  async remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: ValidatedUser): Promise<void> {
     try {
       return this.ordersService.deleteOrder(id, currentUser.userId);
     } catch (error) {
@@ -177,7 +178,7 @@ export class OrdersController {
   @Get('get-edit/:id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get edit order by id')
-  async getOrdersEdit(@Param('id', ParseIntPipe) orderId: number, @CurrentUser() currentUser: any): Promise<any> {
+  async getOrdersEdit(@Param('id', ParseIntPipe) orderId: number, @CurrentUser() currentUser: ValidatedUser): Promise<any> {
     try {
       return this.ordersService.getEditOrder(orderId, currentUser.userId);
     } catch (error) {
@@ -191,7 +192,7 @@ export class OrdersController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Update order status by id using DELETE route')
   async updateStatusViaDelete(
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: ValidatedUser,
     @Param('id', ParseIntPipe) id: number,
     @Param('statusId', ParseIntPipe) statusId: number
   ): Promise<void> {
@@ -277,7 +278,7 @@ export class OrdersController {
   async createQaChecklist(
     @Param('id', ParseIntPipe) id: number,
     @Body() dtos: CreateQualityCheckDto[],
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: ValidatedUser,
   ): Promise<any> {
     return this.ordersService.createManyChecklist(id, dtos, currentUser.email);
   }
@@ -315,7 +316,7 @@ export class OrdersController {
   @HttpCode(HttpStatus.OK)
   async generateQaChecklist(
     @Param('id', ParseIntPipe) orderItemId: number,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: ValidatedUser,
   ): Promise<OrderQualityCheck[]> {
     return this.ordersService.createChecklistForOrderItem(orderItemId, currentUser.email);
   }
@@ -328,7 +329,7 @@ export class OrdersController {
   async createOrderComment(
     @Param('id', ParseIntPipe) orderId: number,
     @Body() createOrderCommentDto: CreateOrderCommentDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: ValidatedUser,
   ): Promise<OrderComment> {
     return this.ordersService.createOrderComment(
       orderId,
@@ -344,7 +345,7 @@ export class OrdersController {
   @CommonApiResponses('Get all comments for an order')
   async getOrderComments(
     @Param('id', ParseIntPipe) orderId: number,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: ValidatedUser,
   ): Promise<OrderComment[]> {
     return this.ordersService.getOrderComments(orderId, currentUser.userId);
   }
@@ -357,7 +358,7 @@ export class OrdersController {
   async updateOrderComment(
     @Param('commentId', ParseIntPipe) commentId: number,
     @Body() updateOrderCommentDto: UpdateOrderCommentDto,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: ValidatedUser,
   ): Promise<OrderComment> {
     return this.ordersService.updateOrderComment(
       commentId,
@@ -373,7 +374,7 @@ export class OrdersController {
   @CommonApiResponses('Delete an order comment')
   async deleteOrderComment(
     @Param('commentId', ParseIntPipe) commentId: number,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: ValidatedUser,
   ): Promise<void> {
     return this.ordersService.deleteOrderComment(commentId, currentUser.userId);
   }

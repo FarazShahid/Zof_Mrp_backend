@@ -5,6 +5,7 @@ import { ShipmentCarrierService } from './shipment-carrier.service';
 import { ApiBody } from '@nestjs/swagger';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 import { HasRight } from 'src/auth/has-right-guard';
@@ -24,7 +25,7 @@ export class ShipmentCarrierController {
   @CommonApiResponses('Create a carrier')
   async create(
     @Body() createShipmentCarrierDto: CreateShipmentCarrierDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: ValidatedUser
   ) {
     return this.ShipmentCarrierService.create(createShipmentCarrierDto, user.email);
   }
@@ -53,7 +54,7 @@ export class ShipmentCarrierController {
   async update(
     @Param('id') id: string,
     @Body() updateShipmentCarrierDto: UpdateShipmentCarrierDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: ValidatedUser
   ) {
     return this.ShipmentCarrierService.update(+id, updateShipmentCarrierDto, user.email);
   }

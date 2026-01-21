@@ -6,6 +6,21 @@ import {
 } from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
 import { AuditLogService } from './audit-log.service';
+import { Request } from 'express';
+
+type SanitizedPayload = Record<string, unknown>;
+
+interface AuditUser {
+  email?: string;
+  userId: number;
+}
+
+interface LoginResponse {
+  user?: {
+    email?: string;
+    id?: number;
+  };
+}
 
 @Injectable()
 export class AuditInterceptor implements NestInterceptor {
@@ -13,13 +28,13 @@ export class AuditInterceptor implements NestInterceptor {
     private readonly auditLogService: AuditLogService,
   ) { }
 
-  private sanitizePayload(payload: any): any {
+  private sanitizePayload(payload: unknown): SanitizedPayload | unknown {
     if (!payload || typeof payload !== 'object') {
       return payload;
     }
 
     const sensitiveFields = ['password', 'Password', 'PASSWORD', 'token', 'Token', 'TOKEN', 'secret', 'Secret', 'SECRET'];
-    const sanitized = { ...payload };
+    const sanitized: SanitizedPayload = { ...payload as SanitizedPayload };
 
     for (const field of sensitiveFields) {
       if (field in sanitized) {
@@ -37,8 +52,8 @@ export class AuditInterceptor implements NestInterceptor {
     return sanitized;
   }
 
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
-    const req = context.switchToHttp().getRequest();
+  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
+    const req = context.switchToHttp().getRequest<Request & { user?: AuditUser }>();
     const { method, originalUrl: endpoint, ip, headers, body, params } = req;
 
     // Skip audit logging for refresh and logout endpoints (they don't have user context yet)
@@ -46,9 +61,9 @@ export class AuditInterceptor implements NestInterceptor {
     const shouldSkipAudit = skipAuditPaths.some(path => endpoint.includes(path));
 
     // For login endpoint, get user email from body since no token exists yet
-    let user = req.user || {};
-    if (endpoint.includes('/login') && body?.email) {
-      user = { email: body.email, userId: 0 };
+    let user: AuditUser = req.user || { userId: 0 };
+    if (endpoint.includes('/login') && (body as Record<string, unknown>)?.email) {
+      user = { email: (body as Record<string, unknown>).email as string, userId: 0 };
     }
 
     // Module = entity name from URL (/api/products → Products)
@@ -90,20 +105,21 @@ export class AuditInterceptor implements NestInterceptor {
       (method !== 'GET' ? `, Payload: ${JSON.stringify(sanitizedBody)}` : '');
 
     return next.handle().pipe(
-      tap(async (response) => {
+      tap(async (response: unknown) => {
         // Skip audit logging if flagged
         if (shouldSkipAudit) {
           return;
         }
 
         // If this was a login call and response contains user info, prefer it
-        if (method === 'POST' && endpoint.includes('/login') && response?.user) {
+        const loginResponse = response as LoginResponse;
+        if (method === 'POST' && endpoint.includes('/login') && loginResponse?.user) {
           user = {
-            email: response.user.email || user.email,
-            userId: response.user.id ?? user.userId ?? 0,
+            email: loginResponse.user.email || user.email,
+            userId: loginResponse.user.id ?? user.userId ?? 0,
           };
         }
-        
+
         if (method !== 'GET' && user.userId && user.userId !== 0) {
           await this.auditLogService.createLog({
             UserId: user.userId,

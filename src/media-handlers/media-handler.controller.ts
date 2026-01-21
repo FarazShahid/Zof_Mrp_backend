@@ -19,6 +19,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 
 @ControllerAuthProtector('Media Handler', 'media-handler')
@@ -58,7 +59,7 @@ export class MediaHandlersController {
     @Query('referenceId') referenceId: number,
     @Query('tag') tag: string,
     @Query('typeId') typeId: number,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: ValidatedUser,
   ) {
     const url = await this.mediaHandlersService.uploadFileAndLink(
       file,

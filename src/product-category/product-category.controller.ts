@@ -3,6 +3,7 @@ import { ProductCategoryService } from './product-category.service';
 import { CreateProductCategoryDto } from './dto/create-product-category.dto';
 import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
@@ -19,7 +20,7 @@ export class ProductCategoryController {
   @ApiBody({ type: CreateProductCategoryDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new product category')
-  create(@Body() createDto: CreateProductCategoryDto, @CurrentUser() currentUser: any) {
+  create(@Body() createDto: CreateProductCategoryDto, @CurrentUser() currentUser: ValidatedUser) {
     try {
       return this.categoryService.create(createDto, currentUser.email);
     } catch (error) {
@@ -56,7 +57,7 @@ export class ProductCategoryController {
   @ApiBody({ type: CreateProductCategoryDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a product category by id')
-  update(@Param('id') id: number, @Body() updateDto: UpdateProductCategoryDto, @CurrentUser() currentUser: any) {
+  update(@Param('id') id: number, @Body() updateDto: UpdateProductCategoryDto, @CurrentUser() currentUser: ValidatedUser) {
     try {
       return this.categoryService.update(id, updateDto, currentUser.email);
     } catch (error) {

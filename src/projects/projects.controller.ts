@@ -16,6 +16,7 @@ import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { ApiBody } from '@nestjs/swagger';
 import { CommonApiResponses, CommonApiResponseModal } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
@@ -37,7 +38,7 @@ export class ProjectsController {
   @ApiBody({ type: CreateProjectDto })
   @CommonApiResponseModal(CreateProjectDto)
   @CommonApiResponses('Create a new project')
-  create(@Body() createProjectDto: CreateProjectDto, @CurrentUser() user: any) {
+  create(@Body() createProjectDto: CreateProjectDto, @CurrentUser() user: ValidatedUser) {
     this.logger.log(`Creating project: ${JSON.stringify(createProjectDto)}, User: ${JSON.stringify(user)}`);
     try {
       return this.projectsService.create(createProjectDto, user.email, user.userId, user.roleId);
@@ -53,7 +54,7 @@ export class ProjectsController {
   @CommonApiResponseModal([CreateProjectDto])
   @CommonApiResponses('Get all projects')
   @ApiQuery({ name: 'clientId', required: false, type: Number, description: 'Client ID to filter projects', example: 1 })
-  findAll(@CurrentUser() user: any, @Query('clientId') clientId?: number) {
+  findAll(@CurrentUser() user: ValidatedUser, @Query('clientId') clientId?: number) {
     this.logger.log('Getting all projects');
     try {
       return this.projectsService.findAll(user.userId, clientId);
@@ -67,7 +68,7 @@ export class ProjectsController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get a project by id')
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+  findOne(@Param('id') id: string, @CurrentUser() user: ValidatedUser) {
     this.logger.log(`Getting project with id: ${id}`);
     try {
       return this.projectsService.findOne(+id, user.userId);
@@ -85,7 +86,7 @@ export class ProjectsController {
   update(
     @Param('id') id: string,
     @Body() updateProjectDto: UpdateProjectDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: ValidatedUser
   ) {
     this.logger.log(`Updating project with id: ${id}, data: ${JSON.stringify(updateProjectDto)}, User: ${JSON.stringify(user)}`);
     try {
@@ -100,7 +101,7 @@ export class ProjectsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CommonApiResponses('Delete a project by id')
-  remove(@Param('id') id: string, @CurrentUser() user: any) {
+  remove(@Param('id') id: string, @CurrentUser() user: ValidatedUser) {
     this.logger.log(`Deleting project with id: ${id}`);
     try {
       return this.projectsService.remove(+id, user.userId, user.roleId);

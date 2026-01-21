@@ -14,6 +14,7 @@ import {
 import { InventorySubCategoryService } from './inventory-sub-categories.service';
 import { CreateInventorySubCategoryDto } from './_/inventory-sub-categories.dto';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
@@ -34,7 +35,7 @@ export class InventorySubCategoryController {
   @CommonApiResponses('Create a new Inventory Sub Category')
   async create(
     @Body() CreateInventorySubCategoryDto: CreateInventorySubCategoryDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: ValidatedUser
   ) {
     try {
       const data = {
@@ -78,7 +79,7 @@ export class InventorySubCategoryController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateData: any,
-    @CurrentUser() user: any
+    @CurrentUser() user: ValidatedUser
   ) {
     try {
       const data = {

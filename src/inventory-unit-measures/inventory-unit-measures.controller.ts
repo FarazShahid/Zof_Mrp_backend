@@ -14,6 +14,7 @@ import {
 import { InventoryUnitOfMeasuresService } from './inventory-unit-measures.service';
 import { CreateInventoryUnitMeasuresDto } from './_/create-inventory-unit-measures.dto';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
@@ -34,7 +35,7 @@ export class UnitofMeasuresController {
   @CommonApiResponses('Create a new Unit of Measures')
   async create(
     @Body() createDto: CreateInventoryUnitMeasuresDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: ValidatedUser
   ) {
     try {
       const data = {
@@ -78,7 +79,7 @@ export class UnitofMeasuresController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateData: any,
-    @CurrentUser() user: any
+    @CurrentUser() user: ValidatedUser
   ) {
     try {
       const data = {

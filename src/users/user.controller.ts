@@ -10,6 +10,7 @@ import { ApiBody } from '@nestjs/swagger';
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 import { HasRight } from 'src/auth/has-right-guard';
 import { AppRightsEnum } from 'src/roles-rights/roles-rights.enum';
+import { ValidatedUser } from '../auth/jwt.strategy';
 
 @ControllerAuthProtector('Users', 'users')
 @UseInterceptors(AuditInterceptor)
@@ -23,18 +24,18 @@ export class UserController {
   @ApiBody({ type: CreateUserDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new user')
-  async create(@Body() createUserDto: CreateUserDto, @CurrentUser() currentUser: any): Promise<User> {
+  async create(@Body() createUserDto: CreateUserDto, @CurrentUser() currentUser: ValidatedUser): Promise<User> {
     try {
       this.logger.log(`Creating user: ${JSON.stringify({
         ...createUserDto,
         Password: '********'
       })}, User: ${JSON.stringify(currentUser)}`);
-      
+
       const data = {
         ...createUserDto,
         createdBy: currentUser.email
       };
-      
+
       return await this.userService.createUser(data);
     } catch (error) {
       this.logger.error(`Error creating user: ${error.message}`, error.stack);
@@ -78,19 +79,19 @@ export class UserController {
   async update(
     @Param('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
-    @CurrentUser() currentUser: any
+    @CurrentUser() currentUser: ValidatedUser
   ): Promise<User> {
     try {
       this.logger.log(`Updating user with id: ${id}, data: ${JSON.stringify({
         ...updateUserDto,
         Password: updateUserDto.Password ? '********' : undefined
       })}, User: ${JSON.stringify(currentUser)}`);
-      
+
       const data = {
         ...updateUserDto,
-        updatedBy: currentUser.email 
+        updatedBy: currentUser.email
       };
-      
+
       return await this.userService.updateUser(id, data);
     } catch (error) {
       this.logger.error(`Error updating user: ${error.message}`, error.stack);

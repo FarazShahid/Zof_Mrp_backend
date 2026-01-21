@@ -1,4 +1,4 @@
-import { applyDecorators } from '@nestjs/common';
+import { applyDecorators, Type } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { ApiResponse, ApiOperation } from '@nestjs/swagger';
 
@@ -16,9 +16,11 @@ export function CommonApiResponses(summary: string) {
   );
 }
 
+export type ApiPropertyExample = string | number | boolean | string[] | number[] | boolean[] | Record<string, unknown>;
+
 export const CommonApiProperty = (
   description: string = '',
-  example?: string | number | boolean | any[],
+  example?: ApiPropertyExample,
   isRequired: boolean = true
 ) => {
   return ApiProperty({
@@ -28,4 +30,4 @@ export const CommonApiProperty = (
   });
 };
 
-export const CommonApiResponseModal = (typeData: any) => (ApiResponse({type: typeData}))
+export const CommonApiResponseModal = <TModel extends Type<unknown>>(typeData: TModel) => (ApiResponse({type: typeData}))

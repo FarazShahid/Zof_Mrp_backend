@@ -4,6 +4,7 @@ import { ProductcutoptionsService } from './productcutoptions.service';
 import { CreateProductCutOptionDto } from './dto/create-product-cut-option.dto';
 import { UpdateProductCutOptionDto } from './dto/update-product-cut-option.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { ValidatedUser } from 'src/auth/jwt.strategy';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import { ApiBody } from '@nestjs/swagger';
@@ -32,7 +33,7 @@ export class ProductcutoptionsController {
   @ApiBody({ type: CreateProductCutOptionDto })
   @HttpCode(HttpStatus.CREATED)
   @CommonApiResponses('Create a new product cut option')
-  create(@Body() CreateProductCutOptionDto: CreateProductCutOptionDto, @CurrentUser() currentUser: any) {
+  create(@Body() CreateProductCutOptionDto: CreateProductCutOptionDto, @CurrentUser() currentUser: ValidatedUser) {
     try {
       return this.productcutoptionsService.create(CreateProductCutOptionDto, currentUser.email);
     } catch (error) {
@@ -45,7 +46,7 @@ export class ProductcutoptionsController {
   @ApiBody({ type: CreateProductCutOptionDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Update a product cut option by id')
-  update(@Param('id') id: number, @Body() UpdateProductCutOptionDto: UpdateProductCutOptionDto, @CurrentUser() currentUser: any) {
+  update(@Param('id') id: number, @Body() UpdateProductCutOptionDto: UpdateProductCutOptionDto, @CurrentUser() currentUser: ValidatedUser) {
     try {
       return this.productcutoptionsService.update({
         ...UpdateProductCutOptionDto,

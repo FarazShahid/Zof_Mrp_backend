@@ -5,6 +5,22 @@ import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { AppRole } from 'src/roles-rights/roles.rights.entity';
 import { Client } from 'src/clients/entities/client.entity';
+import { CreateUserDto, AssignedClientDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+
+export interface CreateUserData extends CreateUserDto {
+  createdBy: string;
+}
+
+export interface UpdateUserData extends UpdateUserDto {
+  updatedBy?: string;
+}
+
+export interface UserWithRole extends Omit<User, 'Password'> {
+  roleName: string | null;
+  assignedClients: { clientId: number; name: string }[];
+  Password: string; // Masked password '****'
+}
 
 @Injectable()
 export class UserService {
@@ -52,19 +68,23 @@ export class UserService {
     }
   }
 
-  async createUser(data: any): Promise<any> {
+  async createUser(data: CreateUserData): Promise<UserWithRole> {
     const { Email, firstName, lastName, Password, createdBy, roleId, assignedClients } = data;
 
     this.logger.log(`Creating user with email: ${Email}`);
 
-    this.validateStrongPassword(Password);
+    if (Password) {
+      this.validateStrongPassword(Password);
+    } else {
+      throw new BadRequestException('Password is required');
+    }
 
     const existingUser = await this.userRepository.findOne({ where: { Email } });
     if (existingUser) {
       throw new ConflictException(['Email already in use']);
     }
 
-    let roleName = null;
+    let roleName: string | null = null;
 
     if (roleId) {
       const existingRole = await this.roleRepository.findOne({ where: { id: roleId } });
@@ -79,7 +99,7 @@ export class UserService {
 
     let clientIds: number[] = [];
     if (assignedClients && Array.isArray(assignedClients)) {
-      clientIds = assignedClients.map((c) => c.clientId);
+      clientIds = assignedClients.map((c: AssignedClientDto) => c.clientId);
     }
 
     const newUser = this.userRepository.create({
@@ -96,10 +116,10 @@ export class UserService {
 
     const savedUser = await this.userRepository.save(newUser);
 
-    return { ...savedUser, roleId: roleId, roleName: roleName, Password: '****' };
+    return { ...savedUser, roleId: roleId, roleName: roleName, assignedClients: [], Password: '****' };
   }
 
-  async getAllUsers(): Promise<any[]> {
+  async getAllUsers(): Promise<UserWithRole[]> {
     this.logger.log('Finding all users');
     const users = await this.userRepository.find();
     const roles = await this.roleRepository.find();
@@ -112,19 +132,18 @@ export class UserService {
     clients.forEach(client => clientMap.set(client.Id, client.Name));
 
     return users.map(user => {
-      const userWithoutPassword = { ...user, roleName: roleMap.get(user.roleId) || null, assignedClients: [] };
-      userWithoutPassword.Password = '****';
+      const userWithoutPassword: UserWithRole = { ...user, roleName: roleMap.get(user.roleId) || null, assignedClients: [], Password: '****' };
       userWithoutPassword.assignedClients = (user.assignedClients || [])
         .map(clientId => ({
           clientId,
-          name: clientMap.get(clientId) || null
+          name: clientMap.get(clientId) || 'Unknown'
         }))
-        .filter(c => c.name);
+        .filter(c => c.name !== 'Unknown');
       return userWithoutPassword;
     });
   }
 
-  async getUserById(id: number): Promise<any> {
+  async getUserById(id: number): Promise<UserWithRole> {
     this.logger.log(`Finding user with id: ${id}`);
     const user = await this.userRepository.findOne({ where: { Id: id } });
 
@@ -142,18 +161,17 @@ export class UserService {
       assignedClients = clients.map(c => ({ clientId: c.Id, name: c.Name }));
     }
 
-    const userWithoutPassword = {
+    const userWithoutPassword: UserWithRole = {
       ...user,
       roleName: role ? role.name : null,
-      assignedClients
+      assignedClients,
+      Password: '****'
     };
 
-    // Mask password
-    userWithoutPassword.Password = '****';
     return userWithoutPassword;
   }
 
-  async updateUser(id: number, data: any): Promise<User> {
+  async updateUser(id: number, data: UpdateUserData): Promise<User> {
     const { Email, firstName, lastName, Password, isActive, updatedBy, assignedClients } = data;
     
     this.logger.log(`Updating user with id: ${id}, data: ${JSON.stringify({

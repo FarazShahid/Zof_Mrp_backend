@@ -9,6 +9,8 @@ import { RefreshTokenDto, RefreshTokenResponseDto } from './dto/refresh-token.dt
 import { AuditInterceptor } from 'src/audit-logs/audit.interceptor';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser } from './current-user.decorator';
+import { Request } from 'express';
+import { ValidatedUser } from './jwt.strategy';
 @ApiTags('Authentication')
 @Controller('auth')
 @UseInterceptors(AuditInterceptor)
@@ -18,16 +20,16 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  @ApiBody({ type: LoginUserDto }) 
-  @ApiResponse({ type: LoginResponseDto }) 
+  @ApiBody({ type: LoginUserDto })
+  @ApiResponse({ type: LoginResponseDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Login a user')
-  async login(@Body() body: { email: string; password: string; token: string }, @Req() req: any) {
+  async login(@Body() body: { email: string; password: string; token: string }, @Req() req: Request) {
     try {
       await this.authService.verify(body.token);
       const user = await this.authService.validateUser(body.email, body.password);
       const deviceInfo = req.headers['user-agent'] || 'Unknown Device';
-      const ipAddress = req.ip || req.connection.remoteAddress || 'Unknown IP';
+      const ipAddress = req.ip || (req.socket?.remoteAddress) || 'Unknown IP';
       const result = await this.authService.login(user, deviceInfo, ipAddress, req.headers['user-agent']);
       return result;
     } catch (error) {
@@ -41,14 +43,14 @@ export class AuthController {
   @ApiResponse({ type: RefreshTokenResponseDto })
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Refresh access token using refresh token')
-  async refresh(@Body() body: RefreshTokenDto, @Req() req: any) {
+  async refresh(@Body() body: RefreshTokenDto, @Req() req: Request) {
     try {
       const deviceInfo = req.headers['user-agent'] || 'Unknown Device';
-      const ipAddress = req.ip || req.connection.remoteAddress || 'Unknown IP';
+      const ipAddress = req.ip || (req.socket?.remoteAddress) || 'Unknown IP';
       const result = await this.authService.refreshTokens(
-        body.refresh_token, 
-        deviceInfo, 
-        ipAddress, 
+        body.refresh_token,
+        deviceInfo,
+        ipAddress,
         req.headers['user-agent']
       );
       return result;
@@ -77,7 +79,7 @@ export class AuthController {
   @ApiBearerAuth('JWT-auth')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Logout user from all devices')
-  async logoutAll(@CurrentUser() user: any) {
+  async logoutAll(@CurrentUser() user: ValidatedUser) {
     try {
       const result = await this.authService.logoutAll(user.userId);
       return result;
