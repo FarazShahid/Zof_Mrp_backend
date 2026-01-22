@@ -17,7 +17,6 @@ export const CurrentUserName = createParamDecorator(
 export const CurrentUserRoleId = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
-    console.log('Request User:', request.user);
     return request?.user?.roleId ?? 0;
   },
 ); 
