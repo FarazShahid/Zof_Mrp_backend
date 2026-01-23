@@ -486,6 +486,7 @@ export class SizeMeasurementsService {
         OriginalSizeMeasurementId: originalId,
         Version: nextVersion,
         IsLatest: true,
+        H_FusionInside: updateSizeMeasurementDto.H_FusionInside,
         IsActive: true,
         CreatedBy: updatedBy,
         UpdatedBy: updatedBy,

@@ -571,6 +571,15 @@ export class CreateSizeMeasurementDto {
   @IsBoolean()
   @Transform(({ value }) => {
     if (value === undefined || value === null) return false;
+    // Handle string values (case-insensitive)
+    if (typeof value === 'string') {
+      return value.toLowerCase() === 'yes' || value === HatFusion.YES;
+    }
+    // Handle boolean
+    if (typeof value === 'boolean') {
+      return value;
+    }
+    // Handle enum value
     return value === HatFusion.YES;
   }, { toClassOnly: true })
   H_FusionInside: boolean;
