@@ -154,8 +154,8 @@ export class OrderPdfService {
               {
                 ProductName: item?.product?.Name ?? '',
                 ProductCategoryName: item.product?.ProductCategory?.type ?? '',
-                ProductFabricName: ft?.name ?? '',
-                ProductFabricGSM: ft?.gsm ?? '',
+                ProductFabricName: ft?.Name ?? '',
+                ProductFabricGSM: ft?.GSM ?? '',
                 chartSrc: undefined,
                 orderItemDetails: (item?.orderItemDetails ?? []).map((detail: any) => ({
                   Quantity: detail.Quantity,
