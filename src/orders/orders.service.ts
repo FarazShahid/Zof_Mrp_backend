@@ -248,6 +248,7 @@ export class OrdersService {
             const product = products.find(p => p.Id === item.ProductId);
             const { IsTopUnit, IsBottomUnit, SupportsLogo, IsBag, IsHat } = product.ProductCategory;
             const isSizeOptionRequired = IsTopUnit || IsBottomUnit || SupportsLogo || IsBag || IsHat;
+            const effectiveClientId = ClientId;
             for (const option of item.orderItemDetails) {
               let sizeMeasurement;
               if (isSizeOptionRequired) {
@@ -276,6 +277,22 @@ export class OrdersService {
                       `Size measurement ${option.MeasurementId} does not match size option ${option.SizeOption}`,
                     );
                   }
+                  // Verify it matches the ProductCategory
+                  if (sizeMeasurement.ProductCategoryId !== product.ProductCategoryId) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match product category ${product.ProductCategoryId}`,
+                    );
+                  }
+                  // Verify it matches selected client (or is global)
+                  if (
+                    sizeMeasurement.ClientId !== null &&
+                    sizeMeasurement.ClientId !== undefined &&
+                    sizeMeasurement.ClientId !== effectiveClientId
+                  ) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match client ${effectiveClientId}`,
+                    );
+                  }
                 } else {
                   // If MeasurementId is not provided, get the latest version for this SizeOption
                   sizeMeasurement = await queryRunner.manager
@@ -284,24 +301,29 @@ export class OrdersService {
                     .andWhere('sm.IsLatest = :isLatest', { isLatest: true })
                     .andWhere('sm.IsActive = :isActive', { isActive: true })
                     .andWhere('sm.ProductCategoryId = :productCategoryId', {productCategoryId: product.ProductCategoryId})
-                    .andWhere('sm.ClientId = :clientId', {clientId: product.ClientId})
-                    .orderBy('sm.Version', 'DESC')
+                    .andWhere('(sm.ClientId = :clientId OR sm.ClientId IS NULL)', { clientId: effectiveClientId })
+                    // Prefer client-specific over global, then newest
+                    .orderBy('sm.ClientId IS NULL', 'ASC')
+                    .addOrderBy('sm.Version', 'DESC')
                     .getOne();
                   
                   if (!sizeMeasurement) {
-                    // Fallback: try to find any active measurement for this SizeOption
-                    sizeMeasurement = await queryRunner.manager.findOne(SizeMeasurement, {
-                      where: { 
-                        SizeOptionId: option.SizeOption,
-                        IsActive: true 
-                      },
-                      order: { Version: 'DESC' }
-                    });
+                    // Fallback: still keep category/client constraints; choose best available
+                    sizeMeasurement = await queryRunner.manager
+                      .createQueryBuilder(SizeMeasurement, 'sm')
+                      .where('sm.SizeOptionId = :sizeOptionId', { sizeOptionId: option.SizeOption })
+                      .andWhere('sm.IsActive = :isActive', { isActive: true })
+                      .andWhere('sm.ProductCategoryId = :productCategoryId', { productCategoryId: product.ProductCategoryId })
+                      .andWhere('(sm.ClientId = :clientId OR sm.ClientId IS NULL)', { clientId: effectiveClientId })
+                      .orderBy('sm.ClientId IS NULL', 'ASC')
+                      .addOrderBy('sm.IsLatest', 'DESC')
+                      .addOrderBy('sm.Version', 'DESC')
+                      .getOne();
                   }
                   
                   if (!sizeMeasurement) {
                     throw new BadRequestException(
-                      `SizeOption with id ${option.SizeOption} has no associated measurement`,
+                      `SizeOption ${option.SizeOption} has no associated measurement for product category ${product.ProductCategoryId} and client ${effectiveClientId}`,
                     );
                   }
                 }
@@ -718,6 +740,7 @@ export class OrdersService {
             const product = products?.find((p) => p.Id === item.ProductId);
             const { IsTopUnit, IsBottomUnit, SupportsLogo } = product.ProductCategory;
             const isSizeOptionRequired = IsTopUnit || IsBottomUnit || SupportsLogo;
+            const effectiveClientId = updateData.ClientId ?? order.ClientId;
             const orderItemDetailsToSave: any[] = [];
             let sizeMeasurement;
             for (const option of item.orderItemDetails) {
@@ -749,6 +772,22 @@ export class OrdersService {
                       `Size measurement ${option.MeasurementId} does not match size option ${option.SizeOption}`,
                     );
                   }
+                  // Verify it matches the ProductCategory
+                  if (sizeMeasurement.ProductCategoryId !== product.ProductCategoryId) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match product category ${product.ProductCategoryId}`,
+                    );
+                  }
+                  // Verify it matches selected client (or is global)
+                  if (
+                    sizeMeasurement.ClientId !== null &&
+                    sizeMeasurement.ClientId !== undefined &&
+                    sizeMeasurement.ClientId !== effectiveClientId
+                  ) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match client ${effectiveClientId}`,
+                    );
+                  }
                 } else {
                   // If MeasurementId is not provided, get the latest version for this SizeOption
                   sizeMeasurement = await queryRunner.manager
@@ -757,24 +796,29 @@ export class OrdersService {
                     .andWhere('sm.IsLatest = :isLatest', { isLatest: true })
                     .andWhere('sm.IsActive = :isActive', { isActive: true })
                     .andWhere('sm.ProductCategoryId = :productCategoryId', {productCategoryId: product.ProductCategoryId})
-                    .andWhere('sm.ClientId = :clientId', {clientId: product.ClientId})
-                    .orderBy('sm.Version', 'DESC')
+                    .andWhere('(sm.ClientId = :clientId OR sm.ClientId IS NULL)', { clientId: effectiveClientId })
+                    // Prefer client-specific over global, then newest
+                    .orderBy('sm.ClientId IS NULL', 'ASC')
+                    .addOrderBy('sm.Version', 'DESC')
                     .getOne();
                   
                   if (!sizeMeasurement) {
-                    // Fallback: try to find any active measurement for this SizeOption
-                    sizeMeasurement = await queryRunner.manager.findOne(SizeMeasurement, {
-                      where: { 
-                        SizeOptionId: option.SizeOption,
-                        IsActive: true 
-                      },
-                      order: { Version: 'DESC' }
-                    });
+                    // Fallback: still keep category/client constraints; choose best available
+                    sizeMeasurement = await queryRunner.manager
+                      .createQueryBuilder(SizeMeasurement, 'sm')
+                      .where('sm.SizeOptionId = :sizeOptionId', { sizeOptionId: option.SizeOption })
+                      .andWhere('sm.IsActive = :isActive', { isActive: true })
+                      .andWhere('sm.ProductCategoryId = :productCategoryId', { productCategoryId: product.ProductCategoryId })
+                      .andWhere('(sm.ClientId = :clientId OR sm.ClientId IS NULL)', { clientId: effectiveClientId })
+                      .orderBy('sm.ClientId IS NULL', 'ASC')
+                      .addOrderBy('sm.IsLatest', 'DESC')
+                      .addOrderBy('sm.Version', 'DESC')
+                      .getOne();
                   }
                   
                   if (!sizeMeasurement) {
                     throw new BadRequestException(
-                      `SizeOption with id ${option.SizeOption} has no associated measurement`,
+                      `SizeOption ${option.SizeOption} has no associated measurement for product category ${product.ProductCategoryId} and client ${effectiveClientId}`,
                     );
                   }
                 }
