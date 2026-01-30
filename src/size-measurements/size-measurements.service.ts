@@ -105,21 +105,30 @@ export class SizeMeasurementsService {
       });
 
       const saved = await this.sizeMeasurementRepository.save(newSizeMeasurement);
-      
-      // Mark other measurements with the same SizeOptionId as not latest
-      // This ensures only one latest version per SizeOptionId
-      await this.sizeMeasurementRepository
+
+      // Mark other measurements with the same SizeOptionId, ClientId, and ProductCategoryId as not latest
+      // This ensures only one latest version per unique (SizeOptionId + ClientId + ProductCategoryId) combination
+      const updateQuery = this.sizeMeasurementRepository
         .createQueryBuilder()
         .update(SizeMeasurement)
         .set({ IsLatest: false })
         .where('SizeOptionId = :sizeOptionId', { sizeOptionId: saved.SizeOptionId })
+        .andWhere('ProductCategoryId = :productCategoryId', { productCategoryId: saved.ProductCategoryId })
         .andWhere('Id != :id', { id: saved.Id })
-        .andWhere('IsActive = :isActive', { isActive: true })
-        .execute();
-      
+        .andWhere('IsActive = :isActive', { isActive: true });
+
+      // Handle ClientId - could be null
+      if (saved.ClientId !== null && saved.ClientId !== undefined) {
+        updateQuery.andWhere('ClientId = :clientId', { clientId: saved.ClientId });
+      } else {
+        updateQuery.andWhere('ClientId IS NULL');
+      }
+
+      await updateQuery.execute();
+
       // Re-mark the saved one as latest (in case the update affected it)
       await this.sizeMeasurementRepository.update(saved.Id, { IsLatest: true });
-      
+
       return saved;
     } catch (error) {
       // Re-throw BadRequestException and NotFoundException as-is to preserve the original error message
@@ -455,17 +464,26 @@ export class SizeMeasurementsService {
         .orWhere('OriginalSizeMeasurementId = :originalId', { originalId })
         .execute();
       
-      // Also mark other measurements with the same SizeOptionId as not latest
-      // This ensures only one latest version per SizeOptionId
-      await this.sizeMeasurementRepository
+      // Also mark other measurements with the same SizeOptionId, ClientId, and ProductCategoryId as not latest
+      // This ensures only one latest version per unique (SizeOptionId + ClientId + ProductCategoryId) combination
+      const updateOthersQuery = this.sizeMeasurementRepository
         .createQueryBuilder()
         .update(SizeMeasurement)
         .set({ IsLatest: false })
         .where('SizeOptionId = :sizeOptionId', { sizeOptionId: existingMeasurement.SizeOptionId })
+        .andWhere('ProductCategoryId = :productCategoryId', { productCategoryId: existingMeasurement.ProductCategoryId })
         .andWhere('Id != :originalId', { originalId })
         .andWhere('(OriginalSizeMeasurementId != :originalId OR OriginalSizeMeasurementId IS NULL)', { originalId })
-        .andWhere('IsActive = :isActive', { isActive: true })
-        .execute();
+        .andWhere('IsActive = :isActive', { isActive: true });
+
+      // Handle ClientId - could be null
+      if (existingMeasurement.ClientId !== null && existingMeasurement.ClientId !== undefined) {
+        updateOthersQuery.andWhere('ClientId = :clientId', { clientId: existingMeasurement.ClientId });
+      } else {
+        updateOthersQuery.andWhere('ClientId IS NULL');
+      }
+
+      await updateOthersQuery.execute();
 
       // Create new version - copy existing measurement and merge with updates
       // Exclude versioning fields, Id, and timestamps from the copy
@@ -566,16 +584,26 @@ export class SizeMeasurementsService {
         .orWhere('OriginalSizeMeasurementId = :originalId', { originalId })
         .execute();
       
-      // Also mark other measurements with the same SizeOptionId as not latest
-      await this.sizeMeasurementRepository
+      // Also mark other measurements with the same SizeOptionId, ClientId, and ProductCategoryId as not latest
+      // This ensures only one latest version per unique (SizeOptionId + ClientId + ProductCategoryId) combination
+      const updateOthersQuery = this.sizeMeasurementRepository
         .createQueryBuilder()
         .update(SizeMeasurement)
         .set({ IsLatest: false })
         .where('SizeOptionId = :sizeOptionId', { sizeOptionId: existingMeasurement.SizeOptionId })
+        .andWhere('ProductCategoryId = :productCategoryId', { productCategoryId: existingMeasurement.ProductCategoryId })
         .andWhere('Id != :originalId', { originalId })
         .andWhere('(OriginalSizeMeasurementId != :originalId OR OriginalSizeMeasurementId IS NULL)', { originalId })
-        .andWhere('IsActive = :isActive', { isActive: true })
-        .execute();
+        .andWhere('IsActive = :isActive', { isActive: true });
+
+      // Handle ClientId - could be null
+      if (existingMeasurement.ClientId !== null && existingMeasurement.ClientId !== undefined) {
+        updateOthersQuery.andWhere('ClientId = :clientId', { clientId: existingMeasurement.ClientId });
+      } else {
+        updateOthersQuery.andWhere('ClientId IS NULL');
+      }
+
+      await updateOthersQuery.execute();
 
       // Create new version - copy existing measurement without changes
       const { Id, OriginalSizeMeasurementId, Version, IsLatest, IsActive, CreatedOn, UpdatedOn, ...existingData } = existingMeasurement;
@@ -678,15 +706,24 @@ export class SizeMeasurementsService {
           });
 
           if (original) {
-            // Mark all other measurements with the same SizeOptionId as not latest
-            await this.sizeMeasurementRepository
+            // Mark all other measurements with the same SizeOptionId, ClientId, and ProductCategoryId as not latest
+            const updateQuery1 = this.sizeMeasurementRepository
               .createQueryBuilder()
               .update(SizeMeasurement)
               .set({ IsLatest: false })
               .where('SizeOptionId = :sizeOptionId', { sizeOptionId: measurementEntity.SizeOptionId })
+              .andWhere('ProductCategoryId = :productCategoryId', { productCategoryId: measurementEntity.ProductCategoryId })
               .andWhere('Id != :originalId', { originalId })
-              .andWhere('IsActive = :isActive', { isActive: true })
-              .execute();
+              .andWhere('IsActive = :isActive', { isActive: true });
+
+            // Handle ClientId - could be null
+            if (measurementEntity.ClientId !== null && measurementEntity.ClientId !== undefined) {
+              updateQuery1.andWhere('ClientId = :clientId', { clientId: measurementEntity.ClientId });
+            } else {
+              updateQuery1.andWhere('ClientId IS NULL');
+            }
+
+            await updateQuery1.execute();
 
             // Set original as latest
             await this.sizeMeasurementRepository.update(originalId, { IsLatest: true });
@@ -701,15 +738,24 @@ export class SizeMeasurementsService {
               .getOne();
 
             if (mostRecentVersion) {
-              // Mark all other measurements with the same SizeOptionId as not latest
-              await this.sizeMeasurementRepository
+              // Mark all other measurements with the same SizeOptionId, ClientId, and ProductCategoryId as not latest
+              const updateQuery2 = this.sizeMeasurementRepository
                 .createQueryBuilder()
                 .update(SizeMeasurement)
                 .set({ IsLatest: false })
                 .where('SizeOptionId = :sizeOptionId', { sizeOptionId: measurementEntity.SizeOptionId })
+                .andWhere('ProductCategoryId = :productCategoryId', { productCategoryId: measurementEntity.ProductCategoryId })
                 .andWhere('Id != :versionId', { versionId: mostRecentVersion.Id })
-                .andWhere('IsActive = :isActive', { isActive: true })
-                .execute();
+                .andWhere('IsActive = :isActive', { isActive: true });
+
+              // Handle ClientId - could be null
+              if (measurementEntity.ClientId !== null && measurementEntity.ClientId !== undefined) {
+                updateQuery2.andWhere('ClientId = :clientId', { clientId: measurementEntity.ClientId });
+              } else {
+                updateQuery2.andWhere('ClientId IS NULL');
+              }
+
+              await updateQuery2.execute();
 
               // Set most recent version as latest
               await this.sizeMeasurementRepository.update(mostRecentVersion.Id, { IsLatest: true });
@@ -726,15 +772,24 @@ export class SizeMeasurementsService {
             .getOne();
 
           if (mostRecentVersion) {
-            // Mark all other measurements with the same SizeOptionId as not latest
-            await this.sizeMeasurementRepository
+            // Mark all other measurements with the same SizeOptionId, ClientId, and ProductCategoryId as not latest
+            const updateQuery3 = this.sizeMeasurementRepository
               .createQueryBuilder()
               .update(SizeMeasurement)
               .set({ IsLatest: false })
               .where('SizeOptionId = :sizeOptionId', { sizeOptionId: measurementEntity.SizeOptionId })
+              .andWhere('ProductCategoryId = :productCategoryId', { productCategoryId: measurementEntity.ProductCategoryId })
               .andWhere('Id != :versionId', { versionId: mostRecentVersion.Id })
-              .andWhere('IsActive = :isActive', { isActive: true })
-              .execute();
+              .andWhere('IsActive = :isActive', { isActive: true });
+
+            // Handle ClientId - could be null
+            if (measurementEntity.ClientId !== null && measurementEntity.ClientId !== undefined) {
+              updateQuery3.andWhere('ClientId = :clientId', { clientId: measurementEntity.ClientId });
+            } else {
+              updateQuery3.andWhere('ClientId IS NULL');
+            }
+
+            await updateQuery3.execute();
 
             // Set most recent version as latest
             await this.sizeMeasurementRepository.update(mostRecentVersion.Id, { IsLatest: true });
