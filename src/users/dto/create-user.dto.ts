@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsString, IsEmail, IsBoolean, IsNotEmpty, MaxLength, IsNumber, IsOptional, Min, IsInt, IsArray, ValidateNested } from 'class-validator';
+import { IsString, IsEmail, IsBoolean, IsNotEmpty, MaxLength, IsNumber, IsOptional, Min, MinLength, IsInt, IsArray, ValidateNested } from 'class-validator';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 
 export class AssignedClientDto {
@@ -31,6 +31,7 @@ export class CreateUserDto {
   @CommonApiProperty('User Password goes here', 'Password')
   @IsString()
   @IsNotEmpty()
+  @MinLength(6, { message: 'Password must be at least 6 characters long' })
   @MaxLength(255)
   Password?: string;
 
