@@ -28,7 +28,11 @@ export class MediaHandlersController {
   constructor(private readonly mediaHandlersService: MediaHandlersService) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', {
+    limits: {
+      fileSize: 300 * 1024 * 1024, // 300 MB
+    },
+  }))
   @ApiOperation({ summary: 'Upload a media file to Azure Blob Storage' })
   @ApiConsumes('multipart/form-data')
   @ApiQuery({
