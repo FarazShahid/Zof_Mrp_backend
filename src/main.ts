@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe, Logger, BadRequestException } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import * as express from 'express';
 
 function extractErrors(errors: any[], parentPath = ''): string[] {
   const result: string[] = [];
@@ -30,6 +31,10 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
   logger.log('Application created');
+
+  // Increase body parser limits to support large file uploads (300 MB)
+  app.use(express.json({ limit: '300mb' }));
+  app.use(express.urlencoded({ limit: '300mb', extended: true }));
 
   // Enable CORS
   app.enableCors({
