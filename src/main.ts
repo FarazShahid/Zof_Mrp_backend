@@ -33,8 +33,8 @@ async function bootstrap() {
   logger.log('Application created');
 
   // Increase body parser limits to support large file uploads (300 MB)
-  app.use(express.json({ limit: '300mb' }));
-  app.use(express.urlencoded({ limit: '300mb', extended: true }));
+  app.use(express.json({ limit: '500mb' }));
+  app.use(express.urlencoded({ limit: '500mb', extended: true }));
 
   // Enable CORS
   app.enableCors({
