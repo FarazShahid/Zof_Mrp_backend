@@ -30,7 +30,7 @@ export class MediaHandlersController {
   @Post('upload')
   @UseInterceptors(FileInterceptor('file', {
     limits: {
-      fileSize: 300 * 1024 * 1024, // 300 MB
+      fileSize: 500 * 1024 * 1024, // 500 MB
     },
   }))
   @ApiOperation({ summary: 'Upload a media file to Azure Blob Storage' })
