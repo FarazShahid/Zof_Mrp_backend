@@ -454,17 +454,17 @@ export class OrdersService {
         });
       }
 
-      if (projectId) {
-        const products = await this.productRepository.find({
-          where: { ProjectId: projectId },
-          select: ['Id'],
-        });
-        const productIds = [...new Set(products.map(p => p.Id))];
-
-        if (productIds.length === 0) return [];
-
-        query.leftJoin('orderitems', 'orderItem', 'orderItem.OrderId = order.Id')
-          .andWhere('orderItem.ProductId IN (:...productIds)', { productIds });
+      if (projectId != null) {
+        // Filter to orders that have at least one item from this project (subquery avoids duplicate order rows)
+        query.andWhere(
+          `order.Id IN (
+            SELECT oi.OrderId
+            FROM orderitems oi
+            INNER JOIN product p ON p.Id = oi.ProductId
+            WHERE p.ProjectId = :projectId
+          )`,
+          { projectId },
+        );
       }
 
       const result = await query.getRawMany();
@@ -503,29 +503,26 @@ export class OrdersService {
     }
   }
 
-  async getOrdersByClientId(clientId: number, userId: number): Promise<any[]> {
+  async getOrdersByClientId(clientId: number, userId: number, projectId?: number): Promise<any[]> {
     const assignedClientIds = await this.getClientsForUser(userId);
     if (assignedClientIds.length > 0 && !assignedClientIds.includes(clientId)) {
       throw new BadRequestException(
         `You are not assigned to the client with ID ${clientId}`,
       );
     }
-    const orders = await this.orderRepository
+    const qb = this.orderRepository
       .createQueryBuilder('order')
-      .leftJoinAndMapOne(
-        'order.EventName',
+      .leftJoin(
         'clientevent',
         'event',
         'order.OrderEventId = event.Id',
       )
-      .leftJoinAndMapOne(
-        'order.ClientName',
+      .leftJoin(
         'client',
         'client',
         'order.ClientId = client.Id',
       )
-      .leftJoinAndMapOne(
-        'order.StatusName',
+      .leftJoin(
         'orderstatus',
         'status',
         'order.OrderStatusId = status.Id',
@@ -551,7 +548,21 @@ export class OrdersService {
         'client.Name AS ClientName',
         'status.StatusName AS StatusName',
       ])
-      .where('order.ClientId = :clientId', { clientId })
+      .where('order.ClientId = :clientId', { clientId });
+
+    if (projectId != null) {
+      qb.andWhere(
+        `order.Id IN (
+          SELECT oi.OrderId
+          FROM orderitems oi
+          INNER JOIN product p ON p.Id = oi.ProductId
+          WHERE p.ProjectId = :projectId
+        )`,
+        { projectId },
+      );
+    }
+
+    const orders = await qb
       .orderBy('order.Deadline', 'ASC')
       .getRawMany();
 

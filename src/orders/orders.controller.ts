@@ -94,10 +94,15 @@ export class OrdersController {
   @HasRight(AppRightsEnum.ViewOrders)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  @CommonApiResponses('Get an order by client id')
-  async findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: any): Promise<any> {
+  @CommonApiResponses('Get orders by client id, optionally filtered by project')
+  @ApiQuery({ name: 'projectId', required: false, type: Number, description: 'Filter to orders that have at least one item from this project', example: 3 })
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() currentUser: any,
+    @Query('projectId') projectId?: number,
+  ): Promise<any> {
     try {
-      return this.ordersService.getOrdersByClientId(id, currentUser.userId);
+      return this.ordersService.getOrdersByClientId(id, currentUser.userId, projectId ? Number(projectId) : undefined);
     } catch (error) {
       console.error('Error fetching orders:', error);
       throw error;
