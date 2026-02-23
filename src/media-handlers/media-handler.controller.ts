@@ -2,12 +2,12 @@
 import {
   Controller,
   Post,
-  UploadedFile,
   UseInterceptors,
   Query,
   Get,
+  Req,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Request } from 'express';
 import { MediaHandlersService } from './media-handlers.service';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
 import {
@@ -28,12 +28,7 @@ export class MediaHandlersController {
   constructor(private readonly mediaHandlersService: MediaHandlersService) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file', {
-    limits: {
-      fileSize: 500 * 1024 * 1024, // 500 MB
-    },
-  }))
-  @ApiOperation({ summary: 'Upload a media file to Azure Blob Storage' })
+  @ApiOperation({ summary: 'Upload a media file to Azure Blob Storage (streamed)' })
   @ApiConsumes('multipart/form-data')
   @ApiQuery({
     name: 'referenceType',
@@ -57,22 +52,21 @@ export class MediaHandlersController {
   })
   @ApiResponse({ status: 201, description: 'File uploaded and linked' })
   async uploadFile(
-    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
     @Query('referenceType') referenceType: string,
     @Query('referenceId') referenceId: number,
     @Query('tag') tag: string,
     @Query('typeId') typeId: number,
     @CurrentUser() currentUser: any,
   ) {
-    const url = await this.mediaHandlersService.uploadFileAndLink(
-      file,
+    return this.mediaHandlersService.uploadFileStream(
+      req,
       currentUser.email,
       referenceType,
       referenceId,
       tag,
       typeId,
     );
-    return url ?? null;
   }
 
   @Get('documents')

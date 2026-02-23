@@ -103,6 +103,9 @@ async function bootstrap() {
   // Start the server
   const port = process.env.PORT || 3000;
   await app.listen(port);
+
+  const httpServer = app.getHttpServer();
+  httpServer.requestTimeout = 10 * 60 * 1000; 
   logger.log(`Application is running on: http://localhost:${port}`);
   logger.log(`Fabric type endpoints are available at: http://localhost:${port}/fabrictype`);
 }
