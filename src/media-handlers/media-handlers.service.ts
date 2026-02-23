@@ -2,11 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { v4 as uuidv4 } from 'uuid';
-import * as stream from 'stream';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { Media } from 'src/media/_/media.entity';
 import { MediaLink } from 'src/media-link/_/media-link.entity';
+import * as Busboy from 'busboy';
 
 @Injectable()
 export class MediaHandlersService {
@@ -75,7 +75,8 @@ export class MediaHandlersService {
       const blobName = `${guid}-${file.originalname}`;
 
       const blockBlobClient = this.containerClient.getBlockBlobClient(blobName);
-      const bufferStream = new stream.PassThrough();
+      const { PassThrough } = await import('stream');
+      const bufferStream = new PassThrough();
       bufferStream.end(file.buffer);
 
       try {
@@ -143,6 +144,119 @@ export class MediaHandlersService {
       }
       throw new Error(`Failed to upload file: ${error.message || 'Unknown error'}`);
     }
+  }
+
+  async uploadFileStream(
+    req: any,
+    createdBy: string,
+    referenceType: string,
+    referenceId: number,
+    tag?: string,
+    typeId?: number,
+  ): Promise<any> {
+    const FileTypesEnum = {
+      DESIGN: { id: 1, name: 'Design File' },
+      MOCKUP: { id: 2, name: 'Mockup File' },
+      REQUIREMENT: { id: 3, name: 'Product Requirement File' },
+      QASHEET: { id: 4, name: 'QA Sheet' },
+    };
+
+    if (typeId && !Object.values(FileTypesEnum).some((t) => t.id === typeId)) {
+      throw new Error('Invalid typeId provided');
+    }
+
+    return new Promise((resolve, reject) => {
+      const busboy = Busboy({
+        headers: req.headers,
+        limits: { fileSize: 500 * 1024 * 1024 }, // 500 MB guard
+      });
+
+      let fileHandled = false;
+
+      busboy.on('file', (fieldname, fileStream, info) => {
+        fileHandled = true;
+        const { filename, mimeType } = info;
+        const extension = filename.split('.').pop();
+        const nameWithoutExtension = filename.replace(/\.[^/.]+$/, '');
+        const blobName = `${uuidv4()}-${filename}`;
+        const blockBlobClient = this.containerClient.getBlockBlobClient(blobName);
+
+        // Stream directly to Azure — no memory buffering
+        // 4 MB block size, 4 concurrent block uploads
+        const uploadStart = Date.now();
+        this.logger.log(`[UPLOAD] Starting: ${filename}`);
+
+        blockBlobClient
+          .uploadStream(fileStream, 4 * 1024 * 1024, 4, {
+            blobHTTPHeaders: { blobContentType: mimeType },
+            onProgress: (ev) => {
+              const mb = (ev.loadedBytes / (1024 * 1024)).toFixed(2);
+              const elapsed = ((Date.now() - uploadStart) / 1000).toFixed(1);
+              const speed = ev.loadedBytes / 1024 / 1024 / parseFloat(elapsed);
+              this.logger.log(
+                `[UPLOAD] ${filename} — ${mb} MB uploaded | ${elapsed}s elapsed | ${speed.toFixed(2)} MB/s`,
+              );
+            },
+          })
+          .then(async () => {
+            try {
+              const media = this.mediaRepository.create({
+                file_name: nameWithoutExtension,
+                file_type: extension,
+                file_url: blobName,
+                typeId: typeId || null,
+                uploaded_by: createdBy,
+              });
+              const savedMedia = await this.mediaRepository.save(media);
+
+              const link = this.mediaLinkRepository.create({
+                media_id: savedMedia.id,
+                reference_type: referenceType,
+                reference_id: referenceId,
+                tag: tag || null,
+                created_by: createdBy,
+              });
+              const savedLink = await this.mediaLinkRepository.save(link);
+
+              resolve({
+                message: 'File uploaded and linked successfully',
+                media: savedMedia,
+                link: savedLink,
+              });
+            } catch (dbError) {
+              reject(dbError);
+            }
+          })
+          .catch((uploadError: any) => {
+            if (uploadError.statusCode === 403) {
+              this.logger.error('Azure Storage 403 — check SAS URL permissions/expiry');
+              reject(
+                new Error(
+                  'Azure Storage authentication failed. Verify SAS URL has write/create permissions and is not expired. ' +
+                    `Details: ${uploadError.message}`,
+                ),
+              );
+            } else {
+              reject(uploadError);
+            }
+          });
+
+        fileStream.on('limit', () => {
+          fileStream.destroy();
+          reject(new Error('File size exceeds the 500 MB limit'));
+        });
+      });
+
+      busboy.on('finish', () => {
+        if (!fileHandled) {
+          reject(new Error('No file field found in the request'));
+        }
+      });
+
+      busboy.on('error', (err) => reject(err));
+
+      req.pipe(busboy);
+    });
   }
 
   async getDocumentsByReference(
