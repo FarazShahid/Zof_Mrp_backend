@@ -146,7 +146,8 @@ export class MediaHandlersService {
     }
   }
 
-  private uploadTimeoutMs = 15 * 60 * 1000; // 15 minutes
+  // Change this value to adjust upload timeout: 1 = testing, 10 = production
+  private uploadTimeoutMs = 1 * 60 * 1000;
 
   async uploadFileStream(
     req: any,
@@ -167,14 +168,25 @@ export class MediaHandlersService {
       throw new Error('Invalid typeId provided');
     }
 
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(
-        () => reject(new Error(`Upload timed out after ${this.uploadTimeoutMs / 60000} minutes`)),
-        this.uploadTimeoutMs,
-      ),
-    );
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => {
+      this.logger.warn(`[UPLOAD] Timeout after ${this.uploadTimeoutMs / 60000} minutes — aborting`);
+      abortController.abort();
+    }, this.uploadTimeoutMs);
 
-    return Promise.race([this.streamUpload(req, createdBy, referenceType, referenceId, tag, typeId), timeoutPromise]);
+    try {
+      return await this.streamUpload(
+        req, createdBy, referenceType, referenceId, tag, typeId,
+        abortController.signal,
+      );
+    } catch (error: any) {
+      if (abortController.signal.aborted || error.name === 'AbortError') {
+        throw new Error(`Upload timed out after ${this.uploadTimeoutMs / 60000} minutes`);
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId); // clean up timer if upload finishes before timeout
+    }
   }
 
   private streamUpload(
@@ -184,6 +196,7 @@ export class MediaHandlersService {
     referenceId: number,
     tag?: string,
     typeId?: number,
+    abortSignal?: AbortSignal,
   ): Promise<any> {
     return new Promise((resolve, reject) => {
       const busboy = Busboy({
@@ -201,14 +214,16 @@ export class MediaHandlersService {
         const blobName = `${uuidv4()}-${filename}`;
         const blockBlobClient = this.containerClient.getBlockBlobClient(blobName);
 
-        // Stream directly to Azure — no memory buffering
-        // 4 MB block size, 4 concurrent block uploads
+        // Destroy the incoming stream when abort fires (stops reading from nginx/client)
+        abortSignal?.addEventListener('abort', () => fileStream.destroy());
+
         const uploadStart = Date.now();
         this.logger.log(`[UPLOAD] Starting: ${filename}`);
 
         blockBlobClient
           .uploadStream(fileStream, 4 * 1024 * 1024, 4, {
             blobHTTPHeaders: { blobContentType: mimeType },
+            abortSignal, // tells Azure SDK to stop mid-upload on abort
             onProgress: (ev) => {
               const mb = (ev.loadedBytes / (1024 * 1024)).toFixed(2);
               const elapsed = ((Date.now() - uploadStart) / 1000).toFixed(1);
