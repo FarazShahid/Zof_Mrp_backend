@@ -1,4 +1,4 @@
-import { Injectable, Logger, RequestTimeoutException } from '@nestjs/common';
+import { Injectable, Logger, RequestTimeoutException, PayloadTooLargeException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { v4 as uuidv4 } from 'uuid';
@@ -166,6 +166,14 @@ export class MediaHandlersService {
 
     if (typeId && !Object.values(FileTypesEnum).some((t) => t.id === typeId)) {
       throw new Error('Invalid typeId provided');
+    }
+
+    const maxBytes = 500 * 1024 * 1024; // 500 MB
+    const contentLength = parseInt(req.headers['content-length'] || '0', 10);
+    if (contentLength > maxBytes) {
+      throw new PayloadTooLargeException(
+        `File too large. Maximum allowed size is 500 MB, received ${(contentLength / (1024 * 1024)).toFixed(2)} MB`,
+      );
     }
 
     const abortController = new AbortController();
