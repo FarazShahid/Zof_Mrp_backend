@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, RequestTimeoutException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { v4 as uuidv4 } from 'uuid';
@@ -147,7 +147,7 @@ export class MediaHandlersService {
   }
 
   // Change this value to adjust upload timeout: 1 = testing, 10 = production
-  private uploadTimeoutMs = 1 * 60 * 1000;
+  private uploadTimeoutMs = 5 * 60 * 1000;
 
   async uploadFileStream(
     req: any,
@@ -181,7 +181,7 @@ export class MediaHandlersService {
       );
     } catch (error: any) {
       if (abortController.signal.aborted || error.name === 'AbortError') {
-        throw new Error(`Upload timed out after ${this.uploadTimeoutMs / 60000} minutes`);
+        throw new RequestTimeoutException(`Upload timed out after ${this.uploadTimeoutMs / 60000} minutes`);
       }
       throw error;
     } finally {
@@ -214,8 +214,14 @@ export class MediaHandlersService {
         const blobName = `${uuidv4()}-${filename}`;
         const blockBlobClient = this.containerClient.getBlockBlobClient(blobName);
 
-        // Destroy the incoming stream when abort fires (stops reading from nginx/client)
-        abortSignal?.addEventListener('abort', () => fileStream.destroy());
+       abortSignal?.addEventListener('abort', () => {
+          req.unpipe(busboy);
+          req.resume();
+          fileStream.destroy();
+          const abortError = new Error('The operation was aborted.');
+          abortError.name = 'AbortError';
+          reject(abortError);
+        });
 
         const uploadStart = Date.now();
         this.logger.log(`[UPLOAD] Starting: ${filename}`);
