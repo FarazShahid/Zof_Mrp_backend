@@ -146,6 +146,8 @@ export class MediaHandlersService {
     }
   }
 
+  private uploadTimeoutMs = 15 * 60 * 1000; // 15 minutes
+
   async uploadFileStream(
     req: any,
     createdBy: string,
@@ -165,6 +167,24 @@ export class MediaHandlersService {
       throw new Error('Invalid typeId provided');
     }
 
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`Upload timed out after ${this.uploadTimeoutMs / 60000} minutes`)),
+        this.uploadTimeoutMs,
+      ),
+    );
+
+    return Promise.race([this.streamUpload(req, createdBy, referenceType, referenceId, tag, typeId), timeoutPromise]);
+  }
+
+  private streamUpload(
+    req: any,
+    createdBy: string,
+    referenceType: string,
+    referenceId: number,
+    tag?: string,
+    typeId?: number,
+  ): Promise<any> {
     return new Promise((resolve, reject) => {
       const busboy = Busboy({
         headers: req.headers,
