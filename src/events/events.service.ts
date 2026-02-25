@@ -19,7 +19,7 @@ export class EventService {
     private userRepository: Repository<User>,
   ) {}
 
-   private async getClientsForUser(userId: number): Promise<number[]> {
+  private async getClientsForUser(userId: number): Promise<number[]> {
 
     const user = await this.userRepository.findOne({
       where: { Id: userId },
@@ -29,12 +29,16 @@ export class EventService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
+     if (user.roleId === 1) {
+      return null;
+    }
+
     const assignedClientIds: number[] = user.assignedClients || [];
 
     if (!assignedClientIds.length) {
       return [];
     }
-    
+
     // Filter out any invalid values (NaN, null, undefined) and ensure all are valid numbers
     const validClientIds = assignedClientIds.filter(id => {
       return id !== null && id !== undefined && !isNaN(Number(id)) && Number.isFinite(Number(id));
@@ -46,7 +50,8 @@ export class EventService {
   async create(createEventDto: CreateEventDto, createdBy: string, userId: number): Promise<ClientEvent> {
     try {
         const assignedClientIds = await this.getClientsForUser(userId);
-        if (createEventDto.ClientId && !assignedClientIds.includes(createEventDto.ClientId)) {
+        // null means all-clients access, skip validation
+        if (createEventDto.ClientId && assignedClientIds !== null && !assignedClientIds.includes(createEventDto.ClientId)) {
           throw new NotFoundException(`Client with ID ${createEventDto.ClientId} not found or not assigned to the user`);
         }
       const newEvent = this.clientEventRepository.create({
@@ -65,8 +70,13 @@ export class EventService {
   async getAllEvents(userId: number): Promise<ClientEvent[]> {
     try {
       const assignedClientIds = await this.getClientsForUser(userId);
+      const whereCondition = assignedClientIds === null
+        ? {}
+        : assignedClientIds.length > 0
+          ? { ClientId: In(assignedClientIds) }
+          : { Id: -1 };
       const response = await this.clientEventRepository.find({
-        where: assignedClientIds.length > 0 ? { ClientId: In(assignedClientIds) } : {},
+        where: whereCondition,
         order: {
           CreatedOn: 'DESC'
         }
@@ -100,7 +110,7 @@ export class EventService {
       const event = await this.clientEventRepository.findOne({
         where: {
           Id: id,
-          ...(assignedClientIds.length > 0 ? { ClientId: In(assignedClientIds) } : {}),
+          ...(assignedClientIds === null ? {} : assignedClientIds.length > 0 ? { ClientId: In(assignedClientIds) } : { Id: -1 }),
         },
       });
 
