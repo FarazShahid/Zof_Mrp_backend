@@ -68,7 +68,8 @@ export class OrdersController {
   @ApiQuery({ name: 'projectId', required: false, type: Number, description: 'Project ID to filter products', example: 1 })
   async findAll(@CurrentUser() currentUser: any, @Query('projectId') projectId?: number): Promise<any> {
     try {
-      return this.ordersService.getAllOrders(currentUser.userId, projectId);
+      const parsedProjectId = projectId != null ? Number(projectId) : undefined;
+      return this.ordersService.getAllOrders(currentUser.userId, Number.isFinite(parsedProjectId) ? parsedProjectId : undefined);
     } catch (error) {
       console.error('Error fetching orders:', error);
       throw error;
