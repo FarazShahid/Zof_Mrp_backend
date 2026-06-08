@@ -35,6 +35,7 @@ import { User } from 'src/users/entities/user.entity';
 import { OrderComment } from './entities/order-comment.entity';
 import { CreateOrderCommentDto } from './dto/create-order-comment.dto';
 import { UpdateOrderCommentDto } from './dto/update-order-comment.dto';
+import { OrderDocumentsService } from './order-documents.service';
 import { OrderType } from './order-type.enum';
 
 @Injectable()
@@ -70,6 +71,7 @@ export class OrdersService {
     private userRepository: Repository<User>,
     @InjectRepository(OrderComment)
     private orderCommentRepository: Repository<OrderComment>,
+    private readonly orderDocumentsService: OrderDocumentsService,
     private dataSource: DataSource,
   ) { }
 
@@ -473,6 +475,10 @@ export class OrdersService {
         .createQueryBuilder('order')
         .getCount();
 
+      const attachmentSummaries = await this.orderDocumentsService.getAttachmentSummaries(
+        result.map((order) => order.Id),
+      );
+
       const formattedOrders = result.map((order) => ({
         Id: order.Id,
         OrderShipmentStatus: order?.OrderShipmentStatus as OrderItemShipmentEnum,
@@ -494,6 +500,7 @@ export class OrdersService {
         CreatedBy: order.CreatedBy,
         UpdatedOn: order.UpdatedOn,
         UpdatedBy: order.UpdatedBy,
+        attachmentProgress: attachmentSummaries.get(order.Id)?.attachmentProgress ?? 0,
       }));
 
       return formattedOrders;
@@ -570,27 +577,36 @@ export class OrdersService {
       return [];
     }
 
-    return orders.map((order) => ({
-      Id: order.OrderId,
-      OrderName: order.OrderName,
-      OrderNumber: order.OrderNumber,
-      OrderType: order.OrderType,
-      ParentOrderId: order?.ParentOrderId ?? null,
-      ExternalOrderId: order.ExternalOrderId,
-      Description: order.order_Description,
-      OrderEventId: order?.order_OrderEventId ?? null,
-      ClientId: order.order_ClientId,
-      OrderPriority: order.OrderPriority,
-      OrderStatusId: order.order_OrderStatusId,
-      Deadline: order.order_Deadline,
-      CreatedOn: order.CreatedOn,
-      CreatedBy: order.CreatedBy,
-      UpdatedOn: order.UpdatedOn,
-      UpdatedBy: order.UpdatedBy,
-      EventName: order.EventName || null,
-      ClientName: order.ClientName || null,
-      StatusName: order.StatusName || null,
-    }));
+    const attachmentSummaries = await this.orderDocumentsService.getAttachmentSummaries(
+      orders.map((order) => order.OrderId),
+    );
+
+    return orders.map((order) => {
+      const summary = attachmentSummaries.get(order.OrderId);
+      return {
+        Id: order.OrderId,
+        OrderName: order.OrderName,
+        OrderNumber: order.OrderNumber,
+        OrderType: order.OrderType,
+        ParentOrderId: order?.ParentOrderId ?? null,
+        ExternalOrderId: order.ExternalOrderId,
+        Description: order.order_Description,
+        OrderEventId: order?.order_OrderEventId ?? null,
+        ClientId: order.order_ClientId,
+        OrderPriority: order.OrderPriority,
+        OrderStatusId: order.order_OrderStatusId,
+        Deadline: order.order_Deadline,
+        CreatedOn: order.CreatedOn,
+        CreatedBy: order.CreatedBy,
+        UpdatedOn: order.UpdatedOn,
+        UpdatedBy: order.UpdatedBy,
+        EventName: order.EventName || null,
+        ClientName: order.ClientName || null,
+        StatusName: order.StatusName || null,
+        attachmentProgress: summary?.attachmentProgress ?? 0,
+        documents: summary?.documents ?? [],
+      };
+    });
   }
 
   async updateOrder(

@@ -17,6 +17,9 @@ import { OrderStatusLogs } from './entities/order-status-log.entity';
 import { SizeMeasurement } from 'src/size-measurements/entities/size-measurement.entity';
 import { ShipmentOrder } from 'src/shipment/entities/shipment-order.entity';
 import { OrderPdfService } from './order.pdf.service';
+import { OrderDocumentsService } from './order-documents.service';
+import { OrderDocumentTypesModule } from 'src/order-document-types/order-document-types.module';
+import { MediaHandlersModule } from 'src/media-handlers/media-handlers.module';
 import { AuditModule } from 'src/audit-logs/audit.module';
 import { OrderQualityCheck } from './entities/order-checklist.entity';
 import { QAChecklist } from 'src/products/entities/qa-checklist.entity';
@@ -46,9 +49,11 @@ import { OrderComment } from './entities/order-comment.entity';
     ]),
     AuditModule,
     UserModule,
+    OrderDocumentTypesModule,
+    MediaHandlersModule,
   ],
   controllers: [OrdersController],
-  providers: [OrdersService , OrderPdfService],
+  providers: [OrdersService, OrderPdfService, OrderDocumentsService],
   exports: [OrdersService]
 })
 export class OrderModule {}

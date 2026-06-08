@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Media } from 'src/media/_/media.entity';
 import { MediaLink } from 'src/media-link/_/media-link.entity';
 import * as Busboy from 'busboy';
@@ -99,19 +99,6 @@ export class MediaHandlersService {
         throw uploadError;
       }
 
-      const FileTypesEnum = {
-        DESIGN: { id: 1, name: "Design File" },
-        MOCKUP: { id: 2, name: "Mockup File" },
-        REQUIREMENT: { id: 3, name: "Product Requirement File" },
-        QASHEET: { id: 4, name: "QA Sheet" },
-      };
-
-      const isValidTypeId = Object.values(FileTypesEnum).some(type => type.id === typeId);
-
-      if (typeId && !isValidTypeId) {
-        throw new Error('Invalid typeId provided');
-      }
-
       const document = this.mediaRepository.create({
         file_name: nameWithoutExtension,
         file_type: extension,
@@ -157,17 +144,6 @@ export class MediaHandlersService {
     tag?: string,
     typeId?: number,
   ): Promise<any> {
-    const FileTypesEnum = {
-      DESIGN: { id: 1, name: 'Design File' },
-      MOCKUP: { id: 2, name: 'Mockup File' },
-      REQUIREMENT: { id: 3, name: 'Product Requirement File' },
-      QASHEET: { id: 4, name: 'QA Sheet' },
-    };
-
-    if (typeId && !Object.values(FileTypesEnum).some((t) => t.id === typeId)) {
-      throw new Error('Invalid typeId provided');
-    }
-
     const maxBytes = 500 * 1024 * 1024; // 500 MB
     const contentLength = parseInt(req.headers['content-length'] || '0', 10);
     if (contentLength > maxBytes) {
@@ -344,6 +320,24 @@ export class MediaHandlersService {
         referenceType: link.reference_type,
         referenceId: link.reference_id,
       };
+    });
+  }
+
+  /**
+   * Fetch media links for many reference IDs of the same reference type in a single query.
+   * Useful for batch progress/summary calculations (e.g. order document completion).
+   */
+  async getDocumentsByReferenceIds(
+    referenceType: string,
+    referenceIds: number[],
+  ): Promise<MediaLink[]> {
+    if (!referenceIds.length) {
+      return [];
+    }
+
+    return this.mediaLinkRepository.find({
+      where: { reference_type: referenceType, reference_id: In(referenceIds) },
+      relations: ['media'],
     });
   }
 
