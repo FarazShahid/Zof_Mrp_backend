@@ -604,7 +604,6 @@ export class OrdersService {
         ClientName: order.ClientName || null,
         StatusName: order.StatusName || null,
         attachmentProgress: summary?.attachmentProgress ?? 0,
-        documents: summary?.documents ?? [],
       };
     });
   }
@@ -1190,6 +1189,8 @@ export class OrdersService {
         delete item._orderItemDetailIds;
       }
 
+      const attachmentProgress = await this.orderDocumentsService.getAttachmentProgress(orderData.Id);
+
       return {
         Id: orderData.Id,
         OrderShipmentStatus: orderData?.OrderShipmentStatus as OrderItemShipmentEnum,
@@ -1207,6 +1208,7 @@ export class OrdersService {
         OrderStatusId: orderData.OrderStatusId,
         StatusName: orderData.StatusName || 'Unknown Status',
         Deadline: orderData.Deadline,
+        attachmentProgress,
         items: processedItems,
       };
     } catch (error) {
