@@ -7,11 +7,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Media } from 'src/media/_/media.entity';
 import { MediaLink } from 'src/media-link/_/media-link.entity';
 import { AuditModule } from 'src/audit-logs/audit.module';
+import { OrderDocumentTypesModule } from 'src/order-document-types/order-document-types.module';
 
 @Module({
    imports: [
       TypeOrmModule.forFeature([Media, MediaLink]),
-      AuditModule
+      AuditModule,
+      OrderDocumentTypesModule,
     ],
   providers: [MediaHandlersService],
   controllers: [MediaHandlersController, PublicMediaController],

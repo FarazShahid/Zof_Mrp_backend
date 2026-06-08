@@ -6,7 +6,10 @@ import { ConfigService } from '@nestjs/config';
 import { Repository, In } from 'typeorm';
 import { Media } from 'src/media/_/media.entity';
 import { MediaLink } from 'src/media-link/_/media-link.entity';
+import { OrderDocumentTypesService } from 'src/order-document-types/order-document-types.service';
 import * as Busboy from 'busboy';
+
+const ORDER_REFERENCE_TYPE = 'order';
 
 @Injectable()
 export class MediaHandlersService {
@@ -20,6 +23,8 @@ export class MediaHandlersService {
 
     @InjectRepository(MediaLink)
     private readonly mediaLinkRepository: Repository<MediaLink>,
+
+    private readonly orderDocumentTypesService: OrderDocumentTypesService,
   ) {
     try {
       const sasUrl = this.configService.get<string>('AZURE_STORAGE_SAS_URL');
@@ -294,17 +299,32 @@ export class MediaHandlersService {
       relations: ['media'],
     });
 
-     const FileTypesEnum = {
-        DESIGN: { id: 1, name: "Design File" },
-        MOCKUP: { id: 2, name: "Mockup File" },
-        REQUIREMENT: { id: 3, name: "Product Requirement File" },
-        QASHEET: { id: 4, name: "QA Sheet" },
-      };
+    // Legacy hardcoded type lookup, retained for non-order references that still rely on it.
+    const FileTypesEnum = {
+      DESIGN: { id: 1, name: "Design File" },
+      MOCKUP: { id: 2, name: "Mockup File" },
+      REQUIREMENT: { id: 3, name: "Product Requirement File" },
+      QASHEET: { id: 4, name: "QA Sheet" },
+    };
+
+    let orderDocumentTypeNamesById: Map<number, string> | null = null;
+    if (referenceType === ORDER_REFERENCE_TYPE) {
+      const orderDocumentTypes = await this.orderDocumentTypesService.findAll();
+      orderDocumentTypeNamesById = new Map(orderDocumentTypes.map((type) => [type.Id, type.Name]));
+    }
 
     return links.map((link) => {
       // Construct URL dynamically using blob name
       const blobName = link.media?.file_url; // file_url now contains blob name
       const fileUrl = blobName ? this.constructMediaUrl(blobName) : null;
+      const linkTypeId = link.media?.typeId ?? null;
+
+      let typeName: string | null = null;
+      if (linkTypeId != null) {
+        typeName = orderDocumentTypeNamesById
+          ? orderDocumentTypeNamesById.get(linkTypeId) ?? null
+          : Object.values(FileTypesEnum).find((type) => type.id === linkTypeId)?.name ?? null;
+      }
 
       return {
         id: link.id,
@@ -313,8 +333,8 @@ export class MediaHandlersService {
         fileType: link.media?.file_type,
         fileUrl: blobName,
         tag: link.tag || null,
-        typeId: link.media?.typeId || null,
-        typeName: link.media?.typeId ? Object.values(FileTypesEnum).find(type => type.id === link.media.typeId)?.name : null,
+        typeId: linkTypeId,
+        typeName,
         uploadedBy: link.media?.uploaded_by,
         uploadedOn: link.media?.uploaded_on,
         referenceType: link.reference_type,
