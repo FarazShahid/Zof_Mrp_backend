@@ -12,15 +12,18 @@ import {
   Query,
   BadRequestException,
   Res,
-  UseInterceptors
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { OrdersService } from './orders.service';
+import { OrderDocumentsService } from './order-documents.service';
 import { CreateOrderDto, GetOrdersItemsDto } from './dto/create-orders.dto';
 import { UpdateOrderDto } from './dto/update-orders.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CommonApiResponses } from 'src/common/decorators/common-api-response.decorator';
 import { ControllerAuthProtector } from 'src/common/decorators/controller-auth-protector';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { OrderStatusLogs } from './entities/order-status-log.entity';
 import { Response } from 'express';
 import { OrderPdfService } from './order.pdf.service';
@@ -44,7 +47,8 @@ import { OrderComment } from './entities/order-comment.entity';
 export class OrdersController {
   constructor(
     private readonly ordersService: OrdersService,
-    private readonly pdfs: OrderPdfService
+    private readonly pdfs: OrderPdfService,
+    private readonly orderDocumentsService: OrderDocumentsService,
   ) { }
 
   @HasRight(AppRightsEnum.AddOrders)
@@ -177,6 +181,60 @@ export class OrdersController {
       console.error('Error fetching order items:', error);
       throw error;
     }
+  }
+
+  @HasRight(AppRightsEnum.UpdateOrders)
+  @Post(':orderId/documents')
+  @UseInterceptors(FilesInterceptor('documents'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Upload one or more documents for an order. Each file (in the "documents" array field) must have a matching entry (by index) in the "typeIds" array field, referencing a valid Order Document Type id.',
+    schema: {
+      type: 'object',
+      properties: {
+        documents: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+        },
+        typeIds: {
+          type: 'array',
+          items: { type: 'integer' },
+          example: [1, 2],
+        },
+      },
+    },
+  })
+  @HttpCode(HttpStatus.CREATED)
+  @CommonApiResponses('Bulk upload documents for an order')
+  async uploadOrderDocuments(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body('typeIds') rawTypeIds: string | string[],
+    @CurrentUser() currentUser: any,
+  ): Promise<any> {
+    const typeIds = this.parseTypeIds(rawTypeIds);
+    return this.orderDocumentsService.uploadDocuments(orderId, files ?? [], typeIds, currentUser.email);
+  }
+
+  private parseTypeIds(raw: string | string[] | undefined): number[] {
+    if (raw == null) {
+      return [];
+    }
+
+    const values = Array.isArray(raw) ? raw : [raw];
+
+    if (values.length === 1 && typeof values[0] === 'string' && values[0].trim().startsWith('[')) {
+      try {
+        const parsed = JSON.parse(values[0]);
+        if (Array.isArray(parsed)) {
+          return parsed.map(Number);
+        }
+      } catch {
+        // not a JSON array — fall through to plain parsing
+      }
+    }
+
+    return values.map(Number);
   }
 
   @HasRight(AppRightsEnum.ViewOrders)

@@ -14,6 +14,7 @@ import { MediaLink } from "src/media-link/_/media-link.entity";
 import { Media } from "src/media/_/media.entity";
 import { OrderQualityCheck } from "src/orders/entities/order-checklist.entity";
 import { OrderComment } from "src/orders/entities/order-comment.entity";
+import { OrderDocumentType } from "src/order-document-types/entities/order-document-type.entity";
 import { OrderItemDetails } from "src/orders/entities/order-item-details";
 import { OrderItemsPrintingOption } from "src/orders/entities/order-item-printiing.option.entity";
 import { OrderItem } from "src/orders/entities/order-item.entity";
@@ -64,6 +65,7 @@ export const ENTITIES = [
     OrderItem,
     OrderItemsPrintingOption,
     OrderComment,
+    OrderDocumentType,
     OrderQualityCheck,
     Order,
     OrderStatus,

@@ -9,6 +9,7 @@ import { UserModule } from './users/user.module';
 import { EventsModule } from './events/events.module';
 import { OrderstatusModule } from './orderstatus/orderstatus.module';
 import { OrderModule } from './orders/orders.module';
+import { OrderDocumentTypesModule } from './order-document-types/order-document-types.module';
 import { PrintingoptionsModule } from './printingoptions/printingoptions.module';
 import { SizeoptionsModule } from './sizeoptions/sizeoptions.module';
 import { ProductcutoptionsModule } from './productcutoptions/productcutoptions.module';
@@ -69,6 +70,7 @@ import { DashboardReportModule } from './dashboard-reports/dashboard-report.modu
     InventoryItemsModule,
     InventoryTransectionsModule,
     OrderModule,
+    OrderDocumentTypesModule,
     OrderstatusModule,
     PrintingoptionsModule,
     ProductCategoryModule,
