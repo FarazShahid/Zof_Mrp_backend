@@ -29,7 +29,9 @@ import { AvailableColorOption } from "src/products/entities/available-color-opti
 import { AvailbleSizeOptions } from "src/products/entities/available-size-options";
 import { ProductPrintingOptions } from "src/products/entities/product-printing-options.entity";
 import { Product, Productdetails } from "src/products/entities/product.entity";
+import { ProductComponent } from "src/products/entities/product-component.entity";
 import { QAChecklist } from "src/products/entities/qa-checklist.entity";
+import { ProductComponentType } from "src/product-component-types/entities/product-component-type.entity";
 import { Project } from "src/projects/entities/project.entity";
 import { ShipmentCarrier } from "src/shipment-carrier/entities/shipment-carrier.entity";
 import { ShipmentBox, ShipmentBoxItem } from "src/shipment/entities/shipment-box.entity";
@@ -73,6 +75,8 @@ export const ENTITIES = [
     PrintingOptions,
     Product,
     ProductCategory,
+    ProductComponent,
+    ProductComponentType,
     ProductCutOption,
     Productdetails,
     ProductPrintingOptions,

@@ -5,13 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { Client } from 'src/clients/entities/client.entity';
 import { ProductPrintingOptions } from './entities/product-printing-options.entity';
+import { ProductComponent } from './entities/product-component.entity';
 import { PrintingOptions } from 'src/printingoptions/entities/printingoptions.entity';
 import { AuditModule } from 'src/audit-logs/audit.module';
 import { User } from 'src/users/entities/user.entity';
 import { Project } from 'src/projects/entities/project.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product, ProductPrintingOptions, Client, User, Project]),
+  imports: [TypeOrmModule.forFeature([Product, ProductPrintingOptions, ProductComponent, Client, User, Project]),
 AuditModule
 ],
   controllers: [ProductsController],

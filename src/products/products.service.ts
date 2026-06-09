@@ -13,6 +13,7 @@ import { Repository, DataSource, In } from 'typeorm';
 import { UpdateProductStatusDto } from './dto/update-status-dto';
 import { Client } from 'src/clients/entities/client.entity';
 import { ProductPrintingOptions } from './entities/product-printing-options.entity';
+import { ProductComponent } from './entities/product-component.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Project } from 'src/projects/entities/project.entity';
 
@@ -33,6 +34,9 @@ export class ProductsService {
 
     @InjectRepository(Project)
     private readonly projectRepository: Repository<Project>,
+
+    @InjectRepository(ProductComponent)
+    private readonly productComponentRepo: Repository<ProductComponent>,
 
     private dataSource: DataSource,
   ) { }
@@ -125,7 +129,8 @@ export class ProductsService {
         (createProductDto.productDetails?.length ?? 0) > 0 ||
         (createProductDto.productSizes?.length ?? 0) > 0 ||
         (createProductDto.qaChecklist?.length ?? 0) > 0 ||
-        (createProductDto.printingOptions?.length ?? 0) > 0;
+        (createProductDto.printingOptions?.length ?? 0) > 0 ||
+        (createProductDto.productComponents?.length ?? 0) > 0;
 
       if (hasRelations) {
         const queryRunner = this.dataSource.createQueryRunner();
@@ -211,6 +216,18 @@ export class ProductsService {
             await queryRunner.query(
               `INSERT INTO qachecklist (name, productId) VALUES (?, ?)`,
               [item.name, savedProduct.Id],
+            );
+          }
+
+          // ✅ Insert productComponents
+          const validComponents = (createProductDto.productComponents ?? []).filter(
+            (c) => c.componentTypeId && c.fabricTypeId,
+          );
+
+          for (const component of validComponents) {
+            await queryRunner.query(
+              `INSERT INTO productcomponent (ProductId, ComponentTypeId, FabricTypeId) VALUES (?, ?, ?)`,
+              [savedProduct.Id, component.componentTypeId, component.fabricTypeId],
             );
           }
 
@@ -455,6 +472,24 @@ export class ProductsService {
       productId: item.productId,
     }));
 
+    const productComponentsRaw = await this.dataSource.query(
+      `SELECT pc.Id, pc.ComponentTypeId, pct.Name AS ComponentTypeName,
+              pc.FabricTypeId, ft.Name AS FabricName
+       FROM productcomponent pc
+       LEFT JOIN productcomponenttype pct ON pc.ComponentTypeId = pct.Id
+       LEFT JOIN fabrictype ft ON pc.FabricTypeId = ft.Id
+       WHERE pc.ProductId = ?`,
+      [id],
+    );
+
+    const productComponents = productComponentsRaw.map((c) => ({
+      id: c.Id,
+      componentTypeId: c.ComponentTypeId,
+      componentTypeName: c.ComponentTypeName,
+      fabricTypeId: c.FabricTypeId,
+      fabricName: c.FabricName,
+    }));
+
     return {
       ...product,
       ClientName: product.client?.Name || null,
@@ -466,7 +501,8 @@ export class ProductsService {
       productColors,
       productDetails,
       productSizes,
-      qaChecklist
+      qaChecklist,
+      productComponents,
     };
   }
 
@@ -535,6 +571,7 @@ export class ProductsService {
       productDetails,
       productSizes,
       printingOptions,
+      productComponents,
       ...productData
     } = updateProductDto;
 
@@ -740,12 +777,29 @@ export class ProductsService {
             );
           } else {
             await queryRunner.query(
-              `INSERT INTO qachecklist 
-         (productId, name) 
+              `INSERT INTO qachecklist
+         (productId, name)
          VALUES (?, ?)`,
               [id, checklist.name],
             );
           }
+        }
+      }
+
+      // --- Product Components ---
+      if (Array.isArray(productComponents)) {
+        await queryRunner.query(
+          `DELETE FROM productcomponent WHERE ProductId = ?`,
+          [id],
+        );
+        const validComponents = productComponents.filter(
+          (c) => c.componentTypeId && c.fabricTypeId,
+        );
+        for (const component of validComponents) {
+          await queryRunner.query(
+            `INSERT INTO productcomponent (ProductId, ComponentTypeId, FabricTypeId) VALUES (?, ?, ?)`,
+            [id, component.componentTypeId, component.fabricTypeId],
+          );
         }
       }
 
@@ -830,6 +884,11 @@ export class ProductsService {
 
       await queryRunner.query(
         `DELETE FROM qachecklist WHERE productId = ?`,
+        [id],
+      );
+
+      await queryRunner.query(
+        `DELETE FROM productcomponent WHERE ProductId = ?`,
         [id],
       );
 
