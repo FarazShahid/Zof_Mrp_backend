@@ -6,7 +6,7 @@ import { DocumentFolderQueryDto } from './dto/document-folder-query.dto';
 // Whitelisted sort column maps — prevents SQL injection from sortBy param
 const ROOT_SORT_COLUMNS: Record<string, string> = {
   clientName:       'c.Name',
-  documentsCount:   'documentsCount',
+  folderCount:      'folderCount',
   lastDocumentDate: 'lastDocumentDate',
 };
 
@@ -49,10 +49,10 @@ export class DocumentsService {
 
     const rows = await this.dataSource.query(
       `SELECT
-        c.Id               AS clientId,
-        c.Name             AS clientName,
-        COUNT(m.id)        AS documentsCount,
-        MAX(m.uploaded_on) AS lastDocumentDate
+        c.Id                    AS clientId,
+        c.Name                  AS clientName,
+        COUNT(DISTINCT o.Id)    AS folderCount,
+        MAX(m.uploaded_on)      AS lastDocumentDate
       FROM client c
       LEFT JOIN orders o       ON o.ClientId = c.Id
       LEFT JOIN media_links ml ON ml.reference_type = 'order' AND ml.reference_id = o.Id
@@ -68,7 +68,7 @@ export class DocumentsService {
       data: rows.map((row: any) => ({
         clientId:         row.clientId,
         clientName:       row.clientName,
-        documentsCount:   Number(row.documentsCount),
+        folderCount:      Number(row.folderCount),
         lastDocumentDate: row.lastDocumentDate ?? null,
       })),
       pagination: {
@@ -221,7 +221,9 @@ export class DocumentsService {
   private buildFileUrl(blobName: string | null): string | null {
     if (!blobName) return null;
     const base = this.configService.get<string>('MEDIA_VIEW_URL') || '';
-    if (!base) return null;
+    // If MEDIA_VIEW_URL is not configured, return the blob name directly so the
+    // frontend can construct the URL using /api/public/media/{blobName}
+    if (!base) return blobName;
     const trimmed = base.endsWith('/') ? base.slice(0, -1) : base;
     return `${trimmed}/${encodeURIComponent(blobName)}`;
   }
