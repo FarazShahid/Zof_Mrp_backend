@@ -30,6 +30,7 @@ import { ShipmentCarrierModule } from './shipment-carrier/shipment-carrier.modul
 import { ShipmentModule } from './shipment/shipment.module';
 import { RolesRightsModule } from './roles-rights/roles.rights.module';
 import { DashboardReportModule } from './dashboard-reports/dashboard-report.module';
+import { ProductComponentTypesModule } from './product-component-types/product-component-types.module';
 
 @Module({
   imports: [
@@ -85,7 +86,8 @@ import { DashboardReportModule } from './dashboard-reports/dashboard-report.modu
     ShipmentCarrierModule,
     ShipmentModule,
     RolesRightsModule,
-    DashboardReportModule
+    DashboardReportModule,
+    ProductComponentTypesModule,
   ],
   controllers: []
 })

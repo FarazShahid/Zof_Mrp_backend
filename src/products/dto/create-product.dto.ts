@@ -14,6 +14,22 @@ import { Type } from 'class-transformer';
 import { CommonApiProperty } from 'src/common/decorators/common-api-response.decorator';
 import { ApiProperty } from '@nestjs/swagger';
 
+export class ProductComponentDto {
+  @ApiProperty({ example: 1 })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
+  componentTypeId: number;
+
+  @ApiProperty({ example: 1 })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
+  fabricTypeId: number;
+}
+
 class ProductColorDto {
   @CommonApiProperty('Product Color Id', 1)
   @IsOptional()
@@ -157,6 +173,13 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => ProductQAChecklistDto)
   qaChecklist?: ProductQAChecklistDto[];
+
+  @ApiProperty({ type: [ProductComponentDto], nullable: true, required: false })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductComponentDto)
+  productComponents?: ProductComponentDto[] | null;
 }
 
 export class ProductQAChecklistDto {
