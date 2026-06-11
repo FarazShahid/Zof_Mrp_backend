@@ -38,6 +38,19 @@ export class OrderItemDetailDto {
   @IsInt()
   MeasurementId?: number;
 
+  @CommonApiProperty('Product Sub Category Id', 1)
+  @Transform(({ value }) => (value === 0 || value === '0' || !value ? null : Number(value)))
+  @IsOptional()
+  @IsNumber()
+  @IsInt()
+  ProductSubCategoryId?: number;
+
+  @CommonApiProperty('Style Number', 'STY-001')
+  @Transform(({ value }) => (value === '' || value === null || value === undefined ? null : String(value)))
+  @IsOptional()
+  @IsString()
+  StyleNumber?: string;
+
   @CommonApiProperty('Quantity', '1')
   @IsNumber()
   @IsInt()

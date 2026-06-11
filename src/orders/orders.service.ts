@@ -295,6 +295,28 @@ export class OrdersService {
                       `Size measurement ${option.MeasurementId} does not match client ${effectiveClientId}`,
                     );
                   }
+                  // Verify it matches selected sub category (or is global)
+                  if (
+                    sizeMeasurement.ProductSubCategoryId !== null &&
+                    sizeMeasurement.ProductSubCategoryId !== undefined &&
+                    option.ProductSubCategoryId &&
+                    sizeMeasurement.ProductSubCategoryId !== option.ProductSubCategoryId
+                  ) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match product sub category ${option.ProductSubCategoryId}`,
+                    );
+                  }
+                  // Verify it matches selected style number (or is global)
+                  if (
+                    sizeMeasurement.StyleNumber !== null &&
+                    sizeMeasurement.StyleNumber !== undefined &&
+                    option.StyleNumber &&
+                    sizeMeasurement.StyleNumber !== option.StyleNumber
+                  ) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match style number ${option.StyleNumber}`,
+                    );
+                  }
                 } else {
                   // If MeasurementId is not provided, get the latest version for this SizeOption
                   sizeMeasurement = await queryRunner.manager
@@ -304,11 +326,15 @@ export class OrdersService {
                     .andWhere('sm.IsActive = :isActive', { isActive: true })
                     .andWhere('sm.ProductCategoryId = :productCategoryId', {productCategoryId: product.ProductCategoryId})
                     .andWhere('(sm.ClientId = :clientId OR sm.ClientId IS NULL)', { clientId: effectiveClientId })
-                    // Prefer client-specific over global, then newest
+                    .andWhere('(sm.ProductSubCategoryId = :productSubCategoryId OR sm.ProductSubCategoryId IS NULL)', { productSubCategoryId: option?.ProductSubCategoryId ?? null })
+                    .andWhere('(sm.StyleNumber = :styleNumber OR sm.StyleNumber IS NULL)', { styleNumber: option?.StyleNumber ?? null })
+                    // Prefer client-specific over global, then sub-category/style-specific over global, then newest
                     .orderBy('sm.ClientId IS NULL', 'ASC')
+                    .addOrderBy('sm.ProductSubCategoryId IS NULL', 'ASC')
+                    .addOrderBy('sm.StyleNumber IS NULL', 'ASC')
                     .addOrderBy('sm.Version', 'DESC')
                     .getOne();
-                  
+
                   if (!sizeMeasurement) {
                     // Fallback: still keep category/client constraints; choose best available
                     sizeMeasurement = await queryRunner.manager
@@ -317,7 +343,11 @@ export class OrdersService {
                       .andWhere('sm.IsActive = :isActive', { isActive: true })
                       .andWhere('sm.ProductCategoryId = :productCategoryId', { productCategoryId: product.ProductCategoryId })
                       .andWhere('(sm.ClientId = :clientId OR sm.ClientId IS NULL)', { clientId: effectiveClientId })
+                      .andWhere('(sm.ProductSubCategoryId = :productSubCategoryId OR sm.ProductSubCategoryId IS NULL)', { productSubCategoryId: option?.ProductSubCategoryId ?? null })
+                      .andWhere('(sm.StyleNumber = :styleNumber OR sm.StyleNumber IS NULL)', { styleNumber: option?.StyleNumber ?? null })
                       .orderBy('sm.ClientId IS NULL', 'ASC')
+                      .addOrderBy('sm.ProductSubCategoryId IS NULL', 'ASC')
+                      .addOrderBy('sm.StyleNumber IS NULL', 'ASC')
                       .addOrderBy('sm.IsLatest', 'DESC')
                       .addOrderBy('sm.Version', 'DESC')
                       .getOne();
@@ -337,6 +367,8 @@ export class OrdersService {
                 Priority: option.Priority,
                 SizeOption: option?.SizeOption ?? null,
                 MeasurementId: sizeMeasurement?.Id ?? null,
+                ProductSubCategoryId: option?.ProductSubCategoryId ?? null,
+                StyleNumber: option?.StyleNumber ?? null,
                 CreatedBy: createdBy,
                 UpdatedBy: createdBy,
               });
@@ -814,6 +846,28 @@ export class OrdersService {
                       `Size measurement ${option.MeasurementId} does not match client ${effectiveClientId}`,
                     );
                   }
+                  // Verify it matches selected sub category (or is global)
+                  if (
+                    sizeMeasurement.ProductSubCategoryId !== null &&
+                    sizeMeasurement.ProductSubCategoryId !== undefined &&
+                    option.ProductSubCategoryId &&
+                    sizeMeasurement.ProductSubCategoryId !== option.ProductSubCategoryId
+                  ) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match product sub category ${option.ProductSubCategoryId}`,
+                    );
+                  }
+                  // Verify it matches selected style number (or is global)
+                  if (
+                    sizeMeasurement.StyleNumber !== null &&
+                    sizeMeasurement.StyleNumber !== undefined &&
+                    option.StyleNumber &&
+                    sizeMeasurement.StyleNumber !== option.StyleNumber
+                  ) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match style number ${option.StyleNumber}`,
+                    );
+                  }
                 } else {
                   // If MeasurementId is not provided, get the latest version for this SizeOption
                   sizeMeasurement = await queryRunner.manager
@@ -823,11 +877,15 @@ export class OrdersService {
                     .andWhere('sm.IsActive = :isActive', { isActive: true })
                     .andWhere('sm.ProductCategoryId = :productCategoryId', {productCategoryId: product.ProductCategoryId})
                     .andWhere('(sm.ClientId = :clientId OR sm.ClientId IS NULL)', { clientId: effectiveClientId })
-                    // Prefer client-specific over global, then newest
+                    .andWhere('(sm.ProductSubCategoryId = :productSubCategoryId OR sm.ProductSubCategoryId IS NULL)', { productSubCategoryId: option?.ProductSubCategoryId ?? null })
+                    .andWhere('(sm.StyleNumber = :styleNumber OR sm.StyleNumber IS NULL)', { styleNumber: option?.StyleNumber ?? null })
+                    // Prefer client-specific over global, then sub-category/style-specific over global, then newest
                     .orderBy('sm.ClientId IS NULL', 'ASC')
+                    .addOrderBy('sm.ProductSubCategoryId IS NULL', 'ASC')
+                    .addOrderBy('sm.StyleNumber IS NULL', 'ASC')
                     .addOrderBy('sm.Version', 'DESC')
                     .getOne();
-                  
+
                   if (!sizeMeasurement) {
                     // Fallback: still keep category/client constraints; choose best available
                     sizeMeasurement = await queryRunner.manager
@@ -836,7 +894,11 @@ export class OrdersService {
                       .andWhere('sm.IsActive = :isActive', { isActive: true })
                       .andWhere('sm.ProductCategoryId = :productCategoryId', { productCategoryId: product.ProductCategoryId })
                       .andWhere('(sm.ClientId = :clientId OR sm.ClientId IS NULL)', { clientId: effectiveClientId })
+                      .andWhere('(sm.ProductSubCategoryId = :productSubCategoryId OR sm.ProductSubCategoryId IS NULL)', { productSubCategoryId: option?.ProductSubCategoryId ?? null })
+                      .andWhere('(sm.StyleNumber = :styleNumber OR sm.StyleNumber IS NULL)', { styleNumber: option?.StyleNumber ?? null })
                       .orderBy('sm.ClientId IS NULL', 'ASC')
+                      .addOrderBy('sm.ProductSubCategoryId IS NULL', 'ASC')
+                      .addOrderBy('sm.StyleNumber IS NULL', 'ASC')
                       .addOrderBy('sm.IsLatest', 'DESC')
                       .addOrderBy('sm.Version', 'DESC')
                       .getOne();
@@ -857,6 +919,8 @@ export class OrdersService {
                 Priority: option.Priority,
                 SizeOption: option?.SizeOption ?? null,
                 MeasurementId: sizeMeasurement?.Id ?? null,
+                ProductSubCategoryId: option?.ProductSubCategoryId ?? null,
+                StyleNumber: option?.StyleNumber ?? null,
                 CreatedBy: updatedBy,
                 UpdatedBy: updatedBy,
                 CreatedOn: new Date(),

@@ -32,6 +32,7 @@ import { RolesRightsModule } from './roles-rights/roles.rights.module';
 import { DashboardReportModule } from './dashboard-reports/dashboard-report.module';
 import { ProductComponentTypesModule } from './product-component-types/product-component-types.module';
 import { DocumentsModule } from './documents/documents.module';
+import { ProductSubCategoryModule } from './product-sub-category/product-sub-category.module';
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { DocumentsModule } from './documents/documents.module';
     DashboardReportModule,
     ProductComponentTypesModule,
     DocumentsModule,
+    ProductSubCategoryModule,
   ],
   controllers: []
 })

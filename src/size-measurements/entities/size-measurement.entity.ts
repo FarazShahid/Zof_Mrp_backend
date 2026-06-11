@@ -33,6 +33,12 @@ export class SizeMeasurement {
   @Column({ type: 'int', nullable: true, default: null })
   ProductCategoryId: number;
 
+  @Column({ type: 'int', nullable: true, default: null })
+  ProductSubCategoryId: number | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true, default: null })
+  StyleNumber: string | null;
+
   @Column({ length: 255, nullable: true })
   Measurement1: string;
 

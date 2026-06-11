@@ -25,6 +25,7 @@ import { PrintingOptions } from "src/printingoptions/entities/printingoptions.en
 import { ProductCategory } from "src/product-category/entities/product-category.entity";
 import { ProductCutOption } from "src/productcutoptions/entity/productcutoptions.entity";
 import { ProductRegionStandard } from "src/productregionstandard/_/product-region-standard.entity";
+import { ProductSubCategory } from "src/product-sub-category/entities/product-sub-category.entity";
 import { AvailableColorOption } from "src/products/entities/available-color-options.entity";
 import { AvailbleSizeOptions } from "src/products/entities/available-size-options";
 import { ProductPrintingOptions } from "src/products/entities/product-printing-options.entity";
@@ -81,6 +82,7 @@ export const ENTITIES = [
     Productdetails,
     ProductPrintingOptions,
     ProductRegionStandard,
+    ProductSubCategory,
     Project,
     QAChecklist,
     Shipment,
