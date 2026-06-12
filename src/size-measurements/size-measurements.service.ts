@@ -389,9 +389,18 @@ export class SizeMeasurementsService {
   /**
    * Return all measurements (originals + versions) for a size option
    */
-  async findAllBySizeOption(sizeOptionId: number, userId: number): Promise<SizeMeasurement[]> {
+  async findAllBySizeOption(
+    sizeOptionId: number,
+    userId: number,
+    productSubCategoryId?: number | string,
+    productCategoryId?: number | string,
+    clientId?: number | string,
+  ): Promise<SizeMeasurement[]> {
     try {
       const userAssignedClientIds = await this.getClientsForUser(userId);
+      const parsedProductSubCategoryId = Number(productSubCategoryId);
+      const parsedProductCategoryId = Number(productCategoryId);
+      const parsedClientId = Number(clientId);
 
       const queryBuilder = this.sizeMeasurementRepository
         .createQueryBuilder('sm')
@@ -399,7 +408,27 @@ export class SizeMeasurementsService {
         .andWhere('sm.IsActive = :isActive', { isActive: true })
         .orderBy('sm.Version', 'ASC');
 
-      if (userAssignedClientIds.length > 0) {
+      if (Number.isFinite(parsedProductSubCategoryId) && parsedProductSubCategoryId > 0) {
+        queryBuilder.andWhere('sm.ProductSubCategoryId = :productSubCategoryId', {
+          productSubCategoryId: parsedProductSubCategoryId,
+        });
+      }
+
+      if (Number.isFinite(parsedProductCategoryId) && parsedProductCategoryId > 0) {
+        queryBuilder.andWhere('sm.ProductCategoryId = :productCategoryId', {
+          productCategoryId: parsedProductCategoryId,
+        });
+      }
+
+      if (Number.isFinite(parsedClientId) && parsedClientId > 0) {
+        if (userAssignedClientIds.length > 0 && !userAssignedClientIds.includes(parsedClientId)) {
+          throw new BadRequestException('Client is not assigned to you');
+        }
+
+        queryBuilder.andWhere('(sm.ClientId = :clientId OR sm.ClientId IS NULL)', {
+          clientId: parsedClientId,
+        });
+      } else if (userAssignedClientIds.length > 0) {
         queryBuilder.andWhere('sm.ClientId IN (:...clientIds)', { clientIds: userAssignedClientIds });
       }
 
