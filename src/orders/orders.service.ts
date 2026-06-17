@@ -535,6 +535,7 @@ export class OrdersService {
         .leftJoin('client', 'client', 'order.ClientId = client.Id')
         .leftJoin('clientevent', 'event', 'order.OrderEventId = event.Id')
         .leftJoin('orderstatus', 'status', 'order.OrderStatusId = status.Id')
+        .leftJoin('orders', 'parentOrder', 'order.ParentOrderId = parentOrder.Id')
         .select([
           'order.Id AS Id',
           'order.OrderShipmentStatus AS OrderShipmentStatus',
@@ -551,6 +552,7 @@ export class OrdersService {
           'order.OrderName AS OrderName',
           'order.OrderType AS OrderType',
           'order.ParentOrderId AS ParentOrderId',
+          'parentOrder.OrderName AS ParentOrderName',
           'order.ExternalOrderId AS ExternalOrderId',
           'order.CreatedOn AS CreatedOn',
           'order.CreatedBy AS CreatedBy',
@@ -604,6 +606,7 @@ export class OrdersService {
         OrderName: order.OrderName,
         OrderType: order.OrderType,
         ParentOrderId: order?.ParentOrderId ?? null,
+        ParentOrderName: order?.ParentOrderName ?? null,
         ExternalOrderId: order.ExternalOrderId,
         CreatedOn: order.CreatedOn,
         CreatedBy: order.CreatedBy,
@@ -633,6 +636,7 @@ export class OrdersService {
         'event',
         'order.OrderEventId = event.Id',
       )
+      .leftJoin('orders', 'parentOrder', 'order.ParentOrderId = parentOrder.Id')
       .leftJoin(
         'client',
         'client',
@@ -655,6 +659,7 @@ export class OrdersService {
         'order.OrderName AS OrderName',
         'order.OrderType AS OrderType',
         'order.ParentOrderId AS ParentOrderId',
+        'parentOrder.OrderName AS ParentOrderName',
         'order.ExternalOrderId AS ExternalOrderId',
         'order.CreatedOn AS CreatedOn',
         'order.CreatedBy AS CreatedBy',
@@ -710,6 +715,7 @@ export class OrdersService {
         OrderNumber: order.OrderNumber,
         OrderType: order.OrderType,
         ParentOrderId: order?.ParentOrderId ?? null,
+        ParentOrderName: order?.ParentOrderName ?? null,
         ExternalOrderId: order.ExternalOrderId,
         Description: order.order_Description,
         OrderEventId: order?.order_OrderEventId ?? null,
@@ -1145,6 +1151,7 @@ export class OrdersService {
         .leftJoin('client', 'client', 'order.ClientId = client.Id')
         .leftJoin('clientevent', 'event', 'order.OrderEventId = event.Id')
         .leftJoin('orderstatus', 'status', 'order.OrderStatusId = status.Id')
+        .leftJoin('orders', 'parentOrder', 'order.ParentOrderId = parentOrder.Id')
         .select([
           'order.Id AS Id',
           'order.ClientId AS ClientId',
@@ -1161,6 +1168,7 @@ export class OrdersService {
           'order.OrderName AS OrderName',
           'order.OrderType AS OrderType',
           'order.ParentOrderId AS ParentOrderId',
+          'parentOrder.OrderName AS ParentOrderName',
           'order.ExternalOrderId AS ExternalOrderId',
         ])
         .where('order.Id = :id', { id });
@@ -1363,6 +1371,7 @@ export class OrdersService {
         OrderName: orderData.OrderName,
         OrderType: orderData.OrderType,
         ParentOrderId: orderData?.ParentOrderId ?? null,
+        ParentOrderName: orderData?.ParentOrderName ?? null,
         ExternalOrderId: orderData.ExternalOrderId,
         OrderStatusId: orderData.OrderStatusId,
         StatusName: orderData.StatusName || 'Unknown Status',
