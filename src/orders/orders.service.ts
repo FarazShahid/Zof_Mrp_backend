@@ -295,6 +295,28 @@ export class OrdersService {
                       `Size measurement ${option.MeasurementId} does not match client ${effectiveClientId}`,
                     );
                   }
+                  // Verify it matches selected sub category (or is global)
+                  if (
+                    sizeMeasurement.ProductSubCategoryId !== null &&
+                    sizeMeasurement.ProductSubCategoryId !== undefined &&
+                    option.ProductSubCategoryId &&
+                    sizeMeasurement.ProductSubCategoryId !== option.ProductSubCategoryId
+                  ) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match product sub category ${option.ProductSubCategoryId}`,
+                    );
+                  }
+                  // Verify it matches selected style number (or is global)
+                  if (
+                    sizeMeasurement.StyleNumber !== null &&
+                    sizeMeasurement.StyleNumber !== undefined &&
+                    option.StyleNumber &&
+                    sizeMeasurement.StyleNumber !== option.StyleNumber
+                  ) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match style number ${option.StyleNumber}`,
+                    );
+                  }
                 } else {
                   // If MeasurementId is not provided, get the latest version for this SizeOption
                   sizeMeasurement = await queryRunner.manager
@@ -304,11 +326,15 @@ export class OrdersService {
                     .andWhere('sm.IsActive = :isActive', { isActive: true })
                     .andWhere('sm.ProductCategoryId = :productCategoryId', {productCategoryId: product.ProductCategoryId})
                     .andWhere('(sm.ClientId = :clientId OR sm.ClientId IS NULL)', { clientId: effectiveClientId })
-                    // Prefer client-specific over global, then newest
+                    .andWhere('(sm.ProductSubCategoryId = :productSubCategoryId OR sm.ProductSubCategoryId IS NULL)', { productSubCategoryId: option?.ProductSubCategoryId ?? null })
+                    .andWhere('(sm.StyleNumber = :styleNumber OR sm.StyleNumber IS NULL)', { styleNumber: option?.StyleNumber ?? null })
+                    // Prefer client-specific over global, then sub-category/style-specific over global, then newest
                     .orderBy('sm.ClientId IS NULL', 'ASC')
+                    .addOrderBy('sm.ProductSubCategoryId IS NULL', 'ASC')
+                    .addOrderBy('sm.StyleNumber IS NULL', 'ASC')
                     .addOrderBy('sm.Version', 'DESC')
                     .getOne();
-                  
+
                   if (!sizeMeasurement) {
                     // Fallback: still keep category/client constraints; choose best available
                     sizeMeasurement = await queryRunner.manager
@@ -317,7 +343,11 @@ export class OrdersService {
                       .andWhere('sm.IsActive = :isActive', { isActive: true })
                       .andWhere('sm.ProductCategoryId = :productCategoryId', { productCategoryId: product.ProductCategoryId })
                       .andWhere('(sm.ClientId = :clientId OR sm.ClientId IS NULL)', { clientId: effectiveClientId })
+                      .andWhere('(sm.ProductSubCategoryId = :productSubCategoryId OR sm.ProductSubCategoryId IS NULL)', { productSubCategoryId: option?.ProductSubCategoryId ?? null })
+                      .andWhere('(sm.StyleNumber = :styleNumber OR sm.StyleNumber IS NULL)', { styleNumber: option?.StyleNumber ?? null })
                       .orderBy('sm.ClientId IS NULL', 'ASC')
+                      .addOrderBy('sm.ProductSubCategoryId IS NULL', 'ASC')
+                      .addOrderBy('sm.StyleNumber IS NULL', 'ASC')
                       .addOrderBy('sm.IsLatest', 'DESC')
                       .addOrderBy('sm.Version', 'DESC')
                       .getOne();
@@ -337,6 +367,8 @@ export class OrdersService {
                 Priority: option.Priority,
                 SizeOption: option?.SizeOption ?? null,
                 MeasurementId: sizeMeasurement?.Id ?? null,
+                ProductSubCategoryId: option?.ProductSubCategoryId ?? null,
+                StyleNumber: option?.StyleNumber ?? null,
                 CreatedBy: createdBy,
                 UpdatedBy: createdBy,
               });
@@ -405,16 +437,93 @@ export class OrdersService {
             Priority: detail.Priority,
             SizeOption: detail?.SizeOption ?? null,
             MeasurementId: detail?.MeasurementId ?? null,
+            ProductSubCategoryId: detail?.ProductSubCategoryId ?? null,
+            StyleNumber: detail?.StyleNumber ?? null,
           })) || [],
       });
     }
 
     // Create new order using the existing createOrder() logic
     const newOrder = await this.createOrder(reorderDto, createdBy, userId);
-    
+
     // Update the new order to set ParentOrderId
     newOrder.ParentOrderId = orderId;
     return await this.orderRepository.save(newOrder);
+  }
+
+  async createProductionOrderFromSample(orderId: number, createdBy: string, userId: number): Promise<any> {
+    const existingOrder = await this.orderRepository.findOne({
+      where: { Id: orderId },
+      relations: [
+        'orderItems',
+        'orderItems.printingOptions',
+        'orderItems.orderItemDetails',
+      ],
+    });
+
+    if (!existingOrder) {
+      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    }
+
+    if (existingOrder.OrderType !== OrderType.SAMPLING) {
+      throw new BadRequestException(
+        `Production orders can only be created from an order of type "${OrderType.SAMPLING}". This order is of type "${existingOrder.OrderType}".`,
+      );
+    }
+
+    const productionDto: CreateOrderDto = {
+      ClientId: existingOrder.ClientId,
+      OrderEventId: existingOrder.OrderEventId,
+      Description: `${existingOrder.Description || 'Sample'} (Production)`,
+      Deadline: existingOrder.Deadline.toISOString(),
+      OrderPriority: existingOrder.OrderPriority ?? 0,
+      ExternalOrderId: existingOrder.ExternalOrderId,
+      OrderNumber: existingOrder.OrderNumber,
+      OrderName: existingOrder.OrderName,
+      OrderType: OrderType.PRODUCTION, // Always Production, regardless of source
+      items: [],
+    };
+
+    for (const item of existingOrder.orderItems) {
+      productionDto.items.push({
+        ProductId: item.ProductId,
+        Description: item.Description,
+        OrderItemPriority: item.OrderItemPriority,
+        ImageId: item.ImageId,
+        FileId: item.FileId,
+        VideoId: item.VideoId,
+        printingOptions:
+          item.printingOptions?.map((po) => ({
+            PrintingOptionId: po.PrintingOptionId,
+            Description: po.Description,
+          })) || [],
+        orderItemDetails:
+          item.orderItemDetails?.map((detail) => ({
+            ColorOptionId: detail?.ColorOptionId ?? null,
+            Quantity: detail.Quantity,
+            Priority: detail.Priority,
+            SizeOption: detail?.SizeOption ?? null,
+            MeasurementId: detail?.MeasurementId ?? null,
+            ProductSubCategoryId: detail?.ProductSubCategoryId ?? null,
+            StyleNumber: detail?.StyleNumber ?? null,
+          })) || [],
+      });
+    }
+
+    const newOrder = await this.createOrder(productionDto, createdBy, userId);
+
+    // Link back to the source sample order
+    newOrder.ParentOrderId = orderId;
+    const savedOrder = await this.orderRepository.save(newOrder);
+
+    return {
+      ...savedOrder,
+      CreatedFromSampleOrder: {
+        Id: existingOrder.Id,
+        OrderName: existingOrder.OrderName,
+        OrderNumber: existingOrder.OrderNumber,
+      },
+    };
   }
 
   async getAllOrders(userId: number, projectId?: number | null | undefined): Promise<any> {
@@ -581,6 +690,18 @@ export class OrdersService {
       orders.map((order) => order.OrderId),
     );
 
+    // Fetch re-orders (child orders) created from any of these orders
+    const reOrders = await this.orderRepository.find({
+      where: { ParentOrderId: In(orders.map((order) => order.OrderId)) },
+    });
+
+    const reOrdersMap = new Map<number, Array<{ Id: number; OrderName: string; OrderNumber: string }>>();
+    for (const reOrder of reOrders) {
+      const list = reOrdersMap.get(reOrder.ParentOrderId) ?? [];
+      list.push({ Id: reOrder.Id, OrderName: reOrder.OrderName, OrderNumber: reOrder.OrderNumber });
+      reOrdersMap.set(reOrder.ParentOrderId, list);
+    }
+
     return orders.map((order) => {
       const summary = attachmentSummaries.get(order.OrderId);
       return {
@@ -604,6 +725,7 @@ export class OrdersService {
         ClientName: order.ClientName || null,
         StatusName: order.StatusName || null,
         attachmentProgress: summary?.attachmentProgress ?? 0,
+        ReorderOrders: reOrdersMap.get(order.OrderId) ?? [],
       };
     });
   }
@@ -814,6 +936,28 @@ export class OrdersService {
                       `Size measurement ${option.MeasurementId} does not match client ${effectiveClientId}`,
                     );
                   }
+                  // Verify it matches selected sub category (or is global)
+                  if (
+                    sizeMeasurement.ProductSubCategoryId !== null &&
+                    sizeMeasurement.ProductSubCategoryId !== undefined &&
+                    option.ProductSubCategoryId &&
+                    sizeMeasurement.ProductSubCategoryId !== option.ProductSubCategoryId
+                  ) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match product sub category ${option.ProductSubCategoryId}`,
+                    );
+                  }
+                  // Verify it matches selected style number (or is global)
+                  if (
+                    sizeMeasurement.StyleNumber !== null &&
+                    sizeMeasurement.StyleNumber !== undefined &&
+                    option.StyleNumber &&
+                    sizeMeasurement.StyleNumber !== option.StyleNumber
+                  ) {
+                    throw new BadRequestException(
+                      `Size measurement ${option.MeasurementId} does not match style number ${option.StyleNumber}`,
+                    );
+                  }
                 } else {
                   // If MeasurementId is not provided, get the latest version for this SizeOption
                   sizeMeasurement = await queryRunner.manager
@@ -823,11 +967,15 @@ export class OrdersService {
                     .andWhere('sm.IsActive = :isActive', { isActive: true })
                     .andWhere('sm.ProductCategoryId = :productCategoryId', {productCategoryId: product.ProductCategoryId})
                     .andWhere('(sm.ClientId = :clientId OR sm.ClientId IS NULL)', { clientId: effectiveClientId })
-                    // Prefer client-specific over global, then newest
+                    .andWhere('(sm.ProductSubCategoryId = :productSubCategoryId OR sm.ProductSubCategoryId IS NULL)', { productSubCategoryId: option?.ProductSubCategoryId ?? null })
+                    .andWhere('(sm.StyleNumber = :styleNumber OR sm.StyleNumber IS NULL)', { styleNumber: option?.StyleNumber ?? null })
+                    // Prefer client-specific over global, then sub-category/style-specific over global, then newest
                     .orderBy('sm.ClientId IS NULL', 'ASC')
+                    .addOrderBy('sm.ProductSubCategoryId IS NULL', 'ASC')
+                    .addOrderBy('sm.StyleNumber IS NULL', 'ASC')
                     .addOrderBy('sm.Version', 'DESC')
                     .getOne();
-                  
+
                   if (!sizeMeasurement) {
                     // Fallback: still keep category/client constraints; choose best available
                     sizeMeasurement = await queryRunner.manager
@@ -836,7 +984,11 @@ export class OrdersService {
                       .andWhere('sm.IsActive = :isActive', { isActive: true })
                       .andWhere('sm.ProductCategoryId = :productCategoryId', { productCategoryId: product.ProductCategoryId })
                       .andWhere('(sm.ClientId = :clientId OR sm.ClientId IS NULL)', { clientId: effectiveClientId })
+                      .andWhere('(sm.ProductSubCategoryId = :productSubCategoryId OR sm.ProductSubCategoryId IS NULL)', { productSubCategoryId: option?.ProductSubCategoryId ?? null })
+                      .andWhere('(sm.StyleNumber = :styleNumber OR sm.StyleNumber IS NULL)', { styleNumber: option?.StyleNumber ?? null })
                       .orderBy('sm.ClientId IS NULL', 'ASC')
+                      .addOrderBy('sm.ProductSubCategoryId IS NULL', 'ASC')
+                      .addOrderBy('sm.StyleNumber IS NULL', 'ASC')
                       .addOrderBy('sm.IsLatest', 'DESC')
                       .addOrderBy('sm.Version', 'DESC')
                       .getOne();
@@ -857,6 +1009,8 @@ export class OrdersService {
                 Priority: option.Priority,
                 SizeOption: option?.SizeOption ?? null,
                 MeasurementId: sizeMeasurement?.Id ?? null,
+                ProductSubCategoryId: option?.ProductSubCategoryId ?? null,
+                StyleNumber: option?.StyleNumber ?? null,
                 CreatedBy: updatedBy,
                 UpdatedBy: updatedBy,
                 CreatedOn: new Date(),
@@ -1191,6 +1345,11 @@ export class OrdersService {
 
       const attachmentProgress = await this.orderDocumentsService.getAttachmentProgress(orderData.Id);
 
+      // Fetch re-orders (child orders) created from this order
+      const reOrders = await this.orderRepository.find({
+        where: { ParentOrderId: orderData.Id },
+      });
+
       return {
         Id: orderData.Id,
         OrderShipmentStatus: orderData?.OrderShipmentStatus as OrderItemShipmentEnum,
@@ -1209,6 +1368,11 @@ export class OrdersService {
         StatusName: orderData.StatusName || 'Unknown Status',
         Deadline: orderData.Deadline,
         attachmentProgress,
+        ReorderOrders: reOrders.map((reOrder) => ({
+          Id: reOrder.Id,
+          OrderName: reOrder.OrderName,
+          OrderNumber: reOrder.OrderNumber,
+        })),
         items: processedItems,
       };
     } catch (error) {

@@ -27,6 +27,12 @@ export class OrderItemDetails {
   @Column({ type: 'int', nullable: true })
   MeasurementId: number;
 
+  @Column({ type: 'int', nullable: true })
+  ProductSubCategoryId: number;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  StyleNumber: string;
+
   @Column({ type: "int", default: () => '1' })
   Quantity: number;
 

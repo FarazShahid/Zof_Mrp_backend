@@ -67,12 +67,24 @@ export class SizeMeasurementsController {
   @Get('size-option/:sizeOptionId')
   @HttpCode(HttpStatus.OK)
   @CommonApiResponses('Get all size measurements (originals and versions) for a size option')
+  @ApiQuery({ name: 'ProductSubCategoryId', required: false, description: 'Filter by Product Sub Category Id' })
+  @ApiQuery({ name: 'ProductCategoryId', required: false, description: 'Filter by Product Category Id' })
+  @ApiQuery({ name: 'ClientId', required: false, description: 'Filter by Client Id' })
   findAllBySizeOption(
     @Param('sizeOptionId') sizeOptionId: string,
     @CurrentUser() user: any,
+    @Query('ProductSubCategoryId') ProductSubCategoryId?: number,
+    @Query('ProductCategoryId') ProductCategoryId?: number,
+    @Query('ClientId') ClientId?: number,
   ) {
     try {
-      return this.sizeMeasurementsService.findAllBySizeOption(+sizeOptionId, user.userId);
+      return this.sizeMeasurementsService.findAllBySizeOption(
+        +sizeOptionId,
+        user.userId,
+        ProductSubCategoryId,
+        ProductCategoryId,
+        ClientId,
+      );
     } catch (error) {
       throw error;
     }
@@ -141,4 +153,4 @@ export class SizeMeasurementsController {
       throw error;
     }
   }
-} 
+}

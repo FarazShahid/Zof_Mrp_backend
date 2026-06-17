@@ -5,11 +5,12 @@ import { SizeMeasurementsController } from './size-measurements.controller';
 import { SizeMeasurement } from './entities/size-measurement.entity';
 import { ProductCutOption } from 'src/productcutoptions/entity/productcutoptions.entity';
 import { ProductCategory } from 'src/product-category/entities/product-category.entity';
+import { ProductSubCategory } from 'src/product-sub-category/entities/product-sub-category.entity';
 import { AuditModule } from 'src/audit-logs/audit.module';
 import { User } from 'src/users/entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([SizeMeasurement, ProductCutOption, ProductCategory, User]), AuditModule],
+  imports: [TypeOrmModule.forFeature([SizeMeasurement, ProductCutOption, ProductCategory, ProductSubCategory, User]), AuditModule],
   controllers: [SizeMeasurementsController],
   providers: [SizeMeasurementsService],
   exports: [SizeMeasurementsService],

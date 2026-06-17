@@ -44,6 +44,18 @@ export class CreateSizeMeasurementDto {
   @Min(1)
   ProductCategoryId: number;
 
+  @CommonApiProperty('Product Sub Category Id', 1)
+  @IsNumber()
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  ProductSubCategoryId?: number;
+
+  @CommonApiProperty('Style Number', 'STY-001')
+  @IsString()
+  @IsOptional()
+  StyleNumber?: string;
+
   @CommonApiProperty('Front Length HPS', '1')
   @IsNumber()
   @IsOptional()

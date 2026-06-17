@@ -143,6 +143,17 @@ export class OrdersController {
     return this.ordersService.reorder(id, currentUser.email, currentUser.userId);
   }
 
+  @HasRight(AppRightsEnum.ReOrder)
+  @Post(':id/create-production-order')
+  @HttpCode(HttpStatus.CREATED)
+  @CommonApiResponses('Creates a new Production order from an existing Sampling order')
+  async createProductionOrderFromSample(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() currentUser: any
+  ): Promise<any> {
+    return this.ordersService.createProductionOrderFromSample(id, currentUser.email, currentUser.userId);
+  }
+
 
   @HasRight(AppRightsEnum.DeleteOrders)
   @Delete(':id')

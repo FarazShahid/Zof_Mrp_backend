@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Repository, UpdateQueryBuilder } from 'typeorm';
 import { SizeMeasurement } from './entities/size-measurement.entity';
 import { CreateSizeMeasurementDto, HatFusion } from './dto/create-size-measurement.dto';
 import { UpdateSizeMeasurementDto } from './dto/update-size-measurement.dto';
 import { ProductCutOption } from 'src/productcutoptions/entity/productcutoptions.entity';
 import { ProductCategory } from 'src/product-category/entities/product-category.entity';
+import { ProductSubCategory } from 'src/product-sub-category/entities/product-sub-category.entity';
 import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
@@ -18,6 +19,9 @@ export class SizeMeasurementsService {
 
     @InjectRepository(ProductCategory)
     private productCategoryRepository: Repository<ProductCategory>,
+
+    @InjectRepository(ProductSubCategory)
+    private productSubCategoryRepository: Repository<ProductSubCategory>,
 
     @InjectRepository(User)
     private userRepository: Repository<User>,
@@ -75,19 +79,35 @@ export class SizeMeasurementsService {
         }
       }
 
-      // Check for duplicate: ClientId, ProductCategoryId, and SizeOptionId combination
+      if (createSizeMeasurementDto.ProductSubCategoryId) {
+        const subCategory = await this.productSubCategoryRepository.findOne({
+          where: { Id: createSizeMeasurementDto.ProductSubCategoryId },
+        });
+
+        if (!subCategory) {
+          throw new BadRequestException(`Product sub category with id ${createSizeMeasurementDto.ProductSubCategoryId} does not exist`);
+        }
+      }
+
+      // Normalize optional matching fields so NULL is compared explicitly (NULL = "applies to any")
+      const productSubCategoryId = createSizeMeasurementDto.ProductSubCategoryId ?? null;
+      const styleNumber = createSizeMeasurementDto.StyleNumber ?? null;
+
+      // Check for duplicate: ClientId, ProductCategoryId, SizeOptionId, ProductSubCategoryId, and StyleNumber combination
       const existingMeasurement = await this.sizeMeasurementRepository.findOne({
         where: {
           ClientId: createSizeMeasurementDto.ClientId,
           ProductCategoryId: createSizeMeasurementDto.ProductCategoryId,
           SizeOptionId: createSizeMeasurementDto.SizeOptionId,
+          ProductSubCategoryId: productSubCategoryId,
+          StyleNumber: styleNumber,
           IsActive: true,
         },
       });
 
       if (existingMeasurement) {
         throw new BadRequestException(
-          'A size measurement with this Client, Product Category, and Size Option combination already exists. Please use a different combination or update the existing measurement.'
+          'A size measurement with this Client, Product Category, Size Option, Sub Category and Style Number combination already exists. Please use a different combination or update the existing measurement.'
         );
       }
 
@@ -117,12 +137,8 @@ export class SizeMeasurementsService {
         .andWhere('Id != :id', { id: saved.Id })
         .andWhere('IsActive = :isActive', { isActive: true });
 
-      // Handle ClientId - could be null
-      if (saved.ClientId !== null && saved.ClientId !== undefined) {
-        updateQuery.andWhere('ClientId = :clientId', { clientId: saved.ClientId });
-      } else {
-        updateQuery.andWhere('ClientId IS NULL');
-      }
+      // Handle ClientId, ProductSubCategoryId, and StyleNumber - could be null
+      this.addNullableMatchClauses(updateQuery, saved);
 
       await updateQuery.execute();
 
@@ -149,10 +165,12 @@ export class SizeMeasurementsService {
           'so.OptionSizeOptions AS SizeOptionName',
           'cl.Name AS ClientName',
           'pc.Id AS ProductCategoryId',
-          'pc.Type AS ProductCategoryType'
+          'pc.Type AS ProductCategoryType',
+          'psc.Name AS ProductSubCategoryName'
         ])
         .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
         .leftJoin('productcategory', 'pc', 'sm.ProductCategoryId = pc.Id')
+        .leftJoin('productsubcategory', 'psc', 'sm.ProductSubCategoryId = psc.Id')
         .leftJoin('client', 'cl', 'sm.ClientId = cl.Id')
         .where('sm.IsActive = :isActive', { isActive: true })
         .orderBy('sm.CreatedOn', 'DESC');
@@ -248,11 +266,13 @@ export class SizeMeasurementsService {
           'so.OptionSizeOptions AS SizeOptionName',
           'cl.Name AS ClientName',
           'pc.Id AS ProductCategoryId',
-          'pc.Type AS ProductCategoryType'
+          'pc.Type AS ProductCategoryType',
+          'psc.Name AS ProductSubCategoryName'
         ])
         .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
         .leftJoin('client', 'cl', 'sm.ClientId = cl.Id')
         .leftJoin('productcategory', 'pc', 'sm.ProductCategoryId = pc.Id')
+        .leftJoin('productsubcategory', 'psc', 'sm.ProductSubCategoryId = psc.Id')
         .where('sm.Id = :id', { id })
         .andWhere('sm.IsActive = :isActive', { isActive: true })
         .getRawOne();
@@ -369,9 +389,18 @@ export class SizeMeasurementsService {
   /**
    * Return all measurements (originals + versions) for a size option
    */
-  async findAllBySizeOption(sizeOptionId: number, userId: number): Promise<SizeMeasurement[]> {
+  async findAllBySizeOption(
+    sizeOptionId: number,
+    userId: number,
+    productSubCategoryId?: number | string,
+    productCategoryId?: number | string,
+    clientId?: number | string,
+  ): Promise<SizeMeasurement[]> {
     try {
       const userAssignedClientIds = await this.getClientsForUser(userId);
+      const parsedProductSubCategoryId = Number(productSubCategoryId);
+      const parsedProductCategoryId = Number(productCategoryId);
+      const parsedClientId = Number(clientId);
 
       const queryBuilder = this.sizeMeasurementRepository
         .createQueryBuilder('sm')
@@ -379,7 +408,27 @@ export class SizeMeasurementsService {
         .andWhere('sm.IsActive = :isActive', { isActive: true })
         .orderBy('sm.Version', 'ASC');
 
-      if (userAssignedClientIds.length > 0) {
+      if (Number.isFinite(parsedProductSubCategoryId) && parsedProductSubCategoryId > 0) {
+        queryBuilder.andWhere('sm.ProductSubCategoryId = :productSubCategoryId', {
+          productSubCategoryId: parsedProductSubCategoryId,
+        });
+      }
+
+      if (Number.isFinite(parsedProductCategoryId) && parsedProductCategoryId > 0) {
+        queryBuilder.andWhere('sm.ProductCategoryId = :productCategoryId', {
+          productCategoryId: parsedProductCategoryId,
+        });
+      }
+
+      if (Number.isFinite(parsedClientId) && parsedClientId > 0) {
+        if (userAssignedClientIds.length > 0 && !userAssignedClientIds.includes(parsedClientId)) {
+          throw new BadRequestException('Client is not assigned to you');
+        }
+
+        queryBuilder.andWhere('(sm.ClientId = :clientId OR sm.ClientId IS NULL)', {
+          clientId: parsedClientId,
+        });
+      } else if (userAssignedClientIds.length > 0) {
         queryBuilder.andWhere('sm.ClientId IN (:...clientIds)', { clientIds: userAssignedClientIds });
       }
 
@@ -476,12 +525,8 @@ export class SizeMeasurementsService {
         .andWhere('(OriginalSizeMeasurementId != :originalId OR OriginalSizeMeasurementId IS NULL)', { originalId })
         .andWhere('IsActive = :isActive', { isActive: true });
 
-      // Handle ClientId - could be null
-      if (existingMeasurement.ClientId !== null && existingMeasurement.ClientId !== undefined) {
-        updateOthersQuery.andWhere('ClientId = :clientId', { clientId: existingMeasurement.ClientId });
-      } else {
-        updateOthersQuery.andWhere('ClientId IS NULL');
-      }
+      // Handle ClientId, ProductSubCategoryId, and StyleNumber - could be null
+      this.addNullableMatchClauses(updateOthersQuery, existingMeasurement);
 
       await updateOthersQuery.execute();
 
@@ -526,10 +571,20 @@ export class SizeMeasurementsService {
         sizeOptionName = sizeOption?.SizeOptionName || null;
       }
 
+      // Get product sub category name for response
+      let productSubCategoryName: string | null = null;
+      if (savedResponse.ProductSubCategoryId) {
+        const subCategory = await this.productSubCategoryRepository.findOne({
+          where: { Id: savedResponse.ProductSubCategoryId },
+        });
+        productSubCategoryName = subCategory?.Name || null;
+      }
+
       return {
         ...savedResponse,
         cutOptionName: cutOptionName,
         SizeOptionName: sizeOptionName,
+        ProductSubCategoryName: productSubCategoryName,
         CreatedOn: savedResponse.CreatedOn,
         CreatedBy: savedResponse.CreatedBy,
         UpdatedOn: savedResponse.UpdatedOn,
@@ -596,12 +651,8 @@ export class SizeMeasurementsService {
         .andWhere('(OriginalSizeMeasurementId != :originalId OR OriginalSizeMeasurementId IS NULL)', { originalId })
         .andWhere('IsActive = :isActive', { isActive: true });
 
-      // Handle ClientId - could be null
-      if (existingMeasurement.ClientId !== null && existingMeasurement.ClientId !== undefined) {
-        updateOthersQuery.andWhere('ClientId = :clientId', { clientId: existingMeasurement.ClientId });
-      } else {
-        updateOthersQuery.andWhere('ClientId IS NULL');
-      }
+      // Handle ClientId, ProductSubCategoryId, and StyleNumber - could be null
+      this.addNullableMatchClauses(updateOthersQuery, existingMeasurement);
 
       await updateOthersQuery.execute();
 
@@ -650,10 +701,20 @@ export class SizeMeasurementsService {
         cutOptionName = cutOption?.OptionProductCutOptions || null;
       }
 
+      // Get product sub category name for response
+      let productSubCategoryName: string | null = null;
+      if (savedResponse.ProductSubCategoryId) {
+        const subCategory = await this.productSubCategoryRepository.findOne({
+          where: { Id: savedResponse.ProductSubCategoryId },
+        });
+        productSubCategoryName = subCategory?.Name || null;
+      }
+
       return {
         ...savedResponse,
         cutOptionName: cutOptionName,
         SizeOptionName: sizeOptionName,
+        ProductSubCategoryName: productSubCategoryName,
         CreatedOn: savedResponse.CreatedOn,
         CreatedBy: savedResponse.CreatedBy,
         UpdatedOn: savedResponse.UpdatedOn,
@@ -716,12 +777,8 @@ export class SizeMeasurementsService {
               .andWhere('Id != :originalId', { originalId })
               .andWhere('IsActive = :isActive', { isActive: true });
 
-            // Handle ClientId - could be null
-            if (measurementEntity.ClientId !== null && measurementEntity.ClientId !== undefined) {
-              updateQuery1.andWhere('ClientId = :clientId', { clientId: measurementEntity.ClientId });
-            } else {
-              updateQuery1.andWhere('ClientId IS NULL');
-            }
+            // Handle ClientId, ProductSubCategoryId, and StyleNumber - could be null
+            this.addNullableMatchClauses(updateQuery1, measurementEntity);
 
             await updateQuery1.execute();
 
@@ -748,12 +805,8 @@ export class SizeMeasurementsService {
                 .andWhere('Id != :versionId', { versionId: mostRecentVersion.Id })
                 .andWhere('IsActive = :isActive', { isActive: true });
 
-              // Handle ClientId - could be null
-              if (measurementEntity.ClientId !== null && measurementEntity.ClientId !== undefined) {
-                updateQuery2.andWhere('ClientId = :clientId', { clientId: measurementEntity.ClientId });
-              } else {
-                updateQuery2.andWhere('ClientId IS NULL');
-              }
+              // Handle ClientId, ProductSubCategoryId, and StyleNumber - could be null
+              this.addNullableMatchClauses(updateQuery2, measurementEntity);
 
               await updateQuery2.execute();
 
@@ -782,12 +835,8 @@ export class SizeMeasurementsService {
               .andWhere('Id != :versionId', { versionId: mostRecentVersion.Id })
               .andWhere('IsActive = :isActive', { isActive: true });
 
-            // Handle ClientId - could be null
-            if (measurementEntity.ClientId !== null && measurementEntity.ClientId !== undefined) {
-              updateQuery3.andWhere('ClientId = :clientId', { clientId: measurementEntity.ClientId });
-            } else {
-              updateQuery3.andWhere('ClientId IS NULL');
-            }
+            // Handle ClientId, ProductSubCategoryId, and StyleNumber - could be null
+            this.addNullableMatchClauses(updateQuery3, measurementEntity);
 
             await updateQuery3.execute();
 
@@ -819,11 +868,13 @@ export class SizeMeasurementsService {
           'so.OptionSizeOptions AS SizeOptionName',
           'cl.Name AS ClientName',
           'pc.Id AS ProductCategoryId',
-          'pc.Type AS ProductCategoryType'
+          'pc.Type AS ProductCategoryType',
+          'psc.Name AS ProductSubCategoryName'
         ])
         .leftJoin('sizeoptions', 'so', 'sm.SizeOptionId = so.Id')
         .leftJoin('client', 'cl', 'sm.ClientId = cl.Id')
         .leftJoin('productcategory', 'pc', 'sm.ProductCategoryId = pc.Id')
+        .leftJoin('productsubcategory', 'psc', 'sm.ProductSubCategoryId = psc.Id')
         .where('sm.ClientId = :clientId', { clientId })
         .andWhere('sm.IsActive = :isActive', { isActive: true })
         .orderBy('sm.CreatedOn', 'DESC')
@@ -869,5 +920,33 @@ export class SizeMeasurementsService {
     return name.replace(/\s*-\s*v\d+$/i, '').trim();
   }
 
+  /**
+   * Add NULL-tolerant match clauses for ClientId, ProductSubCategoryId, and StyleNumber
+   * to an update query builder, so sibling rows are matched on these optional dimensions
+   * the same way they are matched on ClientId (exact value, or IS NULL when not set).
+   */
+  private addNullableMatchClauses(
+    qb: UpdateQueryBuilder<SizeMeasurement>,
+    entity: { ClientId?: number | null; ProductSubCategoryId?: number | null; StyleNumber?: string | null },
+  ): void {
+    if (entity.ClientId !== null && entity.ClientId !== undefined) {
+      qb.andWhere('ClientId = :clientId', { clientId: entity.ClientId });
+    } else {
+      qb.andWhere('ClientId IS NULL');
+    }
 
-} 
+    if (entity.ProductSubCategoryId !== null && entity.ProductSubCategoryId !== undefined) {
+      qb.andWhere('ProductSubCategoryId = :productSubCategoryId', { productSubCategoryId: entity.ProductSubCategoryId });
+    } else {
+      qb.andWhere('ProductSubCategoryId IS NULL');
+    }
+
+    if (entity.StyleNumber !== null && entity.StyleNumber !== undefined) {
+      qb.andWhere('StyleNumber = :styleNumber', { styleNumber: entity.StyleNumber });
+    } else {
+      qb.andWhere('StyleNumber IS NULL');
+    }
+  }
+
+
+}
