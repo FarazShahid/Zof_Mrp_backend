@@ -864,6 +864,17 @@ export class ProductsService {
         throw new ForbiddenException(`You do not have access to this product`);
       }
 
+      // Prevent deletion if product is referenced by any order items
+      const [orderItemRef] = await queryRunner.query(
+        `SELECT Id FROM orderitems WHERE ProductId = ? LIMIT 1`,
+        [id],
+      );
+      if (orderItemRef) {
+        throw new BadRequestException(
+          `Product cannot be deleted because it is used in one or more orders.`,
+        );
+      }
+
       // Delete related available color options
       await queryRunner.query(
         `DELETE FROM availablecoloroptions WHERE ProductId = ?`,
@@ -904,9 +915,10 @@ export class ProductsService {
       return { message: `Product with ID ${id} has been deleted successfully` };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw new BadRequestException(
-        error.message || `Error deleting product with ID ${id}`,
-      );
+      if (error instanceof BadRequestException || error instanceof NotFoundException || error instanceof ForbiddenException) {
+        throw error;
+      }
+      throw new BadRequestException(`Failed to delete product. Please try again.`);
     } finally {
       await queryRunner.release();
     }
