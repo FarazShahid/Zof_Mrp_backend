@@ -1238,6 +1238,12 @@ export class OrdersService {
           'sizeMeasurement',
           'orderItemDetail.MeasurementId = sizeMeasurement.Id',
         )
+        // ProductSubCategory join
+        .leftJoin(
+          'productsubcategory',
+          'productSubCategory',
+          'orderItemDetail.ProductSubCategoryId = productSubCategory.Id',
+        )
         .leftJoin('document', 'imageDoc', 'orderItem.ImageId = imageDoc.Id')
         .leftJoin('document', 'fileDoc', 'orderItem.FileId = fileDoc.Id')
         .leftJoin('document', 'videoDoc', 'orderItem.VideoId = videoDoc.Id')
@@ -1272,7 +1278,10 @@ export class OrdersService {
           'orderItemDetail.SizeOption AS SizeOptionId',
           'orderItemDetail.MeasurementId AS MeasurementId',
           'sizeOption.OptionSizeOptions AS SizeOptionName',
-          'sizeMeasurement.Measurement1 AS MeasurementName', // added MeasurementName
+          'sizeMeasurement.Measurement1 AS MeasurementName',
+          'orderItemDetail.ProductSubCategoryId AS ProductSubCategoryId',
+          'productSubCategory.Name AS ProductSubCategoryName',
+          'orderItemDetail.StyleNumber AS StyleNumber',
         ])
         .where('orderItem.OrderId = :orderId', { orderId: id })
         .getRawMany();
@@ -1342,6 +1351,9 @@ export class OrdersService {
             SizeOptionName: item?.SizeOptionName || 'Unknown Size',
             MeasurementId: item?.MeasurementId ?? null,
             MeasurementName: item?.MeasurementName || 'Unknown Measurement',
+            ProductSubCategoryId: item?.ProductSubCategoryId ?? null,
+            ProductSubCategoryName: item?.ProductSubCategoryName ?? null,
+            StyleNumber: item?.StyleNumber ?? null,
           });
           currentItem._orderItemDetailIds.add(item.OrderItemDetailId);
         }
