@@ -610,8 +610,8 @@ export class OrdersService {
         ExternalOrderId: order.ExternalOrderId,
         CreatedOn: order.CreatedOn,
         CreatedBy: order.CreatedBy,
-        UpdatedOn: order.UpdatedOn,
-        UpdatedBy: order.UpdatedBy,
+        UpdatedOn: order.UpdatedOn && order.CreatedOn && new Date(order.UpdatedOn).getTime() !== new Date(order.CreatedOn).getTime() ? order.UpdatedOn : null,
+        UpdatedBy: order.UpdatedOn && order.CreatedOn && new Date(order.UpdatedOn).getTime() !== new Date(order.CreatedOn).getTime() ? order.UpdatedBy : null,
         attachmentProgress: attachmentSummaries.get(order.Id)?.attachmentProgress ?? 0,
       }));
 
@@ -725,8 +725,8 @@ export class OrdersService {
         Deadline: order.order_Deadline,
         CreatedOn: order.CreatedOn,
         CreatedBy: order.CreatedBy,
-        UpdatedOn: order.UpdatedOn,
-        UpdatedBy: order.UpdatedBy,
+        UpdatedOn: order.UpdatedOn && order.CreatedOn && new Date(order.UpdatedOn).getTime() !== new Date(order.CreatedOn).getTime() ? order.UpdatedOn : null,
+        UpdatedBy: order.UpdatedOn && order.CreatedOn && new Date(order.UpdatedOn).getTime() !== new Date(order.CreatedOn).getTime() ? order.UpdatedBy : null,
         EventName: order.EventName || null,
         ClientName: order.ClientName || null,
         StatusName: order.StatusName || null,
