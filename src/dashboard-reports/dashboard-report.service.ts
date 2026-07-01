@@ -74,18 +74,20 @@ export class DashboardReportService {
     }
     const totalProducts = await totalProductsQuery.getCount();
 
-    // Total Shipments
+    // Total Shipments (use DISTINCT to avoid double-counting shipments linked to multiple orders)
     let totalShipmentsQuery = this.shipmentRepository
       .createQueryBuilder('shipment')
       .leftJoin('shipment.ShipmentOrders', 'shipmentOrder')
-      .leftJoin('shipmentOrder.Order', 'order');
-    
+      .leftJoin('shipmentOrder.Order', 'order')
+      .select('COUNT(DISTINCT shipment.Id)', 'total');
+
     if (assignedClientIds.length > 0) {
       totalShipmentsQuery = totalShipmentsQuery.where('order.ClientId IN (:...assignedClientIds)', {
         assignedClientIds,
       });
     }
-    const totalShipments = await totalShipmentsQuery.getCount();
+    const shipmentResult = await totalShipmentsQuery.getRawOne();
+    const totalShipments = parseInt(shipmentResult.total) || 0;
 
     // Total Clients
     let totalClientsQuery = this.clientRepository.createQueryBuilder('client');
@@ -112,11 +114,11 @@ export class DashboardReportService {
       .createQueryBuilder('order')
       .leftJoin('order.status', 'status')
       .select([
-        'status.Id as statusId',
-        'status.StatusName as statusName',
+        'order.OrderStatusId as statusId',
+        "COALESCE(status.StatusName, 'Pending') as statusName",
         'COUNT(order.Id) as count',
       ])
-      .groupBy('status.Id, status.StatusName');
+      .groupBy("order.OrderStatusId, COALESCE(status.StatusName, 'Pending')");
 
     if (assignedClientIds.length > 0) {
       query = query.where('order.ClientId IN (:...assignedClientIds)', {
@@ -276,17 +278,19 @@ export class DashboardReportService {
       .leftJoin('shipment.ShipmentOrders', 'shipmentOrder')
       .leftJoin('shipmentOrder.Order', 'order')
       .select([
-        'COUNT(shipment.Id) as totalShipments',
-        'SUM(CASE WHEN shipment.Status = :inTransit THEN 1 ELSE 0 END) as inTransit',
-        'SUM(CASE WHEN shipment.Status = :delivered THEN 1 ELSE 0 END) as delivered',
-        'SUM(CASE WHEN shipment.Status = :damaged THEN 1 ELSE 0 END) as damaged',
-        'SUM(CASE WHEN shipment.Status = :cancelled THEN 1 ELSE 0 END) as cancelled',
+        'COUNT(DISTINCT shipment.Id) as totalShipments',
+        'COUNT(DISTINCT CASE WHEN shipment.Status = :inTransit THEN shipment.Id END) as inTransit',
+        'COUNT(DISTINCT CASE WHEN shipment.Status = :delivered THEN shipment.Id END) as delivered',
+        'COUNT(DISTINCT CASE WHEN shipment.Status = :damaged THEN shipment.Id END) as damaged',
+        'COUNT(DISTINCT CASE WHEN shipment.Status = :cancelled THEN shipment.Id END) as cancelled',
+        'COUNT(DISTINCT CASE WHEN shipment.Status = :dispatched THEN shipment.Id END) as dispatched',
       ])
       .setParameters({
         inTransit: ShipmentStatus.IN_TRANSIT,
         delivered: ShipmentStatus.DELIVERED,
         damaged: ShipmentStatus.DAMAGED,
         cancelled: ShipmentStatus.CANCELLED,
+        dispatched: ShipmentStatus.DISPATCHED,
       });
 
     if (assignedClientIds.length > 0) {
@@ -306,6 +310,7 @@ export class DashboardReportService {
       delivered: parseInt(summary.delivered) || 0,
       damaged: parseInt(summary.damaged) || 0,
       cancelled: parseInt(summary.cancelled) || 0,
+      dispatched: parseInt(summary.dispatched) || 0,
       onTimeDelivered,
     };
   }

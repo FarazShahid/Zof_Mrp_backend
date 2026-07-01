@@ -582,10 +582,6 @@ export class OrdersService {
 
       const result = await query.getRawMany();
 
-      const total = await this.orderRepository
-        .createQueryBuilder('order')
-        .getCount();
-
       const attachmentSummaries = await this.orderDocumentsService.getAttachmentSummaries(
         result.map((order) => order.Id),
       );
